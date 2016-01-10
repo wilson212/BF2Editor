@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{44557063-7D57-4D58-8B0E-09B1C7081887}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BF2ScriptingEngine</RootNamespace>
+    <AssemblyName>BF2ScriptingEngine</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>3</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Extensions\Enum.cs" />
+    <Compile Include="Extensions\EnumerableExtensions.cs" />
+    <Compile Include="Extensions\IntExtensions.cs" />
+    <Compile Include="ObjectType.cs" />
+    <Compile Include="Scripting\ObjectReference.cs" />
+    <Compile Include="Scripting\Assignable.cs" />
+    <Compile Include="Scripting\Components\Ability.cs" />
+    <Compile Include="Scripting\Components\Armor.cs" />
+    <Compile Include="Scripting\Components\HelpHud.cs" />
+    <Compile Include="Scripting\Conditional.cs" />
+    <Compile Include="Scripting\GeometryTemplates\SkinnedMesh.cs" />
+    <Compile Include="Scripting\Attributes\IndexedList.cs" />
+    <Compile Include="Scripting\Interfaces\IComponent.cs" />
+    <Compile Include="Scripting\Interfaces\IObjectProperty.cs" />
+    <Compile Include="Scripting\Interfaces\IObjectTemplate.cs" />
+    <Compile Include="LogEntry.cs" />
+    <Compile Include="Logger.cs" />
+    <Compile Include="Scripting\Attributes\ComponentName.cs" />
+    <Compile Include="Scripting\Components\AbilityHud.cs" />
+    <Compile Include="Scripting\Components\Radio.cs" />
+    <Compile Include="Scripting\Components\VehicleHud.cs" />
+    <Compile Include="Scripting\Components\WeaponHud.cs" />
+    <Compile Include="Scripting\Enumerations\FiringPose.cs" />
+    <Compile Include="Scripting\Enumerations\PlayerInput.cs" />
+    <Compile Include="Scripting\Ai\AiBehaviours.cs" />
+    <Compile Include="Scripting\Ai\AiBehaviourWeights.cs" />
+    <Compile Include="Scripting\Ai\VehicleType.cs" />
+    <Compile Include="ConFile.cs" />
+    <Compile Include="ObjectManager.cs" />
+    <Compile Include="ScriptEngine.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Scripting\Enumerations\StrengthType.cs" />
+    <Compile Include="Scripting\ObjectPropertyBase.cs" />
+    <Compile Include="Scripting\ObjectTemplates\Kit.cs" />
+    <Compile Include="Scripting\ObjectTemplates\PlayerControlObject.cs" />
+    <Compile Include="Scripting\ObjectTemplates\GenericFireArm.cs" />
+    <Compile Include="Scripting\BaseTemplates\AiTemplatePlugin.cs" />
+    <Compile Include="Scripting\AiTemplatePlugins\Armament.cs" />
+    <Compile Include="Scripting\ConFileObject.cs" />
+    <Compile Include="Scripting\AiTemplatePlugins\Mobile.cs" />
+    <Compile Include="Scripting\AiTemplatePlugins\Cover.cs" />
+    <Compile Include="Scripting\AiTemplatePlugins\ControlInfo.cs" />
+    <Compile Include="Scripting\ObjectTemplates\ItemContainer.cs" />
+    <Compile Include="Scripting\AiTemplatePlugins\Physical.cs" />
+    <Compile Include="Scripting\Attributes\PropertyName.cs" />
+    <Compile Include="Scripting\BaseTemplates\AiTemplate.cs" />
+    <Compile Include="Scripting\BaseTemplates\KitTemplate.cs" />
+    <Compile Include="Scripting\ObjectProperty.cs" />
+    <Compile Include="Scripting\RemComment.cs" />
+    <Compile Include="Scripting\BaseTemplates\ObjectTemplate.cs" />
+    <Compile Include="Tokenizer\Token.cs" />
+    <Compile Include="Tokenizer\Tokenizer.cs" />
+    <Compile Include="Scripting\BaseTemplates\WeaponTemplate.cs" />
+    <Compile Include="Scripting\AiTemplatePlugins\Unit.cs" />
+    <Compile Include="Tokenizer\TokenType.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

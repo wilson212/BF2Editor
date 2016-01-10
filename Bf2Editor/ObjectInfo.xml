@@ -1,0 +1,364 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+      Adding objects into this xml file allows you to fetch more information about said
+      object by right clicking the objects name in the Object selection box
+      
+      * IMPORTANT the @name attribute should always be lowercase, no matter the casing of the object in zip *
+      
+      If this file gets deleted or removed, an original copy will be made by the program.
+-->
+<ObjectInfo>
+  <vehicles>
+    <air>
+      <object name="ahe_ah1z">
+        <desc>The AH-1Z is the United States Marine Corps. attack helicopter.</desc>
+        <link>http://battlefield.wikia.com/wiki/AH-1Z_Viper</link>
+      </object>
+      <object name="ahe_havoc">
+        <desc>The Mi-28 is the MEC's attack helicopter.</desc>
+        <link>http://battlefield.wikia.com/wiki/Mi-28_Havoc</link>
+      </object>
+      <object name="ahe_z10">
+        <desc>The WZ-10 is the attack helicopter for the PLA.</desc>
+        <link>http://battlefield.wikia.com/wiki/WZ-10</link>
+      </object>
+      <object name="air_f35b">
+        <desc>
+          The F-35B is the only VSTOL (Vertical/Short Take-Off and Landing) fighter jet in the game and one of the 
+          four Fixed-Wing aircraft (F-35B, F-18, F-15E, A-10) used by the United States Marine Corps.
+          It has no PLA or MEC counterpart and is only found on the USS Essex (LHD-2).
+        </desc>
+        <link>http://battlefield.wikia.com/wiki/F-35B</link>
+      </object>
+      <object name="air_j10">
+        <desc>The J-10 in Battlefield 2 is the main fighter aircraft of the PLA</desc>
+        <link>http://battlefield.wikia.com/wiki/J-10</link>
+      </object>
+      <object name="air_su30mkk">
+        <desc>The Su-30 in Battlefield 2 fullfills the role of a strike fighter for the PLA and as one of the three fixed-wing aircraft operated by the PLA</desc>
+        <link>http://battlefield.wikia.com/wiki/Su-30_Flanker-C</link>
+      </object>
+      <object name="chthe_z8">
+        <desc>the Z-8 is used as the PLA transport helicopter. </desc>
+        <link>http://battlefield.wikia.com/wiki/Z-8</link>
+      </object>
+      <object name="ruair_mig29">
+        <desc>The MiG-29 is a jet operated by the Middle Eastern Coalition.</desc>
+        <link>http://battlefield.wikia.com/wiki/MiG-29_Fulcrum</link>
+      </object>
+      <object name="ruair_su34">
+        <desc>The Su-34 jet is the ground attack fighter for the MEC.</desc>
+        <link>http://battlefield.wikia.com/wiki/Su-34_Fullback</link>
+      </object>
+      <object name="the_mi17">
+        <desc>The Mi-17 is the MEC's main transport helicopter.</desc>
+        <link>http://battlefield.wikia.com/wiki/Mi-17_Hip</link>
+      </object>
+      <object name="usair_f15">
+        <desc>The F-15E in Battlefield 2 is one of the four fixed-wing aircraft used by the United States Marine Corps</desc>
+        <link>http://battlefield.wikia.com/wiki/F-15E_Strike_Eagle</link>
+      </object>
+      <object name="usair_f18">
+        <desc>The F/A-18A Hornet appears in Battlefield 2 as one of the four USMC Fixed-wing aircraft in the game</desc>
+        <link>http://battlefield.wikia.com/wiki/F/A-18</link>
+      </object>
+      <object name="usthe_uh60">
+        <desc>The MH-60S Knight Hawk is featured in Battlefield 2 as the USMC's transport helicopter</desc>
+        <link>http://battlefield.wikia.com/wiki/UH-60_Black_Hawk</link>
+      </object>
+    </air>
+    <land>
+      <object name="aav_tunguska">
+        <desc>The 2K22 Tunguska is the MEC's anti-aircraft vehicle. It is also the equivalent of the USMC/EU M6 Linebacker and the PLA PGZ-95</desc>
+        <link>http://battlefield.wikia.com/wiki/2K22_Tunguska</link>
+      </object>
+      <object name="aav_type95">
+        <desc>
+          The PGZ-95 (referred as the type95 in the game files) is the PLA's anti-aircraft vehicle. It is also the equivalent of the USMC M6 Linebacker 
+          and the MEC 2K22 Tunguska.
+        </desc>
+        <link>http://battlefield.wikia.com/wiki/Type_95_SPAAA</link>
+      </object>
+      <object name="apc_btr90">
+        <desc>
+          The BTR-90 appears in Battlefield 2 as the main Armored Personal Carrier (APC) used by the Middle Eastern Coalition, the Spetsnaz, Rebels, and Insurgents.
+          Its counterparts are the Chinese WZ551 and the American LAV-25.
+        </desc>
+        <link>http://battlefield.wikia.com/wiki/BTR-90</link>
+      </object>
+      <object name="apc_wz551">
+        <desc>the WZ551 is the Armored Personal Carrier (APC) used by the People's Liberation Army. Its counterparts are the USMC LAV-25 and the MEC BTR-90.</desc>
+        <link>http://battlefield.wikia.com/wiki/WZ551</link>
+      </object>
+      <object name="jeep_faav">
+        <desc>
+          The Desert Patrol Vehicle is one of the 2 light vehicles operated by the United States Marine Corps and the European Union, operating alongside
+          the HMMWV. It's counterpart is the FAV, which is operated by both the PLA and the MEC. Seats three players: a driver, a gunner, and a passenger.
+        </desc>
+        <link>http://battlefield.wikia.com/wiki/Desert_Patrol_Vehicle</link>
+      </object>
+      <object name="jep_mec_paratrooper">
+        <desc>
+          The FAV Buggy is used by the Middle Eastern Coalition, the MEC Special Forces, the People's Liberation Army, the Rebel Forces, the Insurgent Forces
+          and the Spetsnaz. It performs similarly to the USMC Desert Patrol Vehicle and seats three players: a driver, a gunner, and a passenger.
+        </desc>
+        <link>http://battlefield.wikia.com/wiki/FAV</link>
+      </object>
+      <object name="jep_nanjing">
+        <desc>The NJ 2046 is the light vehicle of the People's Liberation Army and can hold four players.</desc>
+        <link>http://battlefield.wikia.com/wiki/NJ_2046</link>
+      </object>
+      <object name="jep_paratrooper">
+        <desc>
+          The FAV Buggy is used by the Middle Eastern Coalition, the MEC Special Forces, the People's Liberation Army, the Rebel Forces, the Insurgent Forces
+          and the Spetsnaz. It performs similarly to the USMC Desert Patrol Vehicle and seats three players: a driver, a gunner, and a passenger.
+        </desc>
+        <link>http://battlefield.wikia.com/wiki/FAV</link>
+      </object>
+      <object name="jep_vodnik">
+        <desc>The Vodnik is the medium transport vehicle of the Middle Eastern Coalition, Spetsnaz and the Russian Rebel Forces.</desc>
+        <link>http://battlefield.wikia.com/wiki/GAZ-3937_Vodnik</link>
+      </object>
+      <object name="rutnk_t90">
+        <desc>
+          The T-90 is a main battle tank of the Middle Eastern Coalition. It is the counterpart to the USMC M1A2 Abrams, the PLA Type 98,
+          and the EU Leopard 2 and Challenger 2.
+        </desc>
+        <link>http://battlefield.wikia.com/wiki/T-90</link>
+      </object>
+      <object name="tnk_type98">
+        <desc>
+          The Type 98 is the People's Liberation Army's main battle tank in Battlefield 2. Its counterparts are the American M1A2 Abrams, European Challenger 2
+          and Leopard 2, and the MEC T-90.
+        </desc>
+        <link>http://battlefield.wikia.com/wiki/Type_98</link>
+      </object>
+      <object name="usaav_m6">
+        <desc>The M6 Linebacker in Battlefield 2 is the main air-defense vehicle of the United States Marine Corps and the EU.</desc>
+        <link>http://battlefield.wikia.com/wiki/M6_Linebacker</link>
+      </object>
+      <object name="usapc_lav25">
+        <desc>The LAV-25 is an Armored Personal Carrier (APC) featured in Battlefield 2, operated by the United States Marine Corps.</desc>
+        <link>http://battlefield.wikia.com/wiki/LAV-25</link>
+      </object>
+      <object name="usjep_hmmwv">
+        <desc>
+          The HMMWV is the light armored vehicle featured in Battlefield 2 for of United States Marine Corps and European Union and can hold up to
+          4 players (1 driver, 1 gunner, 2 passengers).
+        </desc>
+        <link>http://battlefield.wikia.com/wiki/HMMWV</link>
+      </object>
+      <object name="ustnk_m1a2">
+        <desc>
+          The M1A2 is the main battle tank of the United States Marine Corps in Battlefield 2. It is the counterpart to the PLA Type 98,
+          the EU Leopard 2 and Challenger 2, as well as the MEC T-90.
+        </desc>
+        <link>http://battlefield.wikia.com/wiki/M1A2_Abrams</link>
+      </object>
+    </land>
+  </vehicles>
+  <weapons>
+    <handheld>
+      <object name="chat_eryx">
+        <desc>The ERYX is issued as the default anti-tank weapon for the MEC PLA, MECSF, and Spetsnaz Anti-Tank kits.</desc>
+        <link>http://battlefield.wikia.com/wiki/ERYX</link>
+      </object>
+      <object name="chlmg_type95">
+        <desc>The Type 95 is the light machine gun issued to the PLA Support Kit.</desc>
+        <link>http://battlefield.wikia.com/wiki/QBB-95</link>
+      </object>
+      <object name="chpis_qsz92">
+        <desc>The QSZ-92 is a pistol weapon, issued to all of the PLA Kits</desc>
+        <link>http://battlefield.wikia.com/wiki/QSZ-92</link>
+      </object>
+      <object name="chpis_qsz92_silencer">
+        <desc>The QSZ-92 Silenced, used by the PLA sniper Kit</desc>
+        <link>http://battlefield.wikia.com/wiki/QSZ-92</link>
+      </object>
+      <object name="chrif_type85">
+        <desc>The Type 85 is the default PLA Anti-Tank kit submachine gun.</desc>
+        <link>http://battlefield.wikia.com/wiki/Type_85</link>
+      </object>
+      <object name="chrif_type95">
+        <desc>The QBZ-97 is the standard primary weapon of the PLA Special Forces kit</desc>
+        <link>http://battlefield.wikia.com/wiki/QBZ-95B</link>
+      </object>
+      <object name="chsht_norinco982">
+        <desc>The NOR982 is a 12-gauge, pump-action combat shotgun, issued to the PLA Engineer kit.</desc>
+        <link>http://battlefield.wikia.com/wiki/NOR982</link>
+      </object>
+      <object name="chsht_protecta">
+        <desc>The DAO-12 is the Tier One unlock for the Anti-Tank Kit</desc>
+        <link>http://battlefield.wikia.com/wiki/DAO-12</link>
+      </object>
+      <object name="chsni_type88">
+        <desc>The Type 88 is a standard Sniper Rifle for the PLA.</desc>
+        <link>http://battlefield.wikia.com/wiki/QBU-88</link>
+      </object>
+      <object name="nshgr_flashbang">
+        <desc>The Flashbang is a gadget featured in the Battlefield 2: Special Forces expansion for the Assault kit.</desc>
+        <link>http://battlefield.wikia.com/wiki/Flashbang</link>
+      </object>
+      <object name="rulmg_pkm">
+        <desc>The PKM is a Tier One unlock in Battlefield 2 for the Support kit.</desc>
+        <link>http://battlefield.wikia.com/wiki/PKM</link>
+      </object>
+      <object name="rulmg_rpk74">
+        <desc>The RPK-74 is a weapon for the MEC's Support Kit.</desc>
+        <link>http://battlefield.wikia.com/wiki/RPK</link>
+      </object>
+      <object name="rupis_baghira">
+        <desc>The MR-444 is a weapon issued as the standard sidearm of the Middle Eastern Coalition, Spetsnaz, MECSF, Rebels, and Insurgents</desc>
+        <link>http://battlefield.wikia.com/wiki/MR-444</link>
+      </object>
+      <object name="rupis_baghira_silencer">
+        <desc>The MR-444 Silenced is a weapon issued to the Sniper kit for the Middle Eastern Coalition, Spetsnaz, MECSF, Rebels, and Insurgents</desc>
+        <link>http://battlefield.wikia.com/wiki/MR-444</link>
+      </object>
+      <object name="rurgl_gp25">
+        <desc>The GP-25 is a weapon that is attached to the AK-47, issued uniquely to the PLA Assault kit.</desc>
+        <link>http://battlefield.wikia.com/wiki/GP-25</link>
+      </object>
+      <object name="rurgl_gp30">
+        <desc>The GP-30 is a weapon that is attached to the AK-101 assault rifle used by the MEC.</desc>
+        <link>http://battlefield.wikia.com/wiki/GP-30</link>
+      </object>
+      <object name="rurif_ak101">
+        <desc>The AK-101 is a weapon issued to the MEC as their service rifle for both the Assault and Medic kits</desc>
+        <link>http://battlefield.wikia.com/wiki/AK-101</link>
+      </object>
+      <object name="rurif_ak47">
+        <desc>The AK-47 is the standard primary weapon for the PLA's Assault and Medic kits.</desc>
+        <link>http://battlefield.wikia.com/wiki/AK-47</link>
+      </object>
+      <object name="rurif_bizon">
+        <desc>the PP-19 "Bizon" is issued to the MEC Anti-Tank Kit.</desc>
+        <link>http://battlefield.wikia.com/wiki/PP-19</link>
+      </object>
+      <object name="rurif_dragunov">
+        <desc>The SVD is a weapon featured in Battlefield 2 for the MEC Sniper kit.</desc>
+        <link>http://battlefield.wikia.com/wiki/SVD</link>
+      </object>
+      <!--
+      <object name="rurif_gp25">
+        <desc></desc>
+        <link></link>
+      </object>
+      -->
+      <!--
+      <object name="rurif_gp3.">
+        <desc></desc>
+        <link></link>
+      </object>
+      -->
+      <object name="rurrif_ak74u">
+        <desc>The AK-74U is the standard primary weapon for the Special Forces on the MEC team</desc>
+        <link>http://battlefield.wikia.com/wiki/AKS-74u</link>
+      </object>
+      <object name="rusht_saiga12">
+        <desc>The S12K is the default weapon for the Engineer kit for the MEC team</desc>
+        <link>http://battlefield.wikia.com/wiki/Saiga</link>
+      </object>
+      <object name="usatp_predator">
+        <desc>The SRAW (also known as the Predator SRAW) is issued to the USMC, SEALs, SAS, and EU Anti-Tank kit.</desc>
+        <link>http://battlefield.wikia.com/wiki/SRAW</link>
+      </object>
+      <object name="ushgr_m67">
+        <desc>Hand grenades are standard issue to each playable faction.</desc>
+        <link>http://battlefield.wikia.com/wiki/Grenade</link>
+      </object>
+      <object name="uslmg_m249saw">
+        <desc>The M249 SAW is the first weapon unlocked in the Support kit for the United States Marine Corps</desc>
+        <link>http://battlefield.wikia.com/wiki/M249</link>
+      </object>
+      <object name="uspis_92fs">
+        <desc>The 92FS is the USMC's and European Union's standard sidearm</desc>
+        <link>http://battlefield.wikia.com/wiki/M9</link>
+      </object>
+      <object name="uspis_92fs_silencer">
+        <desc>The 92FS Silenced is issued to the USMC sniper kit</desc>
+        <link>http://battlefield.wikia.com/wiki/M9</link>
+      </object>
+      <object name="usrgl_m203">
+        <desc>The M203 is a weapon Grenade Launcher attachment for the M16A2.</desc>
+        <link>http://battlefield.wikia.com/wiki/M203</link>
+      </object>
+      <object name="usrif_g36c">
+        <desc>The G36C is the Tier One unlock for the Special Forces kit</desc>
+        <link>http://battlefield.wikia.com/wiki/G36C</link>
+      </object>
+      <object name="usrif_G3a3">
+        <desc>The G3 is the Tier 1 unlock for the Assault Kit</desc>
+        <link>http://battlefield.wikia.com/wiki/G3</link>
+      </object>
+      <object name="usrif_m16a2">
+        <desc>The M16A2 is the standard assault rifle used by the USMC Assualt and Medic kits</desc>
+        <link>http://battlefield.wikia.com/wiki/M16</link>
+      </object>
+      <!--
+      <object name="USRIF_M203">
+        <desc></desc>
+        <link></link>
+      </object>
+      -->
+      <object name="usrif_m24">
+        <desc>The M24 is the default sniper rifle for the USMC</desc>
+        <link>http://battlefield.wikia.com/wiki/M24</link>
+      </object>
+      <object name="usrif_m4">
+        <desc>The M4 is the standard primary weapon for the USMC's Special Forces kit.</desc>
+        <link>http://battlefield.wikia.com/wiki/M4_Carbine</link>
+      </object>
+      <object name="usrif_mp5_a3">
+        <desc>The MP5 is the default submachine gun of the USMC Anti-tank kit</desc>
+        <link>http://battlefield.wikia.com/wiki/MP5</link>
+      </object>
+      <object name="usrif_remington11-87">
+        <desc>The M11-87 is a weapon issued to the USMC Engineer Kit</desc>
+        <link>http://battlefield.wikia.com/wiki/M11-87</link>
+      </object>
+      <object name="usrif_sa80">
+        <desc>The L85A1 unlock weapon</desc>
+        <link>http://battlefield.wikia.com/wiki/L85</link>
+      </object>
+      <object name="ussht_jackhammer">
+        <desc>The MK3A1 is the Tier one unlock for the Engineer Kit.</desc>
+        <link>http://battlefield.wikia.com/wiki/MK3A1</link>
+      </object>
+      <object name="ussni_m95_barret">
+        <desc>The M95 is a Tier One unlock for the Sniper kit.</desc>
+        <link>http://battlefield.wikia.com/wiki/M95</link>
+      </object>
+    </handheld>
+    <stationary>
+      <object name="ats_tow">
+        <desc>
+          The BGM-71 TOW is the stationary anti-tank launcher used by the USMC, US Navy SEALs, as well as the EU in Euro Force. 
+          Its counterpart is the Chinese HJ-8.
+        </desc>
+        <link>http://battlefield.wikia.com/wiki/BGM-71_TOW</link>
+      </object>
+      <object name="ats_hj8">
+        <desc>
+          The HJ-8 is the stationary anti-tank launcher used by the People's Liberation Army and the Middle Eastern Coalition.
+          Its counterpart is the USMC TOW.
+        </desc>
+        <link>http://battlefield.wikia.com/wiki/HJ-8</link>
+      </object>
+      <object name="igla_djigit">
+        <desc>
+          The Igla stationary anti-aircraft site used by the People's Liberation Army and Middle Eastern Coalition,
+          with two missiles that lock on and track enemy aircraft.
+        </desc>
+        <link>http://battlefield.wikia.com/wiki/SA-18_Igla</link>
+      </object>
+      <object name="usaas_stinger">
+        <desc>
+          The Stinger stationary anti-aircraft site used by the USMC and European Union, with two missiles that lock on 
+          and track enemy aircraft.
+        </desc>
+        <link>http://battlefield.wikia.com/wiki/FIM-92_Stinger</link>
+      </object>
+    </stationary>
+  </weapons>
+</ObjectInfo>

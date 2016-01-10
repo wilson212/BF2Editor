@@ -1,0 +1,156 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{33A42E55-3D05-4A27-B9E1-D0424E5F57DC}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>BF2Editor</RootNamespace>
+    <AssemblyName>BF2Editor</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Ionic.Zip">
+      <HintPath>..\..\Bf2StrategicStrengthEditor\Bf2StrategicStrengthEditor\Ionic.Zip.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualBasic.PowerPacks, Version=12.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BF2\BF2Client.cs" />
+    <Compile Include="BF2\BF2Map.cs" />
+    <Compile Include="BF2\BF2Mod.cs" />
+    <Compile Include="BF2\InvalidMapException.cs" />
+    <Compile Include="BF2\InvalidModException.cs" />
+    <Compile Include="BF2\InvalidNameException.cs" />
+    <Compile Include="BF2\MapList.cs" />
+    <Compile Include="BF2\MapListEntry.cs" />
+    <Compile Include="Extensions\ByteExtensions.cs" />
+    <Compile Include="Extensions\FileSizeFormatProvider.cs" />
+    <Compile Include="Extensions\FolderSelect\FolderSelectDialog.cs" />
+    <Compile Include="Extensions\FolderSelect\Reflector.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="Application\AiFileType.cs" />
+    <Compile Include="UI\Controls\OwnerDrawnMenu.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="UI\Controls\VistaMenu.cs" />
+    <Compile Include="UI\MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Logging\LogMessage.cs" />
+    <Compile Include="Logging\LogWriter.cs" />
+    <Compile Include="Application\Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\SelectModForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UI\SelectModForm.Designer.cs">
+      <DependentUpon>SelectModForm.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="UI\MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="UI\SelectModForm.resx">
+      <DependentUpon>SelectModForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <Content Include="ObjectInfo.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <None Include="Resources\flag.png" />
+    <None Include="Resources\strategy.png" />
+    <None Include="Resources\world_link1.png" />
+    <None Include="Resources\world_link.png" />
+    <None Include="Resources\move.png" />
+    <None Include="Resources\gun.png" />
+    <None Include="Resources\data-information.png" />
+    <None Include="Resources\object.png" />
+    <None Include="Resources\gnome-cpu.png" />
+    <None Include="Resources\Synchronize.png" />
+    <None Include="Resources\Archive.png" />
+    <None Include="Resources\Settings.png" />
+    <None Include="Resources\Refresh.png" />
+    <None Include="Resources\check.png" />
+    <None Include="Resources\Close.png" />
+    <None Include="Resources\undo.png" />
+    <None Include="Resources\Save.png" />
+    <None Include="Resources\plus.png" />
+    <None Include="Resources\information.png" />
+    <None Include="Resources\error.png" />
+    <None Include="Resources\warning.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\BF2ScriptingEngine\BF2ScriptingEngine.csproj">
+      <Project>{44557063-7d57-4d58-8b0e-09b1c7081887}</Project>
+      <Name>BF2ScriptingEngine</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

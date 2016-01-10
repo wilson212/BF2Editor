@@ -1,0 +1,6 @@
+Bf2Editor/bin/*
+Bf2Editor/obj/*
+BF2ScriptingEngine/bin/*
+BF2ScriptingEngine/obj/*
+SetupWizard/SetupWizard/*
+*.suo
