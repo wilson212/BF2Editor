@@ -7,13 +7,35 @@ using System.Threading.Tasks;
 
 namespace BF2ScriptingEngine.Scripting.Components
 {
-    public class VehicleHud : ConFileObject, IComponent
+    public class VehicleHud : ObjectTemplate, IComponent
     {
-        /// <summary>
-        /// Creates a new instance of VehicleHud
-        /// </summary>
-        /// <param name="Name"></param>
-        /// <param name="Token"></param>
-        public VehicleHud(string Name, Token Token) : base(Name, "ObjectTemplate", Token) { }
+        [PropertyName("hudName")]
+        public ObjectProperty<string> HudName;
+
+        [PropertyName("miniMapIcon")]
+        public ObjectProperty<string> MiniMapIcon;
+
+        [PropertyName("vehicleIcon")]
+        public ObjectProperty<string> VehicleIcon;
+
+        [PropertyName("abilityIcon ")]
+        public ObjectProperty<string> AbilityIcon;
+
+        [PropertyName("spottedIcon")]
+        public ObjectProperty<string> SpottedIcon;
+
+        [PropertyName("pantingSound")]
+        public ObjectProperty<string> PantingSound;
+
+        [PropertyName("injurySound")]
+        public ObjectProperty<string> InjurySound;
+
+        [PropertyName("vehicleType")]
+        public ObjectProperty<int> VehicleType;
+
+        public VehicleHud(string name, Token token) : base(name, token)
+        {
+
+        }
     }
 }

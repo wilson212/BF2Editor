@@ -29,17 +29,14 @@ namespace BF2ScriptingEngine.Scripting
         /// Takes an array of string values, and converts it to the proper value type for
         /// this instance's Generic Type
         /// </summary>
-        /// <param name="ValueParams">The string value's to convert, and set the 
-        /// Value of this instance to.
-        /// </param>
-        public abstract void SetValueFromParams(String[] value);
+        public abstract void SetValueFromParams(Token token, int objectLevel = 0);
 
         /// <summary>
         /// Converts the value of this property to file format
         /// </summary>
         /// <param name="referenceName">The object type reference name used to call upon this property</param>
         /// <param name="field">This object property's field info</param>
-        public abstract string ToFileFormat(ObjectReference reference, FieldInfo field);
+        public abstract string ToFileFormat(Token token, FieldInfo field);
 
         /// <summary>
         ///     Using reflection, this method creates a new instance of the <paramref name="field"/>

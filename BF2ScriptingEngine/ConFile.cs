@@ -32,13 +32,18 @@ namespace BF2ScriptingEngine
         public List<ConFileObject> Objects { get; protected set; }
 
         /// <summary>
-        /// A list of objects and their reference points found in this con file
+        /// A list of objects that are referenced, but not created in this file
         /// </summary>
         /// <remarks>
-        /// Contains all objects in the <see cref="Objects"/> List, as well as any referenced
-        /// objects (.Active and .activeSafe) that were created elsewhere.
+        /// Contains any referenced objects (.Active and .activeSafe) that were created elsewhere.
         /// </remarks>
         public List<ObjectReference> References { get; protected set; }
+
+        /// <summary>
+        /// A list of all found entries in this Con file. This include Objects, Object References,
+        /// If, include, and run statements, as well as while loops
+        /// </summary>
+        public List<ConFileEntry> Entries { get; protected set; }
 
         /// <summary>
         /// Creates a new instance of ConFile
@@ -49,36 +54,31 @@ namespace BF2ScriptingEngine
             FilePath = filePath;
             Objects = new List<ConFileObject>();
             References = new List<ObjectReference>();
+            Entries = new List<ConFileEntry>();
         }
 
         /// <summary>
         /// Adds a new object to this confile, and returns it's reference
         /// </summary>
-        /// <param name="conObject"></param>
+        /// <param name="entry"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        public ObjectReference AddObject(ConFileObject conObject, Token token)
+        public void AddEntry(ConFileEntry entry, Token token)
         {
             // Only add created objects to the Objects list
             if (token.Kind == TokenType.ObjectStart)
-                Objects.Add(conObject);
+            {
+                Objects.Add((ConFileObject)entry);
+            }
+            else if (token.Kind == TokenType.ActiveSwitch)
+            {
+                // Create a new reference and add it
+                var reference = new ObjectReference() { Token = token, Object = (ConFileObject)entry };
+                References.Add(reference);
+            }
 
-            // Always add the reference, no matter the type
-            return CreateReference(conObject, token);
-        }
-
-        /// <summary>
-        /// Creates a new reference point for the specied object.
-        /// </summary>
-        /// <param name="conObject"></param>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        protected ObjectReference CreateReference(ConFileObject conObject, Token token)
-        {
-            // Create a new reference and add it
-            var reference = new ObjectReference() { Token = token, Object = conObject };
-            References.Add(reference);
-            return reference;
+            // Always add the entry
+            Entries.Add(entry);
         }
 
         /// <summary>
@@ -90,10 +90,28 @@ namespace BF2ScriptingEngine
         {
             StringBuilder builder = new StringBuilder();
 
-            // Add defined properties
-            foreach (var obj in References.OrderBy(x => x.Token.Position))
+            // First, we grab all of our assignables, like vars and constants
+            ConFileEntry[] assingables = Entries.Where(x => x is Expression)
+                .OrderBy(x => x.Token.Kind).ToArray();
+
+            // all assingables are put to the top of the file
+            if (assingables.Length > 0)
             {
-                builder.AppendLine(obj.Object.ToFileFormat(obj));
+                foreach (var obj in assingables)
+                    builder.AppendLine(obj.ToFileFormat());
+
+                builder.AppendLine();
+            }
+
+            // Add defined objects and their properties
+            foreach (var obj in Entries.OrderBy(x => x.Token.Position))
+            {
+                // Skip assignables
+                if (obj is Expression)
+                    continue;
+
+                // Call the ToFileFormat method on the ConFileObject
+                builder.AppendLine(obj.ToFileFormat());
                 builder.AppendLine();
             }
 

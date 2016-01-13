@@ -6,8 +6,14 @@ using System.Threading.Tasks;
 
 namespace BF2ScriptingEngine.Scripting.Components
 {
-    public class Radio
+    public class Radio : ObjectTemplate, IComponent
     {
+        [PropertyName("spottedMessage")]
+        public ObjectProperty<string> SpottedMessage;
 
+        public Radio(string name, Token token) : base(name, token)
+        {
+
+        }
     }
 }

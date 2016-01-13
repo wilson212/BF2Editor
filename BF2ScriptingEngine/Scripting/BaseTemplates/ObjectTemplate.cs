@@ -1,4 +1,6 @@
-﻿namespace BF2ScriptingEngine.Scripting
+﻿using System.Collections.Generic;
+
+namespace BF2ScriptingEngine.Scripting
 {
     /// <summary>
     /// Used to define many objects within the game and link in other data.
@@ -45,15 +47,29 @@
         public ObjectProperty<bool> CreatedInEditor;
 
         /// <summary>
+        /// Contains a list of child objects attached to this object
+        /// </summary>
+        [PropertyName("addTemplate")]
+        public ObjectProperty<List<ChildTemplate>> ChildObjects;
+
+        /// <summary>
         /// Creates a new instance of an ObjectTemplate
         /// </summary>
-        /// <param name="Name"></param>
-        /// <param name="Token"></param>
+        /// <param name="Name">The name of this object</param>
+        /// <param name="Token">The ConFile token</param>
         public ObjectTemplate(string Name, Token Token) : base(Name, "ObjectTemplate", Token) { }
 
-        public static ConFileObject Create(string[] Params, Token Token)
+        /// <summary>
+        /// Creates a new instance of ObjectTemplate with the following attributes
+        /// </summary>
+        /// <param name="tokenArgs">The command line token</param>
+        /// <param name="Token">The ConFile token</param>
+        public static ConFileObject Create(TokenArgs tokenArgs, Token Token)
         {
-            switch (Params[1].ToLowerInvariant())
+            string type = tokenArgs.Arguments[0];
+            string name = tokenArgs.Arguments[1];
+
+            switch (type.ToLowerInvariant())
             {
                 case "kit":
                     // Create a kit object
@@ -68,7 +84,7 @@
                 // WeaponObject
                 //break;
                 default:
-                    throw new System.NotSupportedException("Invalid Object Type \"" + Params[1] + "\".");
+                    throw new System.NotSupportedException("Invalid Object Type \"" + type + "\".");
             }
         }
     }

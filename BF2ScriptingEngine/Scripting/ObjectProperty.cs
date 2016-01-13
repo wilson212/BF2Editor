@@ -40,16 +40,22 @@ namespace BF2ScriptingEngine
         /// <param name="ValueParams">The string value's to convert, and set the 
         /// Value of this instance to.
         /// </param>
-        public override void SetValueFromParams(String[] ValueParams)
+        public override void SetValueFromParams(Token token, int objectLevel = 0)
         {
             Type PropertyType = typeof(T);
+
+            // ===
+            // DONOT use this ObjectProperties TOKEN! breaks collections!
+            TokenArgs tokenArgs = token.TokenArgs;
+            // ===
 
             // Check for ConFileObjects
             if (typeof(ConFileObject).IsAssignableFrom(PropertyType))
             {
                 // Let the child class parse itself
-                var obj = (ConFileObject)CreateObject(PropertyType);
-                obj.Parse(ValueParams.Skip(1).ToArray(), Token, Comment);
+                var obj = CreateObject(PropertyType);
+                obj.Parse(token, Comment, ++objectLevel);
+                Value = (T)(object)obj;
             }
 
             // Check for array's, as they are handled differently
@@ -57,11 +63,11 @@ namespace BF2ScriptingEngine
             {
                 // Since we are an array property, warn the user if we have
                 // less values then expected (array should always be > 1)
-                if (ValueParams.Length == 1)
+                if (tokenArgs.Arguments.Length == 1)
                     Logger.Warning($"Expecting value Array for \"{Name}\", but got a single value", Token.File, Token.Position);
 
                 // Set the value to the instanced object
-                Value = (T)ConvertArray(ValueParams, PropertyType);
+                Value = (T)ConvertArray(tokenArgs.Arguments, PropertyType);
             }
             else if (PropertyType.IsGenericType)
             {
@@ -77,9 +83,9 @@ namespace BF2ScriptingEngine
 
                     // Add our value to the list
                     if (types[0].IsArray)
-                        obj.Add(ConvertArray(ValueParams, types[0]));
+                        obj.Add(ConvertArray(tokenArgs.Arguments, types[0]));
                     else
-                        obj.Add(ConvertValue<object>(ValueParams[0], types[0]));
+                        obj.Add(ConvertValue<object>(tokenArgs.Arguments[0], types[0]));
 
                     // Set internal value
                     Value = (T)obj;
@@ -92,13 +98,13 @@ namespace BF2ScriptingEngine
                     IDictionary obj = (IDictionary)Value ?? CreateCollection(types);
 
                     // Grab our key
-                    object key = ConvertValue<object>(ValueParams[0], types[0]);
+                    object key = ConvertValue<object>(tokenArgs.Arguments[0], types[0]);
 
                     // Add our value to the list
                     if (types[1].IsArray)
-                        obj.Add(key, ConvertArray(ValueParams.Skip(1).ToArray(), types[1]));
+                        obj[key] = ConvertArray(tokenArgs.Arguments.Skip(1).ToArray(), types[1]);
                     else
-                        obj.Add(key, ConvertValue<object>(ValueParams[1], types[1]));
+                        obj[key] = ConvertValue<object>(tokenArgs.Arguments[1], types[1]);
 
                     // Set internal value
                     Value = (T)obj;
@@ -110,11 +116,11 @@ namespace BF2ScriptingEngine
             {
                 // Since we are not an array property, make sure we didnt get 
                 // an array passed in the con file
-                if (ValueParams.Length > 1)
+                if (tokenArgs.Arguments.Length > 1)
                     throw new Exception($"Expecting single value, but got an Array for \"{Name}\"");
 
                 // Since we are not an array, extract our only value
-                Value = ConvertValue<T>(ValueParams[0], PropertyType);
+                Value = ConvertValue<T>(tokenArgs.Arguments[0], PropertyType);
             }
         }
 
@@ -124,7 +130,7 @@ namespace BF2ScriptingEngine
         /// <param name="obj">The confile object that contains this property</param>
         /// <param name="field">This object property's field info</param>
         /// <returns></returns>
-        public override string ToFileFormat(ObjectReference reference, FieldInfo field)
+        public override string ToFileFormat(Token token, FieldInfo field)
         {
             // Get our attributes
             Type PropertyType = typeof(T);
@@ -132,7 +138,7 @@ namespace BF2ScriptingEngine
             StringBuilder builder = new StringBuilder();
 
             //Create reference name. 
-            string referenceName = $"{reference.ReferenceName}.{propertyInfo.Name}";
+            string referenceName = $"{token.TokenArgs.ReferenceName}.{Token.TokenArgs.PropertyName}";
 
             // Append comment if we have one
             if (!String.IsNullOrEmpty(Comment?.Value))
@@ -142,7 +148,7 @@ namespace BF2ScriptingEngine
             if (typeof(ConFileObject).IsAssignableFrom(PropertyType))
             {
                 var subObj = (ConFileObject)(object)Value;
-                return subObj.ToFileFormat(reference);
+                return subObj.ToFileFormat(token);
             }
 
             // Check for array's, as they are handled differently

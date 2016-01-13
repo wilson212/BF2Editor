@@ -40,7 +40,7 @@ namespace BF2ScriptingEngine.Scripting
     ///  - Internal Enum
     ///  - ObjectProperty{T}
     /// </remarks>
-    public abstract class ConFileObject
+    public abstract class ConFileObject : ConFileEntry
     {
         /// <summary>
         /// The Con or Ai File that contains this Object
@@ -90,10 +90,14 @@ namespace BF2ScriptingEngine.Scripting
         /// <param name="token">The token which creates this object</param>
         public ConFileObject(string name, string referenceAs, Token token)
         {
+            // Set object variables
             this.Name = name;
             this.File = token.File;
             this.Tokens = new List<Token>() { token };
             this.ReferenceName = referenceAs;
+
+            // Set base token too
+            base.Token = token;
         }
 
         /// <summary>
@@ -105,14 +109,14 @@ namespace BF2ScriptingEngine.Scripting
         /// The type of value is figured out within the method, but only certain types of
         /// object types can be parsed here.
         /// </remarks>
-        /// <param name="ValueParams">An array of values for the property found in the .con file</param>
         /// <param name="token">The token for this ObjectProperty</param>
         /// <param name="comment">The Rem comment for this ObjectProperty if there is one</param>
-        public virtual void Parse(string[] ValueParams, Token token, RemComment comment)
+        public virtual void Parse(Token token, RemComment comment, int objectLevel = 0)
         {
             // Seperate our property name and values
-            string propName = ValueParams[0];
-            string[] values;
+            TokenArgs tokenArgs = token.TokenArgs;
+            string propName = tokenArgs.PropertyNames[objectLevel];
+            string[] values = tokenArgs.Arguments;
 
             // Fetch our property that we are setting the value to
             KeyValuePair<string, FieldInfo> prop = GetField(propName);
@@ -121,10 +125,9 @@ namespace BF2ScriptingEngine.Scripting
             if (prop.Value.FieldType.IsGenericType)
             {
                 Attribute attribute = Attribute.GetCustomAttribute(prop.Value, typeof(IndexedList));
-                values = (attribute == null) ? ValueParams.Skip(1).ToArray() : ValueParams.Skip(2).ToArray();
+                if (attribute != null)
+                    tokenArgs.Arguments = tokenArgs.Arguments.Skip(1).ToArray();
             }
-            else
-                values = ValueParams.Skip(1).ToArray();
 
             // Get the value that is set
             var value = prop.Value.GetValue(this);
@@ -138,7 +141,7 @@ namespace BF2ScriptingEngine.Scripting
             
 
             // Create our instance, and parse
-            obj.SetValueFromParams(values);
+            obj.SetValueFromParams(token, objectLevel);
             prop.Value.SetValue(this, obj);
         }
 
@@ -152,8 +155,11 @@ namespace BF2ScriptingEngine.Scripting
         /// 1. The order in which the properties are defined in the C# object file
         /// 2. The property attribute <see cref="PropertyName.Priority"/> value.
         /// </remarks>
-        public virtual string ToFileFormat(ObjectReference reference)
+        public override string ToFileFormat(Token token = null)
         {
+            // Make sure we have a token
+            Token tkn = token ?? Token;
+
             // Use a string builder to append our values
             StringBuilder builder = new StringBuilder();
 
@@ -162,7 +168,7 @@ namespace BF2ScriptingEngine.Scripting
                 builder.AppendLine(Comment.Value.TrimEnd());
 
             // Appy our reference (.create || .active || .activeSafe) line
-            builder.AppendLine(reference.Token.Value);
+            builder.AppendLine(tkn.Value);
 
             // Order our properties by the PropertyName.Priority value
             Type propertyType = typeof(PropertyName);
@@ -177,11 +183,11 @@ namespace BF2ScriptingEngine.Scripting
                 var property = field.GetValue(this) as ObjectPropertyBase;
 
                 // Skip null values and properties that are defined/set elsewhere
-                if (property == null || property.Token.File.FilePath != reference.Token.File.FilePath)
+                if (property == null || property.Token.File.FilePath != tkn.File.FilePath)
                     continue;
 
                 // Write the property reference and value
-                builder.AppendLine(property.ToFileFormat(reference, field));
+                builder.AppendLine(property.ToFileFormat(tkn, field));
             }
 
             return builder.ToString().TrimEnd();

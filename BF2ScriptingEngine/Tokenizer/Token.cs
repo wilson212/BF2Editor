@@ -34,9 +34,11 @@ namespace BF2ScriptingEngine.Scripting
         public TokenType Kind { get; protected set; }
 
         /// <summary>
-        /// Gets the regular expression match for this token
+        /// Gets this Token object as an <see cref="Scripting.TokenArgs"/> object ONLY IF this 
+        /// <see cref="TokenType"/> is a <see cref="TokenType.ObjectStart"/> or a 
+        /// <see cref="TokenType.ObjectProperty"/>.
         /// </summary>
-        public Match RegexMatch { get; protected set; }
+        public TokenArgs TokenArgs { get; set; }
 
         /// <summary>
         /// Gets or sets the value of the token
@@ -61,7 +63,6 @@ namespace BF2ScriptingEngine.Scripting
                 File = file,
                 Position = match.Index + index,
                 Kind = kind,
-                RegexMatch = match,
                 Value = match.Value
             };
         }

@@ -162,11 +162,11 @@ namespace BF2ScriptingEngine.Scripting
         /// <summary>
         /// Creates a new instance of WeaponTemplate with the following attributes
         /// </summary>
-        /// <param name="Params">The weapon Object Name</param>
+        /// <param name="tokenArgs">The command line token</param>
         /// <param name="Token">The ConFile token</param>
-        public static WeaponTemplate Create(string Name, Token Token)
+        public static WeaponTemplate Create(TokenArgs tokenArgs, Token Token)
         {
-            return new WeaponTemplate(Name, Token);
+            return new WeaponTemplate(tokenArgs.Arguments.Last(), Token);
         }
     }
 }

@@ -71,11 +71,11 @@ namespace BF2ScriptingEngine.Scripting
         /// <summary>
         /// Creates a new instance of AiTemplate with the following attributes
         /// </summary>
-        /// <param name="Params">0 => ReferenceCall, 1 => ".Create", 2 => ObjectName</param>
+        /// <param name="tokenArgs">The command line token</param>
         /// <param name="Token">The ConFile token</param>
-        public static AiTemplate Create(string[] Params, Token Token)
+        public static AiTemplate Create(TokenArgs tokenArgs, Token Token)
         {
-            return new AiTemplate(Params[2], Token);
+            return new AiTemplate(tokenArgs.Arguments.Last(), Token);
         }
     }
 }

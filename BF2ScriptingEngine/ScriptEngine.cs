@@ -160,7 +160,7 @@ namespace BF2ScriptingEngine
             // First we convert our confile lines into parsed tokens
             // ============
             Token[] fileTokens = Tokenizer.Tokenize(workingFile, ref fileContents, TokenExpressions);
-            string[] funcArgs;
+            TokenArgs tokenArgs;
 
             // ============
             // Now we create an object reference of all objects in the Confile
@@ -172,10 +172,10 @@ namespace BF2ScriptingEngine
             foreach(Token Tkn in Tokens)
             {
                 // Split line into function call followed by and arguments
-                funcArgs = GetTokenArgs(Tkn.Value);
+                tokenArgs = GetTokenArgs(Tkn.Value);
 
                 // Create the object template
-                ConFileObject template = CreateObjectType(funcArgs, Tkn);
+                ConFileObject template = CreateObjectType(tokenArgs, Tkn);
                 ObjectType oType = ObjectManager.GetObjectType(template);
 
                 // Make sure we are trying to create an object that is already created
@@ -193,7 +193,7 @@ namespace BF2ScriptingEngine
                 }
 
                 // Add the new object template to the ConFile objects list
-                workingFile.AddObject(template, Tkn);
+                workingFile.AddEntry(template, Tkn);
 
                 // Finally, register the object with the ObjectManager
                 ObjectManager.RegisterObject(template);
@@ -214,6 +214,7 @@ namespace BF2ScriptingEngine
             ConFileObject currentObj = null;
             ObjectType type;
             Dictionary<ObjectType, ConFileObject> lastObj = new Dictionary<ObjectType, ConFileObject>();
+            StringBuilder builder = new StringBuilder();
 
             // We use a for loop here so we can skip rem blocks and statements
             for (int i = 0; i < fileTokens.Length; i++)
@@ -225,20 +226,23 @@ namespace BF2ScriptingEngine
                     case TokenType.ObjectStart:
                     case TokenType.ActiveSwitch:
                         // Split line into function call followed by and arguments
-                        funcArgs = GetTokenArgs(token.Value);
-                        string ObjName = funcArgs.Last();
-                        type = ObjectManager.GetObjectType(funcArgs[0], workingFile, token.Position);
+                        tokenArgs = GetTokenArgs(token.Value);
+                        token.TokenArgs = tokenArgs;
+
+                        // Fetch the object
+                        type = ObjectManager.GetObjectType(tokenArgs.ReferenceName, workingFile, token.Position);
+                        string objName = tokenArgs.Arguments.Last();
 
                         // Ensure our new working object has been referenced
-                        if (!ObjectManager.ContainsObject(ObjName, type))
+                        if (!ObjectManager.ContainsObject(objName, type))
                         {
-                            string error = $"Failed to load un-initialized object \"{ObjName}\"";
+                            string error = $"Failed to load un-initialized object \"{objName}\"";
                             Logger.Error(error, workingFile, token.Position);
                             throw new Exception(error);
                         }
 
                         // Fetch our new working object.
-                        currentObj = ObjectManager.GetObject(ObjName, type);
+                        currentObj = ObjectManager.GetObject(objName, type);
 
                         // Set comment if we have a value
                         if (token.Kind == TokenType.ObjectStart && comment != null)
@@ -247,7 +251,7 @@ namespace BF2ScriptingEngine
                         // === Objects are already added to the working file before hand === //
                         // Add object reference to file
                         if (token.Kind == TokenType.ActiveSwitch)
-                            workingFile.AddObject(currentObj, token);
+                            workingFile.AddEntry(currentObj, token);
 
                         // Set last loaded object
                         lastObj[type] = currentObj;
@@ -256,22 +260,27 @@ namespace BF2ScriptingEngine
                         comment = null;
 
                         // Log
-                        Logger.Info($"Loading object properties for \"{ObjName}\"", workingFile, token.Position);
+                        Logger.Info($"Loading object properties for \"{objName}\"", 
+                            workingFile, token.Position
+                        );
                         break;
                     case TokenType.ObjectProperty:
-                        // Convert to array
-                        funcArgs = GetTokenArgs(token.Value);
+                        // Convert args to an object
+                        tokenArgs = GetTokenArgs(token.Value);
+                        token.TokenArgs = tokenArgs;
 
                         // Make sure we have an object to work with and the object
                         // reference matches our current working object
-                        if (currentObj == null || !currentObj.ReferenceName.Equals(funcArgs[0], StringComparison.InvariantCultureIgnoreCase))
+                        if (currentObj == null || !currentObj.ReferenceName.Equals(
+                            tokenArgs.ReferenceName, 
+                            StringComparison.InvariantCultureIgnoreCase))
                         {
                             // ============
                             // If the object type does not match our current object type, and we didnt use a 
                             // .Active or .Create command, then we must be referencing an already defined object
                             // of a different type (IE: switching from ObjectTemplate to GeometryTemplate)
                             // ============
-                            type = ObjectManager.GetObjectType(funcArgs[0]);
+                            type = ObjectManager.GetObjectType(tokenArgs.ReferenceName);
                             if (lastObj.ContainsKey(type))
                             {
                                 // switch the last active object of this type
@@ -280,7 +289,8 @@ namespace BF2ScriptingEngine
                             else
                             {
                                 // If we are here, we have an issue...
-                                string error = $"Failed to set property \"{funcArgs[0]}.{funcArgs[1]}\". No object reference set!";
+                                string error = $"Failed to set property \"{tokenArgs.ReferenceName}.{tokenArgs.PropertyName}\""
+                                    + ". No object reference set!";
                                 Logger.Error(error, workingFile, token.Position);
                                 throw new Exception(error);
                             }
@@ -289,7 +299,7 @@ namespace BF2ScriptingEngine
                         // Let the object parse its own lines...
                         try
                         {
-                            currentObj.Parse(funcArgs.Skip(1).ToArray(), token, comment);
+                            currentObj.Parse(token, comment);
 
                             // Ensure comment is null
                             comment = null;
@@ -305,26 +315,55 @@ namespace BF2ScriptingEngine
                         // Create a new comment if we need to
                         if (comment == null)
                         {
-                            comment = new RemComment();
+                            comment = new RemComment(token);
                         }
 
                         // Add comment to the current string
                         comment.AppendLine(token.Value);
                         break;
                     case TokenType.BeginRem:
-                        comment = new RemComment();
-                        comment.IsRemBlock = true;
+                        RemComment rem = new RemComment(token);
+                        rem.IsRemBlock = true;
 
                         // Skip every line until we get to the endRem
-                        StringBuilder builder = new StringBuilder();
                         i = ScopeUntil(TokenType.EndRem, fileTokens, i, builder);
 
                         // Set rem value
-                        comment.Value = builder.ToString().TrimEnd();
+                        rem.Value = builder.ToString().TrimEnd();
+                        workingFile.AddEntry(rem, rem.Token);
+
+                        // Clear the string builder
+                        builder.Clear();
+                        break;
+                    case TokenType.IfStart:
+                    case TokenType.Run:
+                    case TokenType.Include:
+                        Statement statement = new Statement(token);
+                        if (token.Kind == TokenType.IfStart)
+                        {
+                            // Skip every line until we get to the endIf
+                            i = ScopeUntil(TokenType.EndIf, fileTokens, i, builder);
+
+                            // Clear the string builder
+                            statement.Token.Value = builder.ToString().TrimEnd();
+                            builder.Clear();
+                        }
+
+                        // Add entry
+                        workingFile.AddEntry(statement, statement.Token);
+                        break;
+                    case TokenType.Constant:
+                    case TokenType.Variable:
+                        Expression exp = new Expression(token);
+                        workingFile.AddEntry(exp, exp.Token);
                         break;
                     case TokenType.None:
                         // Dont attach comment to a property if we have an empty line here
-                        comment = null;
+                        if (comment != null)
+                        {
+                            workingFile.AddEntry(comment, comment.Token);
+                            comment = null;
+                        }
 
                         // Throw error if the line is not empty
                         if (!String.IsNullOrWhiteSpace(token.Value))
@@ -344,23 +383,23 @@ namespace BF2ScriptingEngine
         /// </summary>
         /// <param name="tokenValue">The value of the token</param>
         /// <returns></returns>
-        private static string[] GetTokenArgs(string tokenValue)
+        private static TokenArgs GetTokenArgs(string tokenValue)
         {
             // Begin our array builder
+            TokenArgs tokenArgs = new TokenArgs();
             List<string> args = new List<string>();
 
             // Break the line into {0 => referenceCall, 1 => The rest of the line}
             // We only split into 2 strings, because some values have dots
-            string[] temp = tokenValue.Split(new char[] { '.' }, 2, StringSplitOptions.RemoveEmptyEntries);
-
-            /***
-             * Temp will always be 2 in size because of the Regex used in Tokenize, 
-             * and the the above split on the TokenValue set with a max count set to 2
-            */
-            args.Add(temp[0]);
+            string[] temp = tokenValue.Split(new char[] { '.' }, 2);
+            tokenArgs.ReferenceName = temp[0];
 
             // Split the line after the reference call into arguments
             string[] parts = temp[1].Split(SplitChars, StringSplitOptions.RemoveEmptyEntries);
+            tokenArgs.PropertyName = parts[0];
+
+            // Skip the property/function name
+            parts = parts.Skip(1).ToArray();
 
             // Fix Quotes
             if (temp[1].Contains(QUOTE))
@@ -393,7 +432,8 @@ namespace BF2ScriptingEngine
                 args.AddRange(parts);
 
             // Convert to array, because I was too lazy to recode all following code to reference a list :S
-            return args.ToArray();
+            tokenArgs.Arguments = args.ToArray();
+            return tokenArgs;
         }
 
         /// <summary>
@@ -440,17 +480,17 @@ namespace BF2ScriptingEngine
         /// <param name="File"></param>
         /// <param name="Tkn"></param>
         /// <returns></returns>
-        private static ConFileObject CreateObjectType(string[] Params, Token Tkn)
+        private static ConFileObject CreateObjectType(TokenArgs tokenArgs, Token Tkn)
         {
-            switch (Params[0].ToLowerInvariant())
+            switch (tokenArgs.ReferenceName.ToLowerInvariant())
             {
-                case "aitemplate": return AiTemplate.Create(Params, Tkn);
-                case "aitemplateplugin": return AiTemplatePlugin.Create(Params, Tkn);
-                case "weapontemplate": return WeaponTemplate.Create(Params[2], Tkn);
-                case "objecttemplate": return ObjectTemplate.Create(Params, Tkn);
+                case "aitemplate": return AiTemplate.Create(tokenArgs, Tkn);
+                case "aitemplateplugin": return AiTemplatePlugin.Create(tokenArgs, Tkn);
+                case "weapontemplate": return WeaponTemplate.Create(tokenArgs, Tkn);
+                case "objecttemplate": return ObjectTemplate.Create(tokenArgs, Tkn);
                 case "aisettings":
                 default:
-                    string error = $"Reference call to '{Params[0]}' is not supported";
+                    string error = $"Reference call to '{tokenArgs.ReferenceName}' is not supported";
                     Logger.Error(error, Tkn.File, Tkn.Position);
                     throw new NotSupportedException(error);
             }

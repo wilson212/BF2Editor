@@ -1,8 +1,9 @@
 ﻿using System;
+using BF2ScriptingEngine.Scripting;
 
 namespace BF2ScriptingEngine
 {
-    public class RemComment
+    public class RemComment : ConFileEntry
     {
         public bool IsRemBlock;
 
@@ -21,12 +22,22 @@ namespace BF2ScriptingEngine
             get { return !String.IsNullOrWhiteSpace(Value); }
         }
 
+        public RemComment(Token token)
+        {
+            base.Token = token;
+        }
+
         public void AppendLine(string line)
         {
             if (String.IsNullOrWhiteSpace(Value))
                 Value = line;
             else
                 Value = String.Concat(Value, Environment.NewLine, line);
+        }
+
+        public override string ToFileFormat(Token token = null)
+        {
+            return Value;
         }
 
         public override string ToString()
