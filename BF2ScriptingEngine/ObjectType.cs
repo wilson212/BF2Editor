@@ -6,6 +6,7 @@
         WeaponTemplate,
         AiTemplate,
         AiTemplatePlugin,
+        KitTemplate,
         GeometryTemplate
     }
 }

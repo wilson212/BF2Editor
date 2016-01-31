@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BF2ScriptingEngine.Scripting.GeometryTemplates;
 
 namespace BF2ScriptingEngine.Scripting.Objects
 {
@@ -21,9 +22,9 @@ namespace BF2ScriptingEngine.Scripting.Objects
     /// </remarks>
     /// <seealso cref="http://bfmods.com/mdt/scripting/ObjectTemplate/Types/PlayerControlObject.html"/>
     /// <example>The PlayerControlObject object type is created by ObjectTemplate.Create.</example>
-    public class PlayerControlObject // : ObjectTemplate
+    public class PlayerControlObject : ObjectTemplate
     {
-        public PlayerControlObject()
+        public PlayerControlObject(string Name, Token Token) : base(Name, Token)
         { 
 
         }

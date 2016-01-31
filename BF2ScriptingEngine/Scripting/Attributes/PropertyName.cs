@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BF2ScriptingEngine.Scripting
+namespace BF2ScriptingEngine.Scripting.Attributes
 {
     /// <summary>
     /// This attribute represents the proper name (camel case) name

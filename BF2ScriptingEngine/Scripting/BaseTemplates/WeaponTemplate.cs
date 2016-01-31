@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting
 {
@@ -25,45 +23,45 @@ namespace BF2ScriptingEngine.Scripting
         /// from a plane. It is used in bf2, eg the f15 bombs. - Korben
         /// </remarks>
         [PropertyName("indirect")]
-        public ObjectProperty<bool> Indirect;
+        public ObjectProperty<bool> Indirect { get; set; }
 
         /// <summary>
         /// Is the projectile lobbed in an arc, like a grenade. 
         /// </summary>
         [PropertyName("isThrown")]
-        public ObjectProperty<bool> IsThrown;
+        public ObjectProperty<bool> IsThrown { get; set; }
 
         /// <summary>
         /// Gets or Sets the minimum range that the Bot will use this weapon
         /// </summary>
         [PropertyName("minRange")]
-        public ObjectProperty<double> MinRange;
+        public ObjectProperty<double> MinRange { get; set; }
 
         /// <summary>
         /// Gets or Sets the maximum range that the Bot will use this weapon
         /// </summary>
         [PropertyName("maxRange")]
-        public ObjectProperty<double> MaxRange;
+        public ObjectProperty<double> MaxRange { get; set; }
 
         /// <summary>
         /// This variable tells the Bot at which range point he should be when using this weapon
         /// </summary>
         [PropertyName("optimalRangePercentage")]
-        public ObjectProperty<int> OptimalRangePercentage;
+        public ObjectProperty<int> OptimalRangePercentage { get; set; }
 
         /// <summary>
         /// Gets or Sets the pose (standing/crouching/prone) that the bot will fire 
         /// from once inside the optimal range.
         /// </summary>
         [PropertyName("setFiringPose")]
-        public ObjectProperty<FiringPose> FiringPose;
+        public ObjectProperty<FiringPose> FiringPose { get; set; }
 
         /// <summary>
         /// Depreciated (from BF1942/BFV)
         /// </summary>
         /// <remarks>Hidden, as it is the "set" was removed in some BF2 files.</remarks>
         [PropertyName("firingPose")]
-        protected ObjectProperty<FiringPose> SetFiringPose;
+        protected ObjectProperty<FiringPose> SetFiringPose { get; set; }
 
         /// <summary>
         /// Tells the bot at what value of deviation he may make the first shot of the weapon.
@@ -76,7 +74,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </remarks>
         /// <seealso cref="http://www.battlefieldsingleplayer.com/forum/index.php?showtopic=8308&view=findpost&p=101317"/>
         [PropertyName("allowedDeviation")]
-        public ObjectProperty<double> AllowedDeviation;
+        public ObjectProperty<double> AllowedDeviation { get; set; }
 
         /// <summary>
         /// This variable sets the initial value of deviation the first 
@@ -87,7 +85,7 @@ namespace BF2ScriptingEngine.Scripting
         /// Deviation ultimatly reflects on the bots starting accuracy with the weapon.
         /// </remarks>
         [PropertyName("deviation")]
-        public ObjectProperty<double> Deviation;
+        public ObjectProperty<double> Deviation { get; set; }
 
         /// <summary>
         /// For Bots, This variable sets the amount of time it takes for the weapon deviation to go 
@@ -98,32 +96,32 @@ namespace BF2ScriptingEngine.Scripting
         /// which calculates to 10 seconds.
         /// </remarks>
         [PropertyName("deviationCorrectionTime")]
-        public ObjectProperty<int> DeviationCorrectionTime;
+        public ObjectProperty<int> DeviationCorrectionTime { get; set; }
 
         /// <summary>
         /// Gets or Sets the numerical button to activate this weapon?
         /// </summary>
         [PropertyName("weaponActivate")]
-        public ObjectProperty<PlayerInput> WeaponActivate;
+        public ObjectProperty<PlayerInput> WeaponActivate { get; set; }
 
         /// <summary>
         /// Gets or Sets the firing button for this weapon
         /// </summary>
         [PropertyName("weaponFire")]
-        public ObjectProperty<PlayerInput> WeaponFire;
+        public ObjectProperty<PlayerInput> WeaponFire { get; set; }
 
         /// <summary>
         /// Gets or Sets the Weights assigned to chance of bots selecting this type target
         /// </summary>
         [PropertyName("setStrength")]
-        public ObjectProperty<Dictionary<StrengthType, double>> Strengths;
+        public ObjectProperty<Dictionary<StrengthType, double>> Strengths { get; set; }
 
         /// <summary>
         /// For bots only: Specifies the rate that the AI will fire the weapon at.
         /// This value does not affect human players.
         /// </summary>
         [PropertyName("fireRate")]
-        public ObjectProperty<int> FireRate;
+        public ObjectProperty<int> FireRate { get; set; }
 
         /// <summary>
         /// The range at which another bot will "hear" the firing of this particular weapon
@@ -135,7 +133,7 @@ namespace BF2ScriptingEngine.Scripting
         /// i.e. works in all directions forward/behind/above/below. - Korben
         /// </remarks>
         [PropertyName("setSoundSphereRadius")]
-        public ObjectProperty<double> SoundSphereRadius;
+        public ObjectProperty<double> SoundSphereRadius { get; set; }
 
         /// <summary>
         /// When a projectile impacts whatever, this variable tells the bots (foe or friendly) 
@@ -143,14 +141,14 @@ namespace BF2ScriptingEngine.Scripting
         /// out of that radius (grenades for example).
         /// </summary>
         [PropertyName("setExplosionRadius")]
-        public ObjectProperty<double> ExplosionRadius;
+        public ObjectProperty<double> ExplosionRadius { get; set; }
 
         /// <summary>
         /// Will the projectile size fit through a chain-link fence? so the bot will/won't 
         /// fire that weapon at you through the fence.
         /// </summary>
         [PropertyName("setFiresThroughTransparent")]
-        public ObjectProperty<bool> FiresThroughTransparent;
+        public ObjectProperty<bool> FiresThroughTransparent { get; set; }
 
         /// <summary>
         /// Creates a new isntance of WeaponTemplate

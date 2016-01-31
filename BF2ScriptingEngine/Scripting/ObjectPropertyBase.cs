@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting
 {
-    public abstract class ObjectPropertyBase
+    public abstract class ObjectProperty
     {
         /// <summary>
         /// The name of this property tag
@@ -16,54 +18,73 @@ namespace BF2ScriptingEngine.Scripting
         public string Name;
 
         /// <summary>
-        /// If there was a comment proceeding this object, its set here
-        /// </summary>
-        public RemComment Comment;
-
-        /// <summary>
-        /// The line number in the <see cref="ConFile"/> this object is located
+        /// The <see cref="Token"/> for which this property is first called
         /// </summary>
         public Token Token;
+
+        /// <summary>
+        /// Gets the <see cref="PropertyInfo"/> object that represents the holder of
+        /// this object
+        /// </summary>
+        public PropertyInfo Property { get; protected set; }
+
+        /// <summary>
+        /// Takes an array of arguments, and attempts to set the values
+        /// of this object property
+        /// </summary>
+        /// <param name="values"></param>
+        /// <param name="token"></param>
+        public abstract void SetValues(object[] values, Token token = null);
+
+        /// <summary>
+        /// Converts the value of this property to file format
+        /// </summary>
+        public abstract string ToFileFormat();
 
         /// <summary>
         /// Takes an array of string values, and converts it to the proper value type for
         /// this instance's Generic Type
         /// </summary>
-        public abstract void SetValueFromParams(Token token, int objectLevel = 0);
+        public virtual void SetValue(Token token, int objectLevel = 0)
+        {
+            this.SetValues(token.TokenArgs.Arguments, token);
+        }
 
         /// <summary>
-        /// Converts the value of this property to file format
-        /// </summary>
-        /// <param name="referenceName">The object type reference name used to call upon this property</param>
-        /// <param name="field">This object property's field info</param>
-        public abstract string ToFileFormat(Token token, FieldInfo field);
-
-        /// <summary>
-        ///     Using reflection, this method creates a new instance of the <paramref name="field"/>
+        ///     Using reflection, this method creates a new instance of the <paramref name="property"/>
         ///     type, and returns it.
         /// </summary>
         /// <remarks>
         ///     This method does NOT set the field value, since hey... we dont have an instance to work on
         /// </remarks>
-        /// <param name="field">The field we are creating an instance for. </param>
+        /// <param name="property">The field we are creating an instance for. </param>
         /// <param name="token">The ConFile token for the ObjectProperty ctor</param>
-        /// <param name="comment">The RemComment for the ObjectProperty ctor</param>
         /// <exception cref="System.Exception">
         ///     Thrown if the Field provided does not contain the <see cref="PropertyName"/> attribute
         /// </exception>
-        public static ObjectPropertyBase Create(FieldInfo field, Token token, RemComment comment)
+        public static ObjectProperty Create(PropertyInfo property, Token token)
         {
             // If the Custom attribute exists, we add it to the Mapping
-            Attribute attribute = Attribute.GetCustomAttribute(field, typeof(PropertyName));
+            Attribute attribute = Attribute.GetCustomAttribute(property, typeof(PropertyName));
             if (attribute == null)
-                throw new Exception($"Internal property \"{field.Name}\" does not contain a PropertyName attribute!");
+                throw new Exception($"Internal property \"{property.Name}\" does not contain a PropertyName attribute!");
 
             // Get our constructor
             PropertyName fieldAttr = attribute as PropertyName;
-            return (ObjectPropertyBase)Activator.CreateInstance(
-                field.FieldType,
-                new object[] { fieldAttr.Name, token, comment }
+            return (ObjectProperty)Activator.CreateInstance(
+                property.PropertyType,
+                new object[] { fieldAttr.Name, token, property }
             );
+        }
+
+        /// <summary>
+        /// Converts the object value into the Typed variant of this <see cref="Value"/>
+        /// </summary>
+        /// <param name="Value"></param>
+        /// <returns></returns>
+        protected ValueInfo<K> ConvertValue<K>(object Value)
+        {
+            return Converter.CreateValueInfo<K>(Token, Value);
         }
 
         /// <summary>
@@ -73,36 +94,7 @@ namespace BF2ScriptingEngine.Scripting
         /// <returns></returns>
         protected K ConvertValue<K>(object Value, Type PropertyType)
         {
-            // No need to change type if types match
-            if (Value.GetType() == PropertyType)
-            {
-                return (K)Value;
-            }
-
-            // Enums need special care
-            if (PropertyType.IsEnum)
-            {
-                return (K)Enum.Parse(PropertyType, Value.ToString(), true);
-            }
-
-            // Bools need special care, since a string of "1" or "0" fails to
-            // parse in bool.TryParse, but a 1 or 0 parses fine (as an Int)
-            if (PropertyType == typeof(bool))
-            {
-                bool boolValue;
-                if (bool.TryParse(Value.ToString(), out boolValue))
-                {
-                    return (K)(boolValue as object);
-                }
-                else
-                {
-                    int intValue;
-                    if (Int32.TryParse(Value.ToString(), out intValue))
-                        return (K)Convert.ChangeType(intValue, PropertyType);
-                }
-            }
-
-            return (K)Convert.ChangeType(Value, PropertyType);
+            return Converter.ConvertValue<K>(Value, PropertyType);
         }
 
         /// <summary>
@@ -113,21 +105,36 @@ namespace BF2ScriptingEngine.Scripting
         /// <returns></returns>
         protected object ConvertArray(Object[] values, Type propertyType)
         {
-            // Set the value to the instanced object
-            switch (propertyType.Name.ToLowerInvariant())
+            return Converter.ConvertArray(values, propertyType);
+        }
+
+        /// <summary>
+        /// Converts the object supplied into the correct format for con/Ai script files
+        /// </summary>
+        /// <param name="value"></param>
+        /// <param name="propertyType"></param>
+        /// <returns></returns>
+        protected string ValueToString(object value, Type propertyType)
+        {
+            // Bool format is 1 and 0, not "true" and "false"
+            if (propertyType == typeof(bool))
             {
-                case "int[]":
-                case "int32[]":
-                    return Array.ConvertAll(values, Convert.ToInt32);
-                case "string[]":
-                    return Array.ConvertAll(values, Convert.ToString);
-                case "double[]":
-                    return Array.ConvertAll(values, Convert.ToDouble);
-                case "decimal[]":
-                    return Array.ConvertAll(values, Convert.ToDecimal);
-                default:
-                    throw new Exception("Invalid property type: " + propertyType.Name);
+                return (bool)value ? "1" : "0";
             }
+            else if (propertyType == typeof(Double))
+            {
+                double dVal = (double)Convert.ChangeType(value, TypeCode.Double);
+                return dVal.ToString("0.0###", CultureInfo.InvariantCulture);
+            }
+            else if (propertyType == typeof(Decimal))
+            {
+                Decimal dVal = (Decimal)Convert.ChangeType(value, TypeCode.Decimal);
+                return dVal.ToString(CultureInfo.InvariantCulture);
+            }
+
+            // wrap value in quotes if we detect whitespace
+            string val = value.ToString();
+            return (val.Any(x => Char.IsWhiteSpace(x))) ? $"\"{val}\"" : val;
         }
 
         /// <summary>
@@ -157,9 +164,13 @@ namespace BF2ScriptingEngine.Scripting
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        protected static ConFileObject CreateObject(Type type)
+        protected object CreateObject(Type type, string name, Token token)
         {
-            return (ConFileObject)Activator.CreateInstance(type);
+            // Check for abstract
+            if (type.IsAbstract)
+                throw new Exception($"Cannot create object \"{name}\" from Abstract type \"{type}\"");
+
+            return Activator.CreateInstance(type, new object[] { name, token });
         }
     }
 }

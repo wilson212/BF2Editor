@@ -8,13 +8,15 @@ namespace BF2ScriptingEngine
 {
     public class LogEntry
     {
-        public LogEntryType Type;
+        public LogEntryType Type { get; set; }
 
-        public string Message = "";
+        public string Message { get; set; } = "";
 
-        public ConFile File;
+        public ConFile File { get; set; }
 
-        public int Line;
+        public int Line { get; set; } = 0;
+
+        public Exception ExceptionObj { get; set; }
     }
 
     public enum LogEntryType

@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting
 {
@@ -13,53 +9,53 @@ namespace BF2ScriptingEngine.Scripting
         /// Air vehicles?
         /// </summary>
         [PropertyName("vehicleNumber")]
-        public ObjectProperty<int> VehicleNumber;
+        public ObjectProperty<int> VehicleNumber { get; set; }
 
 
         [PropertyName("setPathfindingMap")]
-        public ObjectProperty<string> PathfindingMap;
+        public ObjectProperty<string> PathfindingMap { get; set; }
 
         /// <summary>
         /// Defines the templates Max Speed.
         /// </summary>
         [PropertyName("maxSpeed")]
-        public ObjectProperty<double> MaxSpeed;
+        public ObjectProperty<double> MaxSpeed { get; set; }
 
         /// <summary>
         /// range is 0.1 to 135.0; most commonly 5.0
         /// </summary>
         [PropertyName("turnRadius")]
-        public ObjectProperty<double> TurnRadius;
+        public ObjectProperty<double> TurnRadius { get; set; }
 
         /// <summary>
         /// range is 20.0 to 50.0; most commonly 50.0
         /// </summary>
         [PropertyName("coverSearchRadius")]
-        public ObjectProperty<double> CoverSearchRadius;
+        public ObjectProperty<double> CoverSearchRadius { get; set; }
 
         /// <summary>
         /// Range is -1.5 to 1.7; most commonly 0.9
         /// </summary>
         [PropertyName("lodHeight")]
-        public ObjectProperty<double> LodHeight;
+        public ObjectProperty<double> LodHeight { get; set; }
 
         /// <summary>
         /// Indicates whether the vehicle is turnable
         /// </summary>
         [PropertyName("isTurnable")]
-        public ObjectProperty<bool> IsTurnable;
+        public ObjectProperty<bool> IsTurnable { get; set; }
 
         /// <summary>
         /// Airplanes?
         /// </summary>
         [PropertyName("setSoundSphereRadius")]
-        protected ObjectProperty<double[]> SoundSphereRadius;
+        protected ObjectProperty<double, double> SoundSphereRadius { get; set; }
 
         /// <summary>
         /// Airplanes?
         /// </summary>
         [PropertyName("setHearingProbability")]
-        protected ObjectProperty<double[]> HearingProbability;
+        protected ObjectProperty<double, double> HearingProbability { get; set; }
 
         /// <summary>
         /// Creates a new instance of Armament

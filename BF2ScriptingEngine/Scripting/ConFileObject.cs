@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
+using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting
 {
@@ -75,11 +75,11 @@ namespace BF2ScriptingEngine.Scripting
         /// <summary>
         /// Contains a map of field info's for types
         /// </summary>
-        public static Dictionary<string, Dictionary<string, FieldInfo>> PropertyMap;
+        public static Dictionary<string, Dictionary<string, PropertyInfo>> PropertyMap;
 
         static ConFileObject()
         {
-            PropertyMap = new Dictionary<string, Dictionary<string, FieldInfo>>();
+            PropertyMap = new Dictionary<string, Dictionary<string, PropertyInfo>>();
         }
 
         /// <summary>
@@ -98,6 +98,11 @@ namespace BF2ScriptingEngine.Scripting
 
             // Set base token too
             base.Token = token;
+
+            // Build our property Map
+            Type type = this.GetType();
+            if (!PropertyMap.ContainsKey(type.Name))
+                PropertyMap.Add(type.Name, GetPropertyMap(type));
         }
 
         /// <summary>
@@ -110,39 +115,47 @@ namespace BF2ScriptingEngine.Scripting
         /// object types can be parsed here.
         /// </remarks>
         /// <param name="token">The token for this ObjectProperty</param>
-        /// <param name="comment">The Rem comment for this ObjectProperty if there is one</param>
-        public virtual void Parse(Token token, RemComment comment, int objectLevel = 0)
+        /// <param name="objectLevel">Specifies the nested object level for this Property</param>
+        public virtual void Parse(Token token, int objectLevel = 0)
         {
             // Seperate our property name and values
             TokenArgs tokenArgs = token.TokenArgs;
             string propName = tokenArgs.PropertyNames[objectLevel];
-            string[] values = tokenArgs.Arguments;
 
             // Fetch our property that we are setting the value to
-            KeyValuePair<string, FieldInfo> prop = GetField(propName);
-
-            // Skip the first param value for indexed lists
-            if (prop.Value.FieldType.IsGenericType)
-            {
-                Attribute attribute = Attribute.GetCustomAttribute(prop.Value, typeof(IndexedList));
-                if (attribute != null)
-                    tokenArgs.Arguments = tokenArgs.Arguments.Skip(1).ToArray();
-            }
+            KeyValuePair<string, PropertyInfo> prop = GetProperty(propName);
 
             // Get the value that is set
             var value = prop.Value.GetValue(this);
-            ObjectPropertyBase obj;
 
-            // If the value is null, then we create a new object property instance
-            if (value == null)
-                obj = ObjectPropertyBase.Create(prop.Value, token, comment);
+            // Is this an object method, or Object Property?
+            if (prop.Value.PropertyType.BaseType.Name == "ObjectMethod")
+            {
+                // Object methods are always instantiated in the object's constructor
+                ObjectMethod method = (ObjectMethod)value;
+                method.Invoke(token);
+            }
             else
-                obj = (ObjectPropertyBase)value;
-            
+            {
+                ObjectProperty obj;
 
-            // Create our instance, and parse
-            obj.SetValueFromParams(token, objectLevel);
-            prop.Value.SetValue(this, obj);
+                // If the value is null, then we create a new object property instance
+                if (value == null)
+                    obj = ObjectProperty.Create(prop.Value, token);
+                else
+                    try {
+                        obj = (ObjectProperty)value;
+                    }
+                    catch
+                    {
+                        throw;
+                    }
+
+
+                // Create our instance, and parse
+                obj.SetValue(token, objectLevel);
+                prop.Value.SetValue(this, obj);
+            }
         }
 
         /// <summary>
@@ -155,39 +168,57 @@ namespace BF2ScriptingEngine.Scripting
         /// 1. The order in which the properties are defined in the C# object file
         /// 2. The property attribute <see cref="PropertyName.Priority"/> value.
         /// </remarks>
+        /// <param name="token">
+        /// IF a token is supplied, we will only include properties that match the token filepath
+        /// with the filepath of the objects properties.
+        /// </param>
         public override string ToFileFormat(Token token = null)
         {
-            // Make sure we have a token
+            // Define our type
+            Type objType = this.GetType();
+
+            // Make sure we have a te correct token
             Token tkn = token ?? Token;
+            if (typeof(IComponent).IsAssignableFrom(objType))
+                tkn = Token;
 
             // Use a string builder to append our values
             StringBuilder builder = new StringBuilder();
 
             // Apply comment to this object if there was one preceeding this object
-            if (!String.IsNullOrWhiteSpace(Comment?.Value))
-                builder.AppendLine(Comment.Value.TrimEnd());
+            //if (!String.IsNullOrWhiteSpace(tkn.Comment?.Value))
+                //builder.AppendLine(tkn.Comment.Value.TrimEnd());
 
             // Appy our reference (.create || .active || .activeSafe) line
             builder.AppendLine(tkn.Value);
 
             // Order our properties by the PropertyName.Priority value
             Type propertyType = typeof(PropertyName);
-            var ordered = PropertyMap[this.GetType().Name].Values.OrderBy(
+            var ordered = PropertyMap[objType.Name].Values.OrderBy(
                 x => (x.GetCustomAttribute(propertyType) as PropertyName).Priority
             );
 
             // Add defined properties
-            foreach (FieldInfo field in ordered)
+            foreach (PropertyInfo propInfo in ordered)
             {
                 // Get the value of the property
-                var property = field.GetValue(this) as ObjectPropertyBase;
+                var property = propInfo.GetValue(this) as ObjectProperty;
 
                 // Skip null values and properties that are defined/set elsewhere
                 if (property == null || property.Token.File.FilePath != tkn.File.FilePath)
                     continue;
 
+                // Hard coded comments?
+                Comment comments = propInfo.GetCustomAttribute(typeof(Comment)) as Comment;
+                if (comments != null && !String.IsNullOrEmpty(comments.Before))
+                    builder.AppendLine($"rem {comments.Before}");
+
                 // Write the property reference and value
-                builder.AppendLine(property.ToFileFormat(tkn, field));
+                builder.AppendLine(property.ToFileFormat());
+
+                // Apply Before comment
+                if (comments != null && !String.IsNullOrEmpty(comments.After))
+                    builder.AppendLine($"rem {comments.After}");
             }
 
             return builder.ToString().TrimEnd();
@@ -199,19 +230,17 @@ namespace BF2ScriptingEngine.Scripting
         /// <param name="fields"></param>
         /// <param name="fieldName"></param>
         /// <returns></returns>
-        public KeyValuePair<string, FieldInfo> GetField(string fieldName)
+        public KeyValuePair<string, PropertyInfo> GetProperty(string fieldName)
         {
-            Type type = this.GetType();
-            if (!PropertyMap.ContainsKey(type.Name))
-                PropertyMap.Add(type.Name, GetPropertyMap(type));
-
             // Fetch our property that we are setting the value to
+            // Note: Property map is built in the ctor, key exists fine!
+            Type type = this.GetType();
             var prop = PropertyMap[type.Name].FirstOrDefault(
                 x => x.Key.Equals(fieldName, StringComparison.InvariantCultureIgnoreCase)
             );
 
             // Make sure this property is supported
-            if (prop.Equals(default(KeyValuePair<string, FieldInfo>)))
+            if (prop.Equals(default(KeyValuePair<string, PropertyInfo>)))
                 ThrowUnsuportedField(fieldName);
 
             return prop;
@@ -224,19 +253,19 @@ namespace BF2ScriptingEngine.Scripting
         /// </summary>
         /// <param name="objectType">The type definition of the calling instance</param>
         /// <returns></returns>
-        protected Dictionary<string, FieldInfo> GetPropertyMap(Type objectType)
+        protected Dictionary<string, PropertyInfo> GetPropertyMap(Type objectType)
         {
             // Create our return Map
-            Dictionary<string, FieldInfo> Properties = new Dictionary<string, FieldInfo>();
-            FieldInfo[] Fields = objectType.GetFields(
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly
+            Dictionary<string, PropertyInfo> Properties = new Dictionary<string, PropertyInfo>();
+            PropertyInfo[] Fields = objectType.GetProperties(
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
             );
 
             // Loop through each property, and search for the custom attribute
-            foreach (FieldInfo Field in Fields)
+            foreach (PropertyInfo property in Fields)
             {
                 // If the Custom attribute exists, we add it to the Mapping
-                Attribute attribute = Attribute.GetCustomAttribute(Field, typeof(PropertyName));
+                Attribute attribute = Attribute.GetCustomAttribute(property, typeof(PropertyName));
                 if (attribute != null)
                 {
                     PropertyName fieldAttr = attribute as PropertyName;
@@ -249,7 +278,7 @@ namespace BF2ScriptingEngine.Scripting
                         throw new Exception(Message);
                     }
 
-                    Properties.Add(fieldAttr.Name, Field);
+                    Properties.Add(fieldAttr.Name, property);
                 }
             }
 
@@ -259,10 +288,10 @@ namespace BF2ScriptingEngine.Scripting
         /// <summary>
         /// Throws a generic Exception with an Invalid property name message
         /// </summary>
-        /// <param name="FieldName"></param>
-        protected void ThrowUnsuportedField(string FieldName)
+        /// <param name="propertyName"></param>
+        protected void ThrowUnsuportedField(string propertyName)
         {
-            throw new Exception("Invalid Object Property \"" + FieldName + "\".");
+            throw new Exception("Invalid Object Property \"" + propertyName + "\".");
         }
 
         /// <summary>
@@ -275,6 +304,11 @@ namespace BF2ScriptingEngine.Scripting
             // Make sure the types match!
             if (sourceType.GenericTypeArguments[0] != destType) // && !sourceType.IsAssignableFrom(destType))
                 throw new Exception("Cannot convert " + destType.Name + " to " + sourceType.Name);
+        }
+
+        public override string ToString()
+        {
+            return Name;
         }
     }
 }

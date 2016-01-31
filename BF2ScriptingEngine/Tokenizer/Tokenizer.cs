@@ -66,8 +66,7 @@ namespace BF2ScriptingEngine.Scripting
             {
                 // Trim our line, and remove empty ones
                 string line = part.Value.Trim();
-                if (line.Length == 0)
-                    continue;
+                //if (line.Length == 0) continue;
 
                 // Check to see if we have a match
                 Match match = regex.Match(line);

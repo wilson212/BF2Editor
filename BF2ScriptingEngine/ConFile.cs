@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BF2ScriptingEngine.Scripting;
 
@@ -40,6 +41,11 @@ namespace BF2ScriptingEngine
         public List<ObjectReference> References { get; protected set; }
 
         /// <summary>
+        /// Gets a Key => Value map of expressions found in this file
+        /// </summary>
+        public Dictionary<string, Expression> Expressions { get; protected set; }
+
+        /// <summary>
         /// A list of all found entries in this Con file. This include Objects, Object References,
         /// If, include, and run statements, as well as while loops
         /// </summary>
@@ -55,6 +61,7 @@ namespace BF2ScriptingEngine
             Objects = new List<ConFileObject>();
             References = new List<ObjectReference>();
             Entries = new List<ConFileEntry>();
+            Expressions = new Dictionary<string, Expression>();
         }
 
         /// <summary>
@@ -76,6 +83,32 @@ namespace BF2ScriptingEngine
                 var reference = new ObjectReference() { Token = token, Object = (ConFileObject)entry };
                 References.Add(reference);
             }
+            else if (entry is Expression)
+            {
+                Expression exp = entry as Expression;
+                if (!Expressions.ContainsKey(exp.Name))
+                {
+                    // Ensure that we are defined, or we are defining now!
+                    // Note: v_arg{num} are always defined in scope! these are file arguments
+                    if (!Regex.Match(exp.Name, "^v_arg[0-9]+$").Success)
+                    {
+                        if (!exp.Token.Value.StartsWithAny("var", "const"))
+                        {
+                            string err;
+                            if (token.Kind == TokenType.Constant)
+                                err = $"Undefined constant \"{exp.Name}\"";
+                            else
+                                err = $"Undefined variable \"{exp.Name}\"";
+
+                            Logger.Error(err, this, token.Position);
+                            throw new Exception(err);
+                        }
+                    }
+
+                    // Add the expression
+                    Expressions.Add(exp.Name, exp);
+                }
+            }
 
             // Always add the entry
             Entries.Add(entry);
@@ -90,26 +123,9 @@ namespace BF2ScriptingEngine
         {
             StringBuilder builder = new StringBuilder();
 
-            // First, we grab all of our assignables, like vars and constants
-            ConFileEntry[] assingables = Entries.Where(x => x is Expression)
-                .OrderBy(x => x.Token.Kind).ToArray();
-
-            // all assingables are put to the top of the file
-            if (assingables.Length > 0)
-            {
-                foreach (var obj in assingables)
-                    builder.AppendLine(obj.ToFileFormat());
-
-                builder.AppendLine();
-            }
-
             // Add defined objects and their properties
-            foreach (var obj in Entries.OrderBy(x => x.Token.Position))
+            foreach (ConFileEntry obj in Entries)
             {
-                // Skip assignables
-                if (obj is Expression)
-                    continue;
-
                 // Call the ToFileFormat method on the ConFileObject
                 builder.AppendLine(obj.ToFileFormat());
                 builder.AppendLine();

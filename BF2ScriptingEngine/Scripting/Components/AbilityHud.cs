@@ -1,21 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting.Components
 {
     public class AbilityHud : ObjectTemplate, IComponent
     {
         [PropertyName("healingSound")]
-        public ObjectProperty<string> HealingSound;
+        public ObjectProperty<string> HealingSound { get; set; }
 
         [PropertyName("repairingSound")]
-        public ObjectProperty<string> RepairingSound;
+        public ObjectProperty<string> RepairingSound { get; set; }
 
         [PropertyName("ammoSound")]
-        public ObjectProperty<string> AmmoSound;
+        public ObjectProperty<string> AmmoSound { get; set; }
 
         public AbilityHud(string name, Token token) : base(name, token)
         {

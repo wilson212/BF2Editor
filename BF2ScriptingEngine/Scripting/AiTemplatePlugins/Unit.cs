@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting
 {
     public class Unit : AiTemplatePlugin
     {
         [PropertyName("equipmentTypeName")]
-        public ObjectProperty<string> EquipmentTypeName;
+        public ObjectProperty<string> EquipmentTypeName { get; set; }
 
         /// <summary>
         /// Contains the offensive and defensive strengths of this unit
@@ -19,30 +16,30 @@ namespace BF2ScriptingEngine.Scripting
         /// <paramref name="DefensiveStrategicStrength"/> instead
         /// </remarks>
         [PropertyName("setStrategicStrength"), IndexedList]
-        protected ObjectProperty<List<int>> Strengths;
+        protected ObjectProperty<List<int>> Strengths { get; set; }
 
         [PropertyName("setSelectKey")]
-        public ObjectProperty<string> SetSelectKey;
+        public ObjectProperty<string> SetSelectKey { get; set; }
 
         [PropertyName("SelectKey")]
-        public ObjectProperty<string> SelectKey;
+        public ObjectProperty<string> SelectKey { get; set; }
 
         [PropertyName("cullDistance")]
-        public ObjectProperty<int> CullDistance;
+        public ObjectProperty<int> CullDistance { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         /// <remarks>MAY BE NULL! Not all units define this variable!</remarks>
         [PropertyName("setHasExposedSoldier")]
-        public ObjectProperty<bool> HasExposedSoldier;
-        
+        public ObjectProperty<bool> HasExposedSoldier { get; set; }
+
         /// <summary>
         /// 
         /// </summary>
         /// <remarks>Found on the BiPod objects</remarks>
         [PropertyName("setUseNoPathfindingToGetToObject")]
-        public ObjectProperty<bool> UseNoPathfindingToGetToObject;
+        public ObjectProperty<bool> UseNoPathfindingToGetToObject { get; set; }
 
         /// <summary>
         /// Gets or Sets the offensive strength of this Unit

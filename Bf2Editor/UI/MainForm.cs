@@ -160,13 +160,13 @@ namespace BF2Editor
         /// Loads all of the *.ai files located in the SubDir name, into
         /// the ObjectManager
         /// </summary>
-        /// <param name="Name">The folder name of .ai files to load</param>
-        protected Task LoadTemplates(string Name)
+        /// <param name="templateType">The folder name of .ai files to load</param>
+        protected Task LoadTemplates(string templateType)
         {
             return Task.Run(async() =>
             {
-                string path = Path.Combine(Program.RootPath, "Temp", "Server Objects", SelectedMod.Name, Name);
-                TreeNode topNode = new TreeNode(Name);
+                string path = Path.Combine(Program.RootPath, "Temp", "Server Objects", SelectedMod.Name, templateType);
+                TreeNode topNode = new TreeNode(templateType);
 
                 // Make sure our tempalte directory exists
                 if (!Directory.Exists(path))
@@ -549,12 +549,29 @@ namespace BF2Editor
         /// <summary>
         /// Testing...
         /// </summary>
-        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var obj = ObjectManager.GetObject<AiTemplate>("Ahe_Ah1z");
             string formated = obj.File.ToFileFormat();
             Clipboard.SetText(formated);
-       }
+            
+            try {
+                string path = @"D:\Programming\C#\Projects\Bf2Editor\Bf2Editor\bin\Debug\Temp\Server Objects\bf2\Kits\US";
+                ConFile file = await ScriptEngine.LoadFileAsync(Path.Combine(path, "us_kits.con"));
+                formated = file.ToFileFormat();
+                Clipboard.SetText(formated);
+
+                ConFile file2 = await ScriptEngine.LoadFileAsync(Path.Combine(path, "US_Specops.con"));
+                formated = file2.ToFileFormat();
+                Clipboard.SetText(formated);
+            }
+            catch
+            {
+
+            }
+
+            var c = Logger.Errors;
+        }
 
         #endregion
     }

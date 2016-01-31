@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting
 {
     public class Physical : AiTemplatePlugin
     {
         [PropertyName("setStrType")]
-        public ObjectProperty<string> StrengthType;
+        public ObjectProperty<string> StrengthType { get; set; }
 
         /// <summary>
         /// Creates a new instance of Armament

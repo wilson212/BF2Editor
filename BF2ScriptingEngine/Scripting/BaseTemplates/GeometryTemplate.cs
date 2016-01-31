@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BF2ScriptingEngine.Scripting.GeometryTemplates;
 
 namespace BF2ScriptingEngine.Scripting
 {
@@ -20,9 +21,18 @@ namespace BF2ScriptingEngine.Scripting
         /// </summary>
         /// <param name="tokenArgs">The command line token</param>
         /// <param name="Token">The ConFile token</param>
-        //public static GeometryTemplate Create(ObjectTokenArgs tokenArgs, Token Token)
-        //{
-            //return new GeometryTemplate(tokenArgs.Arguments.Last(), Token);
-        //}
+        public static GeometryTemplate Create(TokenArgs tokenArgs, Token Token)
+        {
+            string type = tokenArgs.Arguments[0];
+            string name = tokenArgs.Arguments[1];
+
+            switch (type.ToLowerInvariant())
+            {
+                case "bundledmesh": return new BundledMesh(name, Token);
+                case "skinnedmesh": return new SkinnedMesh(name, Token);
+                default:
+                    throw new NotSupportedException("Invalid Object Type \"" + type + "\".");
+            }
+        }
     }
 }

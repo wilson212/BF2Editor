@@ -33,6 +33,11 @@ namespace BF2ScriptingEngine.Scripting
         ActiveSwitch,
 
         /// <summary>
+        /// Represents a "createComponent" command
+        /// </summary>
+        Component,
+
+        /// <summary>
         /// Represents a single line comment
         /// </summary>
         RemComment,

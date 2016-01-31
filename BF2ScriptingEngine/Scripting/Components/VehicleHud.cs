@@ -1,37 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting.Components
 {
     public class VehicleHud : ObjectTemplate, IComponent
     {
-        [PropertyName("hudName")]
-        public ObjectProperty<string> HudName;
+        [PropertyName("hudName"), Quoted]
+        public ObjectProperty<string> HudName { get; set; }
 
-        [PropertyName("miniMapIcon")]
-        public ObjectProperty<string> MiniMapIcon;
+        [PropertyName("miniMapIcon"), Quoted]
+        public ObjectProperty<string> MiniMapIcon { get; set; }
 
-        [PropertyName("vehicleIcon")]
-        public ObjectProperty<string> VehicleIcon;
+        [PropertyName("miniMapIconLeaderSize")]
+        public ObjectProperty<MapIconSize> MiniMapIconLeaderSize { get; set; }
 
-        [PropertyName("abilityIcon ")]
-        public ObjectProperty<string> AbilityIcon;
+        [PropertyName("usePlayerIcon"), Quoted]
+        public ObjectProperty<bool> UsePlayerIcon { get; set; }
 
-        [PropertyName("spottedIcon")]
-        public ObjectProperty<string> SpottedIcon;
+        [PropertyName("vehicleIcon"), Quoted]
+        public ObjectProperty<string> VehicleIcon { get; set; }
+
+        [PropertyName("vehicleIconPos")]
+        public ObjectProperty<string> VehicleIconPos { get; set; }
+
+        [PropertyName("abilityIcon"), Quoted]
+        public ObjectProperty<string> AbilityIcon { get; set; }
+
+        [PropertyName("spottedIcon"), Quoted]
+        public ObjectProperty<string> SpottedIcon { get; set; }
 
         [PropertyName("pantingSound")]
-        public ObjectProperty<string> PantingSound;
+        public ObjectProperty<string> PantingSound { get; set; }
 
         [PropertyName("injurySound")]
-        public ObjectProperty<string> InjurySound;
+        public ObjectProperty<string> InjurySound { get; set; }
 
         [PropertyName("vehicleType")]
-        public ObjectProperty<int> VehicleType;
+        public ObjectProperty<int> VehicleType { get; set; }
+
+        [PropertyName("useSelectionIcons")]
+        public ObjectProperty<int> UseSelectionIcons { get; set; }
+
+        [PropertyName("useVehicleCommRose")]
+        public ObjectProperty<bool> UseVehicleCommRose { get; set; }
+
+        [PropertyName("standardHelpEnabled")]
+        public ObjectProperty<bool> StandardHelpEnabled { get; set; }
 
         public VehicleHud(string name, Token token) : base(name, token)
         {

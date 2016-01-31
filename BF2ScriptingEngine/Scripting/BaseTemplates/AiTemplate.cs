@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting
 {
@@ -13,14 +11,14 @@ namespace BF2ScriptingEngine.Scripting
         /// Contains a list of Object types that dsecribe this object
         /// </summary>
         [PropertyName("addType")]
-        public ObjectProperty<List<string>> Types;
+        public ObjectProperty<List<string>> Types { get; set; }
 
         /// <summary>
         /// Gets or Sets how fast the bots forget the object once they cannot see it anymore. 
         /// </summary>
         /// <remarks>Format appears to be in seconds</remarks>
         [PropertyName("degeneration")]
-        public ObjectProperty<int> Degeneration;
+        public ObjectProperty<int> Degeneration { get; set; }
 
         /// <summary>
         /// This command is used to tell the bots how often they should update the information they have 
@@ -32,7 +30,7 @@ namespace BF2ScriptingEngine.Scripting
         /// erroneous decisions based on it.
         /// </remarks>
         [PropertyName("allowedTimeDiff")]
-        public ObjectProperty<double> AllowedTimeDiff;
+        public ObjectProperty<double> AllowedTimeDiff { get; set; }
 
         /// <summary>
         /// Gets or Sets the basic temperature of this template. The higher the
@@ -40,25 +38,25 @@ namespace BF2ScriptingEngine.Scripting
         /// other objects and actions
         /// </summary>
         [PropertyName("basicTemp")]
-        public ObjectProperty<int> BasicTemp;
+        public ObjectProperty<int> BasicTemp { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("commonKnowledge")]
-        public ObjectProperty<bool> CommonKnowledge;
+        public ObjectProperty<bool> CommonKnowledge { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("secondary")]
-        public ObjectProperty<bool> Secondary;
+        public ObjectProperty<bool> Secondary { get; set; }
 
         /// <summary>
         /// Contains a list of AiTemplatePlugins for this object
         /// </summary>
         [PropertyName("addPlugIn")]
-        public ObjectProperty<List<string>> Plugins;
+        public ObjectProperty<List<string>> Plugins { get; set; }
 
         /// <summary>
         /// Creates a new instance of AiTemplate

@@ -35,6 +35,11 @@ namespace BF2ScriptingEngine
                 Value = String.Concat(Value, Environment.NewLine, line);
         }
 
+        /// <summary>
+        /// Returns this comment value
+        /// </summary>
+        /// <param name="token">DOES not do anything!</param>
+        /// <param name="includeComment">DOES not do anything!</param>
         public override string ToFileFormat(Token token = null)
         {
             return Value;

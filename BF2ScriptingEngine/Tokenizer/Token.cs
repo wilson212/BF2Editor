@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace BF2ScriptingEngine.Scripting
 {
     /// <summary>
-    /// A token is a reference to a parsable object found within a con/Ai file.
+    /// A token is a reference to a parsable line(s) found within a con/Ai file.
     /// </summary>
     public class Token
     {
@@ -34,11 +34,21 @@ namespace BF2ScriptingEngine.Scripting
         public TokenType Kind { get; protected set; }
 
         /// <summary>
+        /// Gets the <see cref="System.Text.RegularExpressions.Match"/> for this token
+        /// </summary>
+        public Match Match { get; protected set; }
+
+        /// <summary>
         /// Gets this Token object as an <see cref="Scripting.TokenArgs"/> object ONLY IF this 
         /// <see cref="TokenType"/> is a <see cref="TokenType.ObjectStart"/> or a 
         /// <see cref="TokenType.ObjectProperty"/>.
         /// </summary>
         public TokenArgs TokenArgs { get; set; }
+
+        /// <summary>
+        /// If a comment was attached to this Token, it is stored here
+        /// </summary>
+        public RemComment Comment { get; set; }
 
         /// <summary>
         /// Gets or sets the value of the token
@@ -63,6 +73,7 @@ namespace BF2ScriptingEngine.Scripting
                 File = file,
                 Position = match.Index + index,
                 Kind = kind,
+                Match = match,
                 Value = match.Value
             };
         }

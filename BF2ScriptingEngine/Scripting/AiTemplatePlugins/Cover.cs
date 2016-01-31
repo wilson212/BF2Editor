@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting
 {
     public class Cover : AiTemplatePlugin
     {
         [PropertyName("coverValue")]
-        public ObjectProperty<double> CoverValue;
+        public ObjectProperty<double> CoverValue { get; set; }
 
         /// <summary>
         /// Creates a new instance of Armament

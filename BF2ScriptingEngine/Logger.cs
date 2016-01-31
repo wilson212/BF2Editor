@@ -103,19 +103,20 @@ namespace BF2ScriptingEngine
         /// <summary>
         /// Stores an ERROR message to be logged
         /// </summary>
-        /// <param name="Message">The message text</param>
-        /// <param name="WorkingFile">The ConFile being processed for this message</param>
-        /// <param name="LineNumber">The ConFile line number being processed for this message</param>
-        public static void Error(string Message, ConFile WorkingFile = null, int LineNumber = 0)
+        /// <param name="error">The message text</param>
+        /// <param name="file">The ConFile being processed for this message</param>
+        /// <param name="line">The ConFile line number being processed for this message</param>
+        public static void Error(string error, ConFile file = null, int line = 0, Exception exception = null)
         {
             if (Enabled)
             {
                 LogEntry entry = new LogEntry()
                 {
                     Type = LogEntryType.Error,
-                    Message = Message,
-                    File = WorkingFile,
-                    Line = LineNumber
+                    Message = error,
+                    File = file,
+                    Line = line,
+                    ExceptionObj = exception
                 };
 
                 lock (_syncObj)

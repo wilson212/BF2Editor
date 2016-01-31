@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BF2ScriptingEngine.Scripting
+namespace BF2ScriptingEngine.Scripting.Attributes
 {
     /// <summary>
     /// This attribute is used to indetify ObjectProperties that

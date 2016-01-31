@@ -36,7 +36,9 @@ namespace BF2ScriptingEngine
             { ObjectType.ObjectTemplate, typeof(ObjectTemplate) },
             { ObjectType.WeaponTemplate, typeof(WeaponTemplate) },
             { ObjectType.AiTemplate, typeof(AiTemplate) },
-            { ObjectType.AiTemplatePlugin, typeof(AiTemplatePlugin) }
+            { ObjectType.AiTemplatePlugin, typeof(AiTemplatePlugin) },
+            { ObjectType.KitTemplate, typeof(KitTemplate) },
+            { ObjectType.GeometryTemplate, typeof(GeometryTemplate) },
         };
 
         /// <summary>
@@ -44,7 +46,8 @@ namespace BF2ScriptingEngine
         /// </summary>
         static ObjectManager()
         {
-            Globals = new Dictionary<Tuple<string, ObjectType>, ConFileObject>();
+            var Comparer = new ObjectEqualityComparer();
+            Globals = new Dictionary<Tuple<string, ObjectType>, ConFileObject>(Comparer);
         }
 
         /// <summary>

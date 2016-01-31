@@ -52,7 +52,7 @@ namespace BF2ScriptingEngine
 
             // Object creation
             new KeyValuePair<TokenType, string>(TokenType.ObjectStart, 
-                @"^(?<reference>[a-z]+)\.create(?<type>[a-z_]*)([\s|\t]+)(?<value>.*)$"
+                @"^(?<reference>[a-z]+)\.create([\s|\t]+)(?<value>.*)$"
             ),
 
             new KeyValuePair<TokenType, string>(TokenType.ActiveSwitch,
@@ -62,7 +62,7 @@ namespace BF2ScriptingEngine
             // Object property value, HAS TO FOLLOW everything else with a similar expression
             // due to the ungreediness of this regular expression
             new KeyValuePair<TokenType, string>(TokenType.ObjectProperty,
-                @"^(?<reference>[a-z]+)\.(?<property>[a-z_]+)([\s|\t]+)(?<value>.*)?$"
+                @"^(?<reference>[a-z]+)\.(?<property>[a-z_\.]+)([\s|\t]+)(?<value>.*)?$"
             ),
 
             // === Vars Conditionals === //
@@ -74,10 +74,11 @@ namespace BF2ScriptingEngine
             new KeyValuePair<TokenType, string>(TokenType.EndIf, @"^(?<value>.*)endIf$"),
 
             // Variable
-            new KeyValuePair<TokenType, string>(TokenType.Variable, @"^var(?<value>.*)?$"),
+            new KeyValuePair<TokenType, string>(TokenType.Variable, @"^(?:var[\s\t]+)(?<name>[a-z0-9_]+)[\s\t]*(?:=[\s\t]*)?(?<value>.*?)?$"),
+            new KeyValuePair<TokenType, string>(TokenType.Variable, @"^(?<name>[a-z0-9_]+)[\s\t]*(?:=[\s\t]*)(?<value>.*?)$"),
 
             // Constant
-            new KeyValuePair<TokenType, string>(TokenType.Constant, @"^const(?<value>.*)?$"),
+            new KeyValuePair<TokenType, string>(TokenType.Constant, @"^(?:const[\s\t]+)(?<name>[a-z0-9_]+)[\s\t]*(?:=[\s\t]*)(?<value>.*?)$"),
 
             // Include command
             new KeyValuePair<TokenType, string>(TokenType.Include, @"^include(?<value>.*)?$"),
@@ -117,7 +118,7 @@ namespace BF2ScriptingEngine
                 Logger.Info("Loading file: " + filePath);
 
                 // Open the confile, and read its contents
-                using (FileStream fStream = new FileStream(filePath, FileMode.Open))
+                using (FileStream fStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
                 using (StreamReader reader = new StreamReader(fStream))
                 {
                     // While we can keep reading
@@ -131,21 +132,15 @@ namespace BF2ScriptingEngine
                 // Parse the contents of the Con / Ai file
                 try
                 {
-                    Execute(fileContents, ref cFile);
-                }
-                catch
-                {
-                    // If we are not supressing errors, throw this
-                    if (!supressErrors)
-                    {
-                        throw;
-                    }
+                    Execute(fileContents, cFile, true);
 
+                    // Return the file
+                    return cFile;
+                }
+                catch when (supressErrors)
+                {
                     return null;
                 }
-
-                // Return the file
-                return cFile;
             });
         }
 
@@ -154,7 +149,11 @@ namespace BF2ScriptingEngine
         /// </summary>
         /// <param name="fileContents">A dictionary of file contents [LineNumber => LineContents]</param>
         /// <param name="workingFile">A reference to the ConFile that contains the contents</param>
-        public static void Execute(Dictionary<int, string> fileContents, ref ConFile workingFile)
+        /// <param name="registerObjects">
+        /// Do we register the objects we find in the Globals? If true, then any objects found that are
+        /// already defined elsewhere will cause a <see cref="System.Exception"/> to be thrown.
+        /// </param>
+        public static void Execute(Dictionary<int, string> fileContents, ConFile workingFile, bool registerObjects)
         {
             // ============
             // First we convert our confile lines into parsed tokens
@@ -178,30 +177,31 @@ namespace BF2ScriptingEngine
                 ConFileObject template = CreateObjectType(tokenArgs, Tkn);
                 ObjectType oType = ObjectManager.GetObjectType(template);
 
-                // Make sure we are trying to create an object that is already created
-                if (ObjectManager.ContainsObject(template.Name, oType))
+                // Do we register what we find?
+                if (registerObjects)
                 {
-                    // Fetch the object
-                    ConFileObject Obj = ObjectManager.GetObject(template.Name, oType);
-                    string message = "Object \"" + template.Name + "\" has already been Initialized. "
-                        + Environment.NewLine
-                        + "Original object file: " 
-                        + Obj.File.FilePath 
-                        + " [" + Obj.Tokens[0].Position + "]"; // 0 index is always the defining index
-                    Logger.Error(message, workingFile, Tkn.Position);
-                    throw new Exception(message);
+                    // Make sure we are trying to create an object that isnt already created
+                    if (ObjectManager.ContainsObject(template.Name, oType))
+                    {
+                        // Fetch the object
+                        ConFileObject Obj = ObjectManager.GetObject(template.Name, oType);
+                        string message = "Object \"" + template.Name + "\" has already been Initialized. "
+                            + Environment.NewLine
+                            + "Original object file: "
+                            + Obj.File.FilePath
+                            + " [" + Obj.Tokens[0].Position + "]"; // 0 index is always the defining index
+                        Logger.Error(message, workingFile, Tkn.Position);
+                        throw new Exception(message);
+                    }
+
+                    // Finally, register the object with the ObjectManager
+                    ObjectManager.RegisterObject(template);
+                    Logger.Info($"Created {template.ReferenceName} \"{template.Name}\"", workingFile, Tkn.Position);
                 }
-
-                // Add the new object template to the ConFile objects list
-                workingFile.AddEntry(template, Tkn);
-
-                // Finally, register the object with the ObjectManager
-                ObjectManager.RegisterObject(template);
-                
-                // Fire event
-                Logger.Info(
-                    "Created  " + template.ReferenceName + "  \"" + template.Name + "\"", 
-                    workingFile, Tkn.Position);
+                else
+                {
+                    Logger.Info($"Found {template.ReferenceName} \"{template.Name}\"", workingFile, Tkn.Position);
+                }
             }
 
             // ============
@@ -215,6 +215,7 @@ namespace BF2ScriptingEngine
             ObjectType type;
             Dictionary<ObjectType, ConFileObject> lastObj = new Dictionary<ObjectType, ConFileObject>();
             StringBuilder builder = new StringBuilder();
+            StringComparison Comparer = StringComparison.InvariantCultureIgnoreCase;
 
             // We use a for loop here so we can skip rem blocks and statements
             for (int i = 0; i < fileTokens.Length; i++)
@@ -228,6 +229,7 @@ namespace BF2ScriptingEngine
                         // Split line into function call followed by and arguments
                         tokenArgs = GetTokenArgs(token.Value);
                         token.TokenArgs = tokenArgs;
+                        token.Comment = comment;
 
                         // Fetch the object
                         type = ObjectManager.GetObjectType(tokenArgs.ReferenceName, workingFile, token.Position);
@@ -244,14 +246,9 @@ namespace BF2ScriptingEngine
                         // Fetch our new working object.
                         currentObj = ObjectManager.GetObject(objName, type);
 
-                        // Set comment if we have a value
-                        if (token.Kind == TokenType.ObjectStart && comment != null)
-                            currentObj.Comment = comment;
-
                         // === Objects are already added to the working file before hand === //
                         // Add object reference to file
-                        if (token.Kind == TokenType.ActiveSwitch)
-                            workingFile.AddEntry(currentObj, token);
+                        workingFile.AddEntry(currentObj, token);
 
                         // Set last loaded object
                         lastObj[type] = currentObj;
@@ -260,7 +257,7 @@ namespace BF2ScriptingEngine
                         comment = null;
 
                         // Log
-                        Logger.Info($"Loading object properties for \"{objName}\"", 
+                        Logger.Info($"Loading object properties for \"{objName}\"",
                             workingFile, token.Position
                         );
                         break;
@@ -268,12 +265,11 @@ namespace BF2ScriptingEngine
                         // Convert args to an object
                         tokenArgs = GetTokenArgs(token.Value);
                         token.TokenArgs = tokenArgs;
+                        token.Comment = comment;
 
                         // Make sure we have an object to work with and the object
                         // reference matches our current working object
-                        if (currentObj == null || !currentObj.ReferenceName.Equals(
-                            tokenArgs.ReferenceName, 
-                            StringComparison.InvariantCultureIgnoreCase))
+                        if (currentObj == null || !currentObj.ReferenceName.Equals(tokenArgs.ReferenceName, Comparer))
                         {
                             // ============
                             // If the object type does not match our current object type, and we didnt use a 
@@ -299,14 +295,14 @@ namespace BF2ScriptingEngine
                         // Let the object parse its own lines...
                         try
                         {
-                            currentObj.Parse(token, comment);
+                            currentObj.Parse(token);
 
                             // Ensure comment is null
                             comment = null;
                         }
                         catch (Exception e)
                         {
-                            Logger.Error(e.Message, workingFile, token.Position);
+                            Logger.Error(e.Message, workingFile, token.Position, e);
                             ObjectManager.ReleaseAll(workingFile);
                             throw;
                         }
@@ -410,8 +406,19 @@ namespace BF2ScriptingEngine
                 {
                     if (!inQuote && part.StartsWith(QUOTE))
                     {
-                        inQuote = true;
-                        builder.Append($"{part} ");
+                        if (part.EndsWith(QUOTE))
+                        {
+                            builder.Append($"{part}");
+
+                            // Add the final quoted string as a single part
+                            args.Add(builder.ToString());
+                            builder.Clear();
+                        }
+                        else
+                        {
+                            inQuote = true;
+                            builder.Append($"{part} ");
+                        }
                     }
                     else if (inQuote && part.EndsWith(QUOTE))
                     {
@@ -442,10 +449,12 @@ namespace BF2ScriptingEngine
         /// <paramref name="endType"/> specified. All contents starting at the offset are stored
         /// into the <paramref name="builder"/> provided.
         /// </summary>
-        /// <param name="endType"></param>
-        /// <param name="fileTokens"></param>
-        /// <param name="offset"></param>
-        /// <param name="builder"></param>
+        /// <remarks>This method DOES support nested statements</remarks>
+        /// <param name="endType">The token type we skip to</param>
+        /// <param name="fileTokens">The file tokens we are itterating through</param>
+        /// <param name="offset">The starting offset in the <paramref name="fileTokens"/></param>
+        /// <param name="builder">The string builder object we are using to storing the contents 
+        /// i nbetween the <paramref name="offset"/> and <paramref name="endType"/></param>
         /// <returns>Returns the index of <paramref name="fileTokens"/> that we stopped at.</returns>
         private static int ScopeUntil(TokenType endType, Token[] fileTokens, int offset, StringBuilder builder)
         {
@@ -453,19 +462,32 @@ namespace BF2ScriptingEngine
             Token currentToken = fileTokens[offset];
 
             // Loop until we find the closing tag
-            for (; offset < fileTokens.Length; offset++)
+            for (int i = offset + 1; i < fileTokens.Length; i++)
             {
                 // Append line, no matter what it is
-                Token token = fileTokens[offset];
+                Token token = fileTokens[i];
+
+                // Add value
                 builder.AppendLine(token.Value);
+
+                // Search for nested types
+                switch (token.Kind)
+                {
+                    case TokenType.IfStart:
+                        i = ScopeUntil(TokenType.EndIf, fileTokens, i, builder);
+                        break;
+                    case TokenType.BeginRem:
+                        i = ScopeUntil(TokenType.EndRem, fileTokens, i, builder);
+                        break;
+                }
 
                 // We stop our journey here if we found the tag
                 if (token.Kind == endType)
-                    return offset;
+                    return i;
             }
 
             // Log error
-            string error = $"No closing tag found for \"{nameof(currentToken)}\" ({currentToken.Position}) found!";
+            string error = $"No closing tag found for \"{currentToken.Kind}\" ({currentToken.Position}) found!";
             Logger.Error(error, currentToken.File, currentToken.Position);
             throw new Exception(error);
         }
@@ -476,9 +498,8 @@ namespace BF2ScriptingEngine
         /// will be applied to that object, until another create command or the end of the 
         /// file is encountered.
         /// </summary>
-        /// <param name="Params"></param>
-        /// <param name="File"></param>
-        /// <param name="Tkn"></param>
+        /// <param name="tokenArgs">The token arguments that make up the create command line</param>
+        /// <param name="Tkn">The token object from the <see cref="Tokenizer"/></param>
         /// <returns></returns>
         private static ConFileObject CreateObjectType(TokenArgs tokenArgs, Token Tkn)
         {
@@ -488,6 +509,8 @@ namespace BF2ScriptingEngine
                 case "aitemplateplugin": return AiTemplatePlugin.Create(tokenArgs, Tkn);
                 case "weapontemplate": return WeaponTemplate.Create(tokenArgs, Tkn);
                 case "objecttemplate": return ObjectTemplate.Create(tokenArgs, Tkn);
+                case "kittemplate": return KitTemplate.Create(tokenArgs, Tkn);
+                case "geometrytemplate": return GeometryTemplate.Create(tokenArgs, Tkn);
                 case "aisettings":
                 default:
                     string error = $"Reference call to '{tokenArgs.ReferenceName}' is not supported";
