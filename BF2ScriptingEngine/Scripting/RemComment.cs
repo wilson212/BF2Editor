@@ -40,7 +40,7 @@ namespace BF2ScriptingEngine
         /// </summary>
         /// <param name="token">DOES not do anything!</param>
         /// <param name="includeComment">DOES not do anything!</param>
-        public override string ToFileFormat(Token token = null)
+        public override string ToFileFormat()
         {
             return Value;
         }

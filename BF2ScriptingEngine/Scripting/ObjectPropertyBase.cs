@@ -10,7 +10,7 @@ using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting
 {
-    public abstract class ObjectProperty
+    public abstract class ObjectProperty : ConFileEntry
     {
         /// <summary>
         /// The name of this property tag
@@ -18,15 +18,15 @@ namespace BF2ScriptingEngine.Scripting
         public string Name;
 
         /// <summary>
-        /// The <see cref="Token"/> for which this property is first called
-        /// </summary>
-        public Token Token;
-
-        /// <summary>
         /// Gets the <see cref="PropertyInfo"/> object that represents the holder of
         /// this object
         /// </summary>
         public PropertyInfo Property { get; protected set; }
+
+        /// <summary>
+        /// Gets the <see cref="ConFileObject"/> that contains this property
+        /// </summary>
+        public ConFileObject Owner { get; protected set; }
 
         /// <summary>
         /// Takes an array of arguments, and attempts to set the values
@@ -39,7 +39,7 @@ namespace BF2ScriptingEngine.Scripting
         /// <summary>
         /// Converts the value of this property to file format
         /// </summary>
-        public abstract string ToFileFormat();
+        public override abstract string ToFileFormat();
 
         /// <summary>
         /// Takes an array of string values, and converts it to the proper value type for
@@ -62,7 +62,7 @@ namespace BF2ScriptingEngine.Scripting
         /// <exception cref="System.Exception">
         ///     Thrown if the Field provided does not contain the <see cref="PropertyName"/> attribute
         /// </exception>
-        public static ObjectProperty Create(PropertyInfo property, Token token)
+        public static ObjectProperty Create(PropertyInfo property, ConFileObject owner, Token token)
         {
             // If the Custom attribute exists, we add it to the Mapping
             Attribute attribute = Attribute.GetCustomAttribute(property, typeof(PropertyName));
@@ -73,7 +73,31 @@ namespace BF2ScriptingEngine.Scripting
             PropertyName fieldAttr = attribute as PropertyName;
             return (ObjectProperty)Activator.CreateInstance(
                 property.PropertyType,
-                new object[] { fieldAttr.Name, token, property }
+                new object[] { fieldAttr.Name, token, property, owner }
+            );
+        }
+
+        /// <summary>
+        /// Using reflection, this method creates a new instance of the <typeparamref name="T"/>
+        /// type, and returns it.
+        /// </summary>
+        /// <typeparam name="T">A type of <see cref="ObjectProperty"/></typeparam>
+        /// <param name="property">The <see cref="ConFileObject"/> property info</param>
+        /// <param name="owner">The <see cref="ConFileObject"/> that owns this property</param>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static T Create<T>(PropertyInfo property, ConFileObject owner, Token token) where T : ObjectProperty
+        {
+            // If the Custom attribute exists, we add it to the Mapping
+            Attribute attribute = Attribute.GetCustomAttribute(property, typeof(PropertyName));
+            if (attribute == null)
+                throw new Exception($"Internal property \"{property.Name}\" does not contain a PropertyName attribute!");
+
+            // Get our constructor
+            PropertyName fieldAttr = attribute as PropertyName;
+            return (T)Activator.CreateInstance(
+                typeof(T),
+                new object[] { fieldAttr.Name, token, property, owner }
             );
         }
 
@@ -84,7 +108,7 @@ namespace BF2ScriptingEngine.Scripting
         /// <returns></returns>
         protected ValueInfo<K> ConvertValue<K>(object Value)
         {
-            return Converter.CreateValueInfo<K>(Token, Value);
+            return Converter.CreateValueInfo<K>(this, Value);
         }
 
         /// <summary>

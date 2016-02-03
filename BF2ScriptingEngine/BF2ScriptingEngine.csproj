@@ -59,7 +59,10 @@
     <Compile Include="Scripting\Enumerations\MapIconSize.cs" />
     <Compile Include="Scripting\Expression.cs" />
     <Compile Include="Scripting\GeometryTemplates\BundledMesh.cs" />
+    <Compile Include="Scripting\Interfaces\IObjectPropertyCollection.cs" />
     <Compile Include="Scripting\ObjectMethod.cs" />
+    <Compile Include="Scripting\ObjectPropertyDict.cs" />
+    <Compile Include="Scripting\ObjectPropertyList.cs" />
     <Compile Include="Scripting\ObjectReference.cs" />
     <Compile Include="Scripting\Components\Ability.cs" />
     <Compile Include="Scripting\Components\Armor.cs" />

@@ -3,12 +3,31 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BF2ScriptingEngine.Scripting.Attributes;
 using BF2ScriptingEngine.Scripting.GeometryTemplates;
 
 namespace BF2ScriptingEngine.Scripting
 {
+    /// <summary>
+    /// Defines what geometry to use to render a type of object.
+    /// </summary>
     public abstract class GeometryTemplate : ConFileObject
     {
+        /// <summary>
+        /// Gets or Sets the LOD (Level Of Detail) of the model will be 
+        /// seen at a particular distance.
+        /// </summary>
+        /// <remarks>
+        /// Based on my research, which may not 100% accurate (lack of documentation)
+        /// 
+        /// First param indetifies the Mesh part
+        /// Second Param represents the LOD id of the mesh
+        /// Thrid param is the actual Distance the mesh comes into view
+        /// </remarks>
+        /// <seealso cref="http://bfmods.com/mdt/scripting/GeometryTemplate/Properties/SetLodDistance.html"/>
+        [PropertyName("setSubGeometryLodDistance")]
+        public ObjectPropertyList<int, int, int> SubGeometryLodDistances { get; internal set; }
+
         /// <summary>
         /// Creates a new isntance of WeaponTemplate
         /// </summary>

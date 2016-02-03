@@ -20,7 +20,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </summary>
         /// <param name="Value">The current property index value</param>
         /// <returns></returns>
-        public static ValueInfo<K> CreateValueInfo<K>(Token Token, object Value)
+        public static ValueInfo<K> CreateValueInfo<K>(ObjectProperty property, object Value)
         {
             // Grab the type of K
             Type PropertyType = typeof(K);
@@ -31,22 +31,7 @@ namespace BF2ScriptingEngine.Scripting
             if (strValue.StartsWithAny("v_", "c_"))
             {
                 // Make sure the expression is defined!
-                if (!Token.File.Expressions.ContainsKey(strValue))
-                {
-                    string err;
-                    if (strValue.StartsWith("c"))
-                        err = $"Undefined constant \"{strValue}\"";
-                    else
-                        err = $"Undefined variable \"{strValue}\"";
-
-                    throw new Exception(err);
-                }
-                
-                // Grab our assignable expression, and ensure its value is defined
-                exp = Token.File.Expressions[strValue];
-                if (exp.Value == null)
-                    throw new Exception($"Value cannot be null; Argument \"{exp.Name}\" is unassigned");
-
+                exp = property.Owner.File.GetExpressionReference(strValue, property);
                 Value = exp.Value;
             }
 

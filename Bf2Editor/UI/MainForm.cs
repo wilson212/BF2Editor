@@ -547,19 +547,23 @@ namespace BF2Editor
         }
 
         /// <summary>
-        /// Testing...
+        /// For Testing purposes while I code the Script Engine
         /// </summary>
         private async void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var obj = ObjectManager.GetObject<AiTemplate>("Ahe_Ah1z");
+            obj.SetValue("basicTemp", 300);
             string formated = obj.File.ToFileFormat();
             Clipboard.SetText(formated);
-            
+
             try {
                 string path = @"D:\Programming\C#\Projects\Bf2Editor\Bf2Editor\bin\Debug\Temp\Server Objects\bf2\Kits\US";
                 ConFile file = await ScriptEngine.LoadFileAsync(Path.Combine(path, "us_kits.con"));
                 formated = file.ToFileFormat();
                 Clipboard.SetText(formated);
+
+                ConFile file3 = await ScriptEngine.LoadFileAsync(Path.Combine(path, "us_common.con"));
+                formated = file3.ToFileFormat();
 
                 ConFile file2 = await ScriptEngine.LoadFileAsync(Path.Combine(path, "US_Specops.con"));
                 formated = file2.ToFileFormat();

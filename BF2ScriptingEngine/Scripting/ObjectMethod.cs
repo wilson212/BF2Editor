@@ -68,6 +68,68 @@ namespace BF2ScriptingEngine.Scripting
         }
     }
 
+    public class ObjectMethod<T1, T2, T3, T4> : ObjectMethod
+    {
+        protected Func<Token, string> Format;
+        protected Action<Token, T1, T2, T3, T4> Action;
+
+        /// <summary>
+        /// Creates a new instance of <see cref="ObjectMethod{T1, T2, T3, T4}"/>.
+        /// </summary>
+        /// <param name="action">The <see cref="System.Action"/> to perform when this method is called when 
+        /// parsing the <see cref="ConFileObject"/></param>
+        /// <param name="format">The method to invoke when converting this <see cref="ObjectMethod"/>
+        /// back to file format, if any</param>
+        /// <remarks>The get method can be null, however the set method cannot be!</remarks>
+        /// <exception cref="ArgumentNullException">Thrown if the <paramref name="action"/> Action is null</exception>
+        public ObjectMethod(Action<Token, T1, T2, T3, T4> action, Func<Token, string> format = null)
+        {
+            // We at least need a setter
+            if (action == null)
+                throw new ArgumentNullException("action");
+
+            Format = format;
+            Action = action;
+        }
+
+        /// <summary>
+        /// Invokes the underlying <see cref="Action{T1, T2, T3, T4}"/>
+        /// </summary>
+        /// <param name="token"></param>
+        public override void Invoke(Token token)
+        {
+            // Shorten this down a bit
+            string[] values = token.TokenArgs.Arguments;
+
+            // Ensure the length is correct
+            if (token.TokenArgs.Arguments.Length != 4)
+            {
+                string error = $"Invalid values count for {token.TokenArgs.ReferenceName}; Got {values.Length}, Expecting 4.";
+                Logger.Error(error, token.File, token.Position);
+                throw new Exception(error);
+            }
+
+            // Invoke the method
+            Action.Invoke(
+                token, 
+                Converter.ConvertValue<T1>(values[0], typeof(T1)),
+                Converter.ConvertValue<T2>(values[1], typeof(T2)),
+                Converter.ConvertValue<T3>(values[2], typeof(T3)),
+                Converter.ConvertValue<T4>(values[3], typeof(T4))
+            );
+        }
+
+        /// <summary>
+        /// Invokes the underlying <see cref="Func{T, String}"/> if set.
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public override string ToFileFormat(Token token)
+        {
+            return (Format == null) ? null : Format.Invoke(token);
+        }
+    }
+
     /// <summary>
     /// This class represents an <see cref="Action"/> and 
     /// <see cref="Func{String}"/> to perform whenever an object 

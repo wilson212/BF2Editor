@@ -8,11 +8,20 @@ using System.Threading.Tasks;
 namespace BF2ScriptingEngine
 {
     /// <summary>
-    /// This EqualityComparer is used to compare the <see cref="ObjectManager.Globals"/> tupple key,
-    /// by ignoring the Tupple string character case.
+    /// This EqualityComparer is used to compare the <see cref="ObjectManager.Globals"/> tupple key
     /// </summary>
+    /// <remarks>
+    /// As far as I can tell at the moment, The object names are Case and Type sensetive!
+    /// 
+    /// Examples:
+    ///     GeometryTemplate(us_kits) != GeometryTemplate(US_Kits)
+    ///     AiTemplate(Ahz_AH1) != WeaponTemplate(Ahz_AH1)
+    /// </remarks>
     internal class ObjectEqualityComparer : IEqualityComparer<Tuple<string, ObjectType>>
     {
+        /// <summary>
+        /// Provide a consitant english culture to compare strings
+        /// </summary>
         private static CultureInfo EnglishCulture = CultureInfo.CreateSpecificCulture("en-US");
 
         /// <summary>

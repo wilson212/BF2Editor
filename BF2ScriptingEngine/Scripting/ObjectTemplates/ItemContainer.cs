@@ -15,19 +15,19 @@ namespace BF2ScriptingEngine.Scripting
         /// is encountered.
         /// </remarks>
         [Comment(Before = "", After = "")] // Override base comments
-        public override ObjectProperty<List<ChildTemplate>> Templates { get; set; }
+        public override ObjectProperty<List<ChildTemplate>> Templates { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("replaceItem")]
-        public ObjectProperty<List<string>> Replaces { get; set; }
+        public ObjectProperty<List<string>> Replaces { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("unlockLevel")]
-        public ObjectProperty<int> UnlockLevel { get; set; }
+        public ObjectProperty<int> UnlockLevel { get; internal set; }
 
         public ItemContainer(string Name, Token Token) : base(Name, Token) { }
     }

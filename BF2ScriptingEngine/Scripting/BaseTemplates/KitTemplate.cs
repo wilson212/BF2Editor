@@ -69,7 +69,7 @@ namespace BF2ScriptingEngine.Scripting
         /// Gets or Sets the Weights assigned to chance of bots selecting this type target
         /// </summary>
         [PropertyName("setBattleStrength")]
-        public ObjectProperty<Dictionary<StrengthType, double>> BattleStrengths { get; set; }
+        public ObjectPropertyDict<StrengthType, double> BattleStrengths { get; set; }
 
         /// <summary>
         /// Creates a new isntance of KitTemplate

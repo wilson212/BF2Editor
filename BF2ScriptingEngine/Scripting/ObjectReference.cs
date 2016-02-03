@@ -18,7 +18,12 @@ namespace BF2ScriptingEngine.Scripting
         /// </summary>
         public ConFileObject Object { get; set; }
 
-        public override string ToFileFormat(Token token = null)
+        public override string ToFileFormat()
+        {
+            return ToFileFormat(Token);
+        }
+
+        public string ToFileFormat(Token token)
         {
             Token tkn = token ?? Token;
             return Object.ToFileFormat(tkn);

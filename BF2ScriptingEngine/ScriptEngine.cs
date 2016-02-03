@@ -371,6 +371,9 @@ namespace BF2ScriptingEngine
                         break;
                 }
             }
+
+            // Finalize this confile
+            workingFile.Finish();
         }
 
         /// <summary>

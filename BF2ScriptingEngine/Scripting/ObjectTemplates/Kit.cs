@@ -24,8 +24,8 @@ namespace BF2ScriptingEngine.Scripting
         [Component("AbilityHud")]
         [PropertyName("abilityHud", 500)]
         [Comment(
-            Before = "---BeginComp:AbilityHud ---",
-            After = "---EndComp ---"
+            Before = "---BeginComp:AbilityHud ---"
+            //After = "---EndComp ---"
         )]
         public ObjectProperty<AbilityHud> AbilityHud { get; set; }
 
@@ -35,8 +35,8 @@ namespace BF2ScriptingEngine.Scripting
         [Component("VehicleHud")]
         [PropertyName("vehicleHud", 502)]
         [Comment(
-            Before = "---BeginComp:VehicleHud ---",
-            After = "---EndComp ---"
+            Before = "---BeginComp:VehicleHud ---"
+            //After = "---EndComp ---"
         )]
         public ObjectProperty<VehicleHud> VehicleHud { get; set; }
 
@@ -46,8 +46,8 @@ namespace BF2ScriptingEngine.Scripting
         [Component("Radio")]
         [PropertyName("Radio", 510)]
         [Comment(
-            Before = "---BeginComp:Radio ---",
-            After = "---EndComp ---"
+            Before = "---BeginComp:Radio ---"
+            //After = "---EndComp ---"
         )]
         public ObjectProperty<Radio> Radio { get; set; }
 

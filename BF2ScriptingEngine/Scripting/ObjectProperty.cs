@@ -41,12 +41,14 @@ namespace BF2ScriptingEngine
         /// </summary>
         /// <param name="name">the property name</param>
         /// <param name="token">the token information</param>
-        /// <param name="comment">the rem comment if any</param>
-        public ObjectProperty(string name, Token token, PropertyInfo property)
+        /// <param name="property">The PropertyInfo object for this instance</param>
+        /// <param name="owner">the ConFileObject that owns this property instance</param>
+        public ObjectProperty(string name, Token token, PropertyInfo property, ConFileObject owner)
         {
             Name = name;
             Token = token;
             Property = property;
+            Owner = owner;
         }
 
         /// <summary>
@@ -334,12 +336,14 @@ namespace BF2ScriptingEngine
         /// </summary>
         /// <param name="name">the property name</param>
         /// <param name="token">the token information</param>
-        /// <param name="comment">the rem comment if any</param>
-        public ObjectProperty(string name, Token token, PropertyInfo property)
+        /// <param name="property">The PropertyInfo object for this instance</param>
+        /// <param name="owner">the ConFileObject that owns this property instance</param>
+        public ObjectProperty(string name, Token token, PropertyInfo property, ConFileObject owner)
         {
             Name = name;
             Token = token;
             Property = property;
+            Owner = owner;
         }
 
         public override void SetValues(object[] values, Token token = null)
@@ -421,12 +425,14 @@ namespace BF2ScriptingEngine
         /// </summary>
         /// <param name="name">the property name</param>
         /// <param name="token">the token information</param>
-        /// <param name="comment">the rem comment if any</param>
-        public ObjectProperty(string name, Token token, PropertyInfo property)
+        /// <param name="property">The PropertyInfo object for this instance</param>
+        /// <param name="owner">the ConFileObject that owns this property instance</param>
+        public ObjectProperty(string name, Token token, PropertyInfo property, ConFileObject owner)
         {
             Name = name;
             Token = token;
             Property = property;
+            Owner = owner;
         }
 
         public override void SetValues(object[] values, Token token = null)
@@ -524,12 +530,14 @@ namespace BF2ScriptingEngine
         /// </summary>
         /// <param name="name">the property name</param>
         /// <param name="token">the token information</param>
-        /// <param name="comment">the rem comment if any</param>
-        public ObjectProperty(string name, Token token, PropertyInfo property)
+        /// <param name="property">The PropertyInfo object for this instance</param>
+        /// <param name="owner">the ConFileObject that owns this property instance</param>
+        public ObjectProperty(string name, Token token, PropertyInfo property, ConFileObject owner)
         {
             Name = name;
             Token = token;
             Property = property;
+            Owner = owner;
         }
 
         public override void SetValues(object[] values, Token token = null)

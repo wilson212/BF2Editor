@@ -18,19 +18,19 @@ namespace BF2ScriptingEngine.Scripting
         /// This property is valid for only the debug version of the game engine.
         /// </summary>
         [PropertyName("saveInSeparateFile", 1)]
-        public ObjectProperty<bool> SaveInSeparateFile { get; set; }
+        public ObjectProperty<bool> SaveInSeparateFile { get; internal set; }
 
         /// <summary>
         /// Gets the creator of this object
         /// </summary>
         [PropertyName("creator", 2)]
-        public ObjectProperty<string> CreatedBy { get; set; }
+        public ObjectProperty<string> CreatedBy { get; internal set; }
 
         /// <summary>
         /// Gets the last user to modify this object
         /// </summary>
         [PropertyName("modifiedByUser", 3)]
-        public ObjectProperty<string> ModifiedBy { get; set; }
+        public ObjectProperty<string> ModifiedBy { get; internal set; }
 
         /// <summary>
         /// This command tells the game that the object is not limited to any space constraints, 
@@ -45,13 +45,13 @@ namespace BF2ScriptingEngine.Scripting
         /// <seealso cref="GenericProjectile"/>
         /// <seealso cref="http://bfmods.com/mdt/scripting/ObjectTemplate/Properties/CreateNotInGrid.html"/>
         [PropertyName("createNotInGrid", 20)]
-        public ObjectProperty<bool> NotInGrid { get; set; }
+        public ObjectProperty<bool> NotInGrid { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("createdInEditor", 21)]
-        public ObjectProperty<bool> CreatedInEditor { get; set; }
+        public ObjectProperty<bool> CreatedInEditor { get; internal set; }
 
         /// <summary>
         /// 
@@ -61,19 +61,19 @@ namespace BF2ScriptingEngine.Scripting
         /// are trying to be stored here...
         /// </remarks>
         [PropertyName("aiTemplate", 30)] //, ExistingObject]
-        public ObjectProperty<string> AiTemplate { get; set; }
+        public ObjectProperty<string> AiTemplate { get; internal set; }
 
         /// <summary>
         /// Gets or Sets the named geometry object
         /// </summary>
         [PropertyName("geometry", 40), ExistingObject]
-        public virtual ObjectProperty<GeometryTemplate> Geometry { get; set; }
+        public virtual ObjectProperty<GeometryTemplate> Geometry { get; internal set; }
 
         /// <summary>
         /// Gets or Sets the name of the network id for this object.
         /// </summary>
         [PropertyName("networkableInfo", 50)]
-        public ObjectProperty<string> NetworkableInfo { get; set; }
+        public ObjectProperty<string> NetworkableInfo { get; internal set; }
 
         /// <summary>
         /// Gets or Sets that this object can collide with other objects
@@ -82,19 +82,19 @@ namespace BF2ScriptingEngine.Scripting
         /// When set, the geometry mesh associated with this object must have at least one collision mesh
         /// </remarks>
         [PropertyName("setHasCollisionPhysics", 60)]
-        public ObjectProperty<bool> HasCollisionPhysics { get; set; }
+        public ObjectProperty<bool> HasCollisionPhysics { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("unlockIndex", 100)]
-        public ObjectProperty<int> UnlockIndex { get; set; }
+        public ObjectProperty<int> UnlockIndex { get; internal set; }
 
         /// <summary>
         /// This property determines at what distance an object is entirely culled out from display.
         /// </summary>
         [PropertyName("cullRadiusScale", 110)]
-        public ObjectProperty<double> CullRadiusScale { get; set; }
+        public ObjectProperty<double> CullRadiusScale { get; internal set; }
 
         /// <summary>
         /// Contains a list of child objects attached to this object
@@ -109,7 +109,7 @@ namespace BF2ScriptingEngine.Scripting
             Before = "-------------------------------------",
             After =  "-------------------------------------"
         )]
-        public virtual ObjectProperty<List<ChildTemplate>> Templates { get; set; }
+        public virtual ObjectProperty<List<ChildTemplate>> Templates { get; internal set; }
 
         #endregion
 
@@ -189,6 +189,9 @@ namespace BF2ScriptingEngine.Scripting
         {
             Type type = this.GetType();
 
+            // Token correction
+            token.Kind = TokenType.Component;
+
             // Ensure we have a map of components => property
             if (!ComponentMap.ContainsKey(type.Name))
             {
@@ -205,20 +208,18 @@ namespace BF2ScriptingEngine.Scripting
             var args = new object[] { name, token };
 
             // Create instances
-            object component = Activator.CreateInstance(componentType, args);
-            var objProperty = ObjectProperty.Create(property, token);
+            var component = (ConFileObject)Activator.CreateInstance(componentType, args);
+            //var objProperty = ObjectProperty.Create(property, component, token);
+            var objProperty = ObjectProperty.Create(property, this, token);
 
             // Use reflection to set the value of the new component instance
-            objProperty.GetType().GetMethod("SetValues").Invoke(
-                objProperty, 
-                new object[] {
-                    new object[] { component }, // First param is an object array
-                    token // Second Param is a Token
-                }
-            );
+            objProperty.SetValues(new object[] { component }, token);
 
             // Set value of this.{name}
             property.SetValue(this, objProperty);
+
+            // Add component to file entries
+            token.File.AddEntry(objProperty, token);
         }
 
         /// <summary>
@@ -241,10 +242,13 @@ namespace BF2ScriptingEngine.Scripting
                 throw new Exception(err);
             }
 
-            // Get the "SetPosition" field, and make sure the ObjectProperty is not null
-            PropertyInfo field = item.GetProperty("SetPosition").Value;
-            if (field.GetValue(item) == null)
-                item.SetPosition = new ObjectProperty<string>("setPosition", token, field);
+            // Ensure the SetPosition is not null
+            if (item.SetPosition == null)
+            {
+                PropertyInfo field = item.GetProperty("SetPosition").Value;
+                item.SetPosition = new ObjectProperty<string>("setPosition", token, field, this);
+                token.File.AddProperty(item.SetPosition);
+            }
 
             // Set the new value
             item.SetPosition.SetValue(token);
@@ -273,10 +277,13 @@ namespace BF2ScriptingEngine.Scripting
                 throw new Exception(err);
             }
 
-            // Get the "SetPosition" field, and make sure the ObjectProperty is not null
-            PropertyInfo field = item.GetProperty("SetRotation").Value;
-            if (field.GetValue(item) == null)
-                item.SetRotation = new ObjectProperty<string>("setRotation", token, field);
+            // Get the "SetRotation" field, and make sure the ObjectProperty is not null
+            if (item.SetRotation == null)
+            {
+                PropertyInfo field = item.GetProperty("SetRotation").Value;
+                item.SetRotation = new ObjectProperty<string>("setRotation", token, field, this);
+                token.File.AddProperty(item.SetRotation);
+            }
 
             // Set the new value
             item.SetRotation.SetValue(token);

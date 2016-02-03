@@ -21,8 +21,14 @@ namespace BF2ScriptingEngine.Scripting
         /// <exception cref="NotSupportedException">Thrown Always for this class type!</exception>
         public override ObjectProperty<List<ChildTemplate>> Templates
         {
-            get { throw new NotSupportedException("SimpleObject cannot contain any child objects."); }
-            set { throw new NotSupportedException("SimpleObject cannot contain any child objects."); }
+            get
+            {
+                return null; // Return null for script engine to ignore!
+            } 
+            internal set
+            {
+                throw new NotSupportedException("SimpleObject cannot contain any child objects.");
+            }
         }
 
         /// <summary>

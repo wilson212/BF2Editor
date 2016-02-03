@@ -20,18 +20,18 @@ namespace BF2ScriptingEngine.Scripting
         /// this token is found in, so we can properly put this token and
         /// its value in the correct con file when saved
         /// </remarks>
-        public ConFile File { get; protected set; }
+        public ConFile File { get; internal set; }
 
         /// <summary>
         /// Gets the position this information is found at in the original source
         /// </summary>
         /// <remarks>The line number</remarks>
-        public int Position { get; protected set; }
+        public int Position { get; internal set; }
 
         /// <summary>
         /// Gets the representation of the kind of instruction we're working with
         /// </summary>
-        public TokenType Kind { get; protected set; }
+        public TokenType Kind { get; internal set; }
 
         /// <summary>
         /// Gets the <see cref="System.Text.RegularExpressions.Match"/> for this token
@@ -75,6 +75,19 @@ namespace BF2ScriptingEngine.Scripting
                 Kind = kind,
                 Match = match,
                 Value = match.Value
+            };
+        }
+
+        public static Token Create(TokenType kind, TokenArgs args, ConFile file)
+        {
+            return new Token
+            {
+                File = file,
+                Position = 0,
+                Kind = kind,
+                TokenArgs = args,
+                Match = Match.Empty,
+                Value = args.ToString()
             };
         }
     }

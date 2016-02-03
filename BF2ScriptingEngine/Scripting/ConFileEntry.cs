@@ -26,7 +26,7 @@
         /// entry's formatted string.
         /// </param>
         /// <returns></returns>
-        public virtual string ToFileFormat(Token token = null)
+        public virtual string ToFileFormat()
         {
             return Token?.Value;
         }
