@@ -73,6 +73,15 @@ namespace BF2ScriptingEngine.Scripting
         public List<Token> Tokens { get; protected set; }
 
         /// <summary>
+        /// A collection of detached versions of this object. Any changes made to this object
+        /// outside of its defined file, are stored here.
+        /// </summary>
+        /// <remarks>
+        /// [RelaPath => ObjectReference]
+        /// </remarks>
+        public List<ConFileObject> References { get; protected set; }
+
+        /// <summary>
         /// Contains a map of field info's for types
         /// </summary>
         public static Dictionary<string, Dictionary<string, PropertyInfo>> PropertyMap;

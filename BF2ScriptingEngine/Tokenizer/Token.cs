@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace BF2ScriptingEngine.Scripting
 {
     /// <summary>
-    /// A token is a reference to a parsable line(s) found within a con/Ai file.
+    /// A token describes a parsable line(s) found within a con/Ai file.
     /// </summary>
     public class Token
     {
@@ -36,7 +36,7 @@ namespace BF2ScriptingEngine.Scripting
         /// <summary>
         /// Gets the <see cref="System.Text.RegularExpressions.Match"/> for this token
         /// </summary>
-        public Match Match { get; protected set; }
+        public Match Match { get; internal set; }
 
         /// <summary>
         /// Gets this Token object as an <see cref="Scripting.TokenArgs"/> object ONLY IF this 

@@ -102,7 +102,7 @@ namespace BF2Editor
         {
             // Clear nodesand Globals!
             treeView1.Nodes.Clear();
-            ObjectManager.ReleaseAll();
+            //ObjectManager.ReleaseAll();
 
             try
             {
@@ -116,7 +116,7 @@ namespace BF2Editor
                 // Load Weapon templates
                 await LoadTemplates("Weapons");
 
-                // Create a new log entry with parsing details
+                /* Create a new log entry with parsing details
                 LogEntry entry = new LogEntry()
                 {
                     Type = LogEntryType.Info,
@@ -129,9 +129,10 @@ namespace BF2Editor
                 // Append an empry entry (line break), and the Final message
                 Logger.Messages.Add(new LogEntry());
                 Logger.Messages.Add(entry);
+                */
 
                 // Update Loaded objects
-                ObjectsLoadedLabel.Text = ObjectManager.ObjectsCount.ToString();
+                //ObjectsLoadedLabel.Text = ObjectManager.ObjectsCount.ToString();
                 ErrorsStripButton.Enabled = Logger.Errors.Count > 0;
                 ErrorsStripButton.Text = Logger.Errors.Count + " Errors";
                 WarningsStripButton.Enabled = Logger.Warnings.Count > 0;
@@ -202,22 +203,30 @@ namespace BF2Editor
                         string file = Path.Combine(subdir, "ai", "Objects.ai");
                         if (File.Exists(file))
                         {
-                            cFile = await ScriptEngine.LoadFileAsync(file, true);
-                            if (cFile == null)
-                                continue;
+                            try
+                            {
+                                cFile = await ScriptEngine.LoadFileAsync(file, null);
+                                files.Add(AiFileType.Object, cFile);
+                            }
+                            catch
+                            {
 
-                            files.Add(AiFileType.Object, cFile);
+                            }
                         }
 
                         // Load the Weapons.ai file if we have one
                         file = Path.Combine(subdir, "ai", "Weapons.ai");
                         if (File.Exists(file))
                         {
-                            cFile = await ScriptEngine.LoadFileAsync(file, true);
-                            if (cFile == null)
-                                continue;
+                            try
+                            {
+                                cFile = await ScriptEngine.LoadFileAsync(file, null);
+                                files.Add(AiFileType.Weapon, cFile);
+                            }
+                            catch
+                            {
 
-                            files.Add(AiFileType.Weapon, cFile);
+                            }
                         }
 
                         // Add to tree view
@@ -551,21 +560,20 @@ namespace BF2Editor
         /// </summary>
         private async void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var obj = ObjectManager.GetObject<AiTemplate>("Ahe_Ah1z");
-            obj.SetValue("basicTemp", 300);
-            string formated = obj.File.ToFileFormat();
-            Clipboard.SetText(formated);
+            string formated;
 
             try {
+                Scope scope = new Scope();
+
                 string path = @"D:\Programming\C#\Projects\Bf2Editor\Bf2Editor\bin\Debug\Temp\Server Objects\bf2\Kits\US";
-                ConFile file = await ScriptEngine.LoadFileAsync(Path.Combine(path, "us_kits.con"));
+                ConFile file = await ScriptEngine.LoadFileAsync(Path.Combine(path, "us_kits.con"), scope);
                 formated = file.ToFileFormat();
                 Clipboard.SetText(formated);
 
-                ConFile file3 = await ScriptEngine.LoadFileAsync(Path.Combine(path, "us_common.con"));
+                ConFile file3 = await ScriptEngine.LoadFileAsync(Path.Combine(path, "us_common.con"), scope);
                 formated = file3.ToFileFormat();
 
-                ConFile file2 = await ScriptEngine.LoadFileAsync(Path.Combine(path, "US_Specops.con"));
+                ConFile file2 = await ScriptEngine.LoadFileAsync(Path.Combine(path, "US_Specops.con"), scope);
                 formated = file2.ToFileFormat();
                 Clipboard.SetText(formated);
             }

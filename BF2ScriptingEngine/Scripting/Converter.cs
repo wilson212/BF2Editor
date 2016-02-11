@@ -30,7 +30,9 @@ namespace BF2ScriptingEngine.Scripting
             // Check for variable or constant... names must begin with v_ or c_
             if (strValue.StartsWithAny("v_", "c_"))
             {
-                // Make sure the expression is defined!
+                // We use the File's expression reference and NOT the Scope, 
+                // because this object property could be created AFTER the inital 
+                // parse of the file
                 exp = property.Owner.File.GetExpressionReference(strValue, property);
                 Value = exp.Value;
             }

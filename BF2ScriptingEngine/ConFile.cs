@@ -29,6 +29,12 @@ namespace BF2ScriptingEngine
         public string FilePath { get; protected set; }
 
         /// <summary>
+        /// Gets the scope, in which the entries in this <see cref="ConFile"/>
+        /// will be parsed and used in.
+        /// </summary>
+        public Scope Scope { get; internal set; }
+
+        /// <summary>
         /// A list of found objects that were created in this Con file
         /// </summary>
         /// <remarks>Only objects created with the ".create" method are stored here!</remarks>
@@ -62,6 +68,11 @@ namespace BF2ScriptingEngine
         public List<ConFileEntry> Entries { get; protected set; }
 
         /// <summary>
+        /// Gets a list of Included files that were executed within this file
+        /// </summary>
+        public List<ConFile> ExecutedIncludes { get; internal set; }
+
+        /// <summary>
         /// Indicates whether this ConFile has finished parsing
         /// </summary>
         protected bool Finalized = false;
@@ -70,13 +81,27 @@ namespace BF2ScriptingEngine
         /// Creates a new instance of ConFile
         /// </summary>
         /// <param name="filePath">The complete file path to this con file.</param>
-        public ConFile(string filePath)
+        public ConFile(string filePath, Scope scope = null)
         {
+            // Instantiate internals
             FilePath = filePath;
+            Scope = scope ?? new Scope();
             Objects = new List<ConFileObject>();
             References = new List<ObjectReference>();
             Entries = new List<ConFileEntry>();
             Expressions = new Dictionary<string, List<Expression>>();
+            ExecutedIncludes = new List<ConFile>();
+
+            // Add arg definitions
+            Expression[] args = Scope.GetArguments();
+            if (args != null && args.Length > 0)
+            {
+                for (int i = 1; i <= args.Length; i++)
+                {
+                    Expressions[$"v_arg{i}"] = new List<Expression>() { args[i] };
+                    Entries.Add(args[i]);
+                }
+            }
         }
 
         /// <summary>
@@ -325,33 +350,6 @@ namespace BF2ScriptingEngine
             }
         }
 
-        internal void Finish()
-        {
-            // Check for unasigned values
-            foreach (var item in Expressions)
-            {
-                // If we just have a defining expression, with no value ever...
-                if (item.Value.Count == 1)
-                {
-                    Expression exp = (Expression)item.Value[0];
-                    if (String.IsNullOrWhiteSpace(exp.Value))
-                    {
-                        string prefix = (exp.Token.Kind == TokenType.Constant)
-                            ? "constant"
-                            : "variable";
-
-                        // Log as a warning
-                        Logger.Warning(
-                            $"The {prefix} \"{exp.Name}\" is never assigned a value.",
-                            this,
-                            exp.Token.Position
-                        );
-                    }
-                }
-            }
-
-            // WE parsed successfully
-            Finalized = true;
-        }
+        internal void Finish() => Finalized = true;
     }
 }

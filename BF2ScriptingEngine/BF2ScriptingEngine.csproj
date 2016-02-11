@@ -41,13 +41,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ExecuteInstruction.cs" />
     <Compile Include="Extensions\Enum.cs" />
     <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Extensions\IntExtensions.cs" />
     <Compile Include="Extensions\PropertyInfoExt.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="ObjectEqualityComparer.cs" />
-    <Compile Include="ObjectType.cs" />
+    <Compile Include="Scripting\RunStatement.cs" />
+    <Compile Include="TemplateType.cs" />
+    <Compile Include="Scope.cs" />
     <Compile Include="Scripting\Attributes\Comment.cs" />
     <Compile Include="Scripting\Attributes\Component.cs" />
     <Compile Include="Scripting\Attributes\ExistingObject.cs" />
@@ -57,6 +60,7 @@
     <Compile Include="Scripting\ConFileEntry.cs" />
     <Compile Include="Scripting\Converter.cs" />
     <Compile Include="Scripting\Enumerations\MapIconSize.cs" />
+    <Compile Include="Scripting\Enumerations\NetworkableInfo.cs" />
     <Compile Include="Scripting\Expression.cs" />
     <Compile Include="Scripting\GeometryTemplates\BundledMesh.cs" />
     <Compile Include="Scripting\Interfaces\IObjectPropertyCollection.cs" />
@@ -84,7 +88,6 @@
     <Compile Include="Scripting\Ai\AiBehaviourWeights.cs" />
     <Compile Include="Scripting\Ai\VehicleType.cs" />
     <Compile Include="ConFile.cs" />
-    <Compile Include="ObjectManager.cs" />
     <Compile Include="ScriptEngine.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Scripting\Enumerations\StrengthType.cs" />

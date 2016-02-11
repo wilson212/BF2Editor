@@ -41,6 +41,43 @@ namespace BF2ScriptingEngine.Scripting
         }
 
         /// <summary>
+        /// Performs tokenization on a non-tokenized input string with the specified patterns
+        /// </summary>
+        /// <param name="input">The input string we are trying to tokenize</param>
+        /// <param name="tokenExpressions">The expressions to use against the input string</param>
+        /// <exception cref="ArgumentException">
+        /// Thrown in the input string cannot be tokenized (unrecognized input)
+        /// </exception>
+        public static Token Tokenize(string input, KeyValuePair<TokenType, string>[] tokenExpressions)
+        {
+            Regex regex;
+
+            // Tokenize and add each token to the list of matched rules
+            foreach (KeyValuePair<TokenType, string> token in tokenExpressions)
+            {
+                // Create our regex and remove excess whitespace on our input
+                regex = new Regex(token.Value, RegexOptions.Multiline | RegexOptions.IgnoreCase);
+                string line = input.Trim();
+
+                // Check to see if we have a match
+                Match match = regex.Match(line);
+                if (match.Success)
+                {
+                    return new Token()
+                    {
+                        Match = match,
+                        Position = 0,
+                        Kind = token.Key,
+                        Value = line
+                    };
+                }
+            }
+
+            // We will never get here using ScriptEngine tokens!
+            throw new ArgumentException($"Unrecognized input \"{input}\"");
+        }
+
+        /// <summary>
         /// Performs tokenization of a collection of non-tokenized data parts with a specific pattern
         /// </summary>
         /// <param name="tokenKind">The name to give the located tokens</param>

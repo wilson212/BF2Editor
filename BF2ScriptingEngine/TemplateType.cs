@@ -1,6 +1,6 @@
 ﻿namespace BF2ScriptingEngine
 {
-    public enum ObjectType
+    public enum TemplateType
     {
         ObjectTemplate,
         WeaponTemplate,

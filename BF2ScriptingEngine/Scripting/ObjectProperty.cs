@@ -78,12 +78,12 @@ namespace BF2ScriptingEngine
                 {
                     // Is this a defined object?
                     string name = tokenArgs.Arguments.Last();
-                    bool existing = Property.GetCustomAttribute(typeof(ExistingObject)) != null;
-                    var type = ObjectManager.GetObjectType(PropertyType);
+                    //var type = ScriptEngine.GetTemplateType(PropertyType);
 
-                    if (existing && ObjectManager.ContainsObject(name, type))
+                    // Check for the object in this properties owner's Scope
+                    if (Token.File.Scope.ContainsObject(name, PropertyType))
                     {
-                        obj = ObjectManager.GetObject(name, type);
+                        obj = Token.File.Scope.GetObject(name, PropertyType, Token);
                         Argument = new ValueInfo<T>((T)(object)obj);
                     }
                     else

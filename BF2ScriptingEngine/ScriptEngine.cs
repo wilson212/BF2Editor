@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using BF2ScriptingEngine.Scripting;
@@ -24,7 +26,7 @@ namespace BF2ScriptingEngine
         /// that match an expression are removed from our source. As we get to the bottom
         /// of this array, the source will get smaller and smaller as we match our expressions.
         /// </remarks>
-        private static KeyValuePair<TokenType, string>[] TokenExpressions = new[]
+        internal static KeyValuePair<TokenType, string>[] TokenExpressions = new[]
         {
             // === Parse comments first, as somethings like objects and properties can be commented out === //
 
@@ -91,6 +93,22 @@ namespace BF2ScriptingEngine
         };
 
         /// <summary>
+        /// Gets a list of Assignable types for the GetObjectType method
+        /// </summary>
+        /// <remarks>
+        /// This list just contains what we can parse so far...
+        /// </remarks>
+        private static Dictionary<TemplateType, Type> AssignableTypes = new Dictionary<TemplateType, Type>()
+        {
+            { TemplateType.ObjectTemplate, typeof(ObjectTemplate) },
+            { TemplateType.WeaponTemplate, typeof(WeaponTemplate) },
+            { TemplateType.AiTemplate, typeof(AiTemplate) },
+            { TemplateType.AiTemplatePlugin, typeof(AiTemplatePlugin) },
+            { TemplateType.KitTemplate, typeof(KitTemplate) },
+            { TemplateType.GeometryTemplate, typeof(GeometryTemplate) },
+        };
+
+        /// <summary>
         /// Contains our list of spliting characters
         /// </summary>
         public static readonly char[] SplitChars = new char[] { ' ', '\t' };
@@ -100,17 +118,27 @@ namespace BF2ScriptingEngine
         /// </summary>
         private const string QUOTE = "\"";
 
+        internal static Assembly Assembly { get; set; }
+
+        static ScriptEngine()
+        {
+            Assembly = Assembly.GetExecutingAssembly();
+        }
+
         /// <summary>
         /// Loads a .con or .ai file, and converts the script objects into C# objects
         /// </summary>
         /// <param name="filePath">The path to the .con / .ai file</param>
         /// <returns></returns>
-        public static Task<ConFile> LoadFileAsync(string filePath, bool supressErrors = false)
+        public static Task<ConFile> LoadFileAsync(
+            string filePath, 
+            Scope scope = null, 
+            ExecuteInstruction runInstruction = ExecuteInstruction.Skip)
         {
-            return Task.Run(() =>
+            return Task.Run(async() =>
             {
                 // Create new ConFile contents
-                ConFile cFile = new ConFile(filePath);
+                ConFile cFile = new ConFile(filePath, scope);
                 Dictionary<int, string> fileContents = new Dictionary<int, string>();
                 int lineNum = 1;
 
@@ -124,24 +152,105 @@ namespace BF2ScriptingEngine
                     // While we can keep reading
                     while (!reader.EndOfStream)
                     {
-                        string line = reader.ReadLine();
+                        string line = await reader.ReadLineAsync();
                         fileContents.Add(lineNum++, line);
                     }
                 }
 
                 // Parse the contents of the Con / Ai file
-                try
-                {
-                    Execute(fileContents, cFile, true);
+                await ParseFileLines(fileContents, cFile, runInstruction);
 
-                    // Return the file
-                    return cFile;
-                }
-                catch when (supressErrors)
-                {
-                    return null;
-                }
+                // Return the file
+                return cFile;
             });
+        }
+
+        /// <summary>
+        /// Executes the the specified token on the specified scope
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="scope"></param>
+        public static void ExecuteInScope(Token token, Scope scope)
+        {
+            // create properties
+            TokenArgs tokenArgs;
+            ConFileObject currentObj;
+
+            switch (token.Kind)
+            {
+                case TokenType.ObjectStart:
+                case TokenType.ActiveSwitch:
+                    // Split line into function call followed by and arguments
+                    tokenArgs = GetTokenArgs(token.Value);
+                    token.TokenArgs = tokenArgs;
+
+                    // Fetch our object
+                    if (token.Kind == TokenType.ActiveSwitch)
+                    {
+                        currentObj = scope.GetObject(token);
+
+                        // Set as the active object
+                        scope.SetActiveObject(currentObj);
+                    }
+                    else
+                    {
+                        // Fetch our new working object.
+                        currentObj = CreateObject(token);
+                        scope.AddObject(currentObj, token);
+                    }
+                    break;
+                case TokenType.ObjectProperty:
+                    // Convert args to an object
+                    tokenArgs = GetTokenArgs(token.Value);
+                    token.TokenArgs = tokenArgs;
+
+                    // Get the last used object
+                    TemplateType type = GetTemplateType(tokenArgs.ReferenceName);
+                    currentObj = scope.GetActiveObject(type);
+
+                    // Make sure we have an object to work with and the object
+                    // reference matches our current working object
+                    if (currentObj == null)
+                    {
+                        // If we are here, we have an issue...
+                        string error = $"Failed to set property \"{tokenArgs.ReferenceName}.{tokenArgs.PropertyName}\""
+                            + ". No object reference set!";
+                        Logger.Error(error, token.File, token.Position);
+                        throw new Exception(error);
+                    }
+
+                    // Let the object parse its own lines...
+                    try
+                    {
+                        currentObj.Parse(token);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.Error(e.Message, token.File, token.Position, e);
+                        throw;
+                    }
+                    break;
+                case TokenType.RemComment:
+                case TokenType.BeginRem:
+                case TokenType.IfStart:
+                case TokenType.Run:
+                case TokenType.Include:
+                    break;
+                case TokenType.Constant:
+                case TokenType.Variable:
+                    Expression exp = new Expression(token);
+                    scope.Expressions[exp.Name] = exp;
+                    break;
+                case TokenType.None:
+                    // Throw error if the line is not empty
+                    if (!String.IsNullOrWhiteSpace(token.Value))
+                    {
+                        string message = $"Unable to parse file entry \"{token.Value}\" on line {token.Position}";
+                        Logger.Error(message, token.File, token.Position);
+                        throw new Exception(message);
+                    }
+                    break;
+            }
         }
 
         /// <summary>
@@ -149,11 +258,10 @@ namespace BF2ScriptingEngine
         /// </summary>
         /// <param name="fileContents">A dictionary of file contents [LineNumber => LineContents]</param>
         /// <param name="workingFile">A reference to the ConFile that contains the contents</param>
-        /// <param name="registerObjects">
-        /// Do we register the objects we find in the Globals? If true, then any objects found that are
-        /// already defined elsewhere will cause a <see cref="System.Exception"/> to be thrown.
-        /// </param>
-        public static void Execute(Dictionary<int, string> fileContents, ConFile workingFile, bool registerObjects)
+        internal static async Task ParseFileLines(
+            Dictionary<int, string> fileContents, 
+            ConFile workingFile, 
+            ExecuteInstruction run)
         {
             // ============
             // First we convert our confile lines into parsed tokens
@@ -168,40 +276,17 @@ namespace BF2ScriptingEngine
             // NOTE: Do not create object references for .Active and .safeActive
             // ============
             var Tokens = fileTokens.Where(x => x.Kind == TokenType.ObjectStart).OrderBy(x => x.Position);
-            foreach(Token Tkn in Tokens)
+            foreach (Token Tkn in Tokens)
             {
                 // Split line into function call followed by and arguments
-                tokenArgs = GetTokenArgs(Tkn.Value);
+                Tkn.TokenArgs = GetTokenArgs(Tkn.Value);
 
                 // Create the object template
-                ConFileObject template = CreateObjectType(tokenArgs, Tkn);
-                ObjectType oType = ObjectManager.GetObjectType(template);
+                ConFileObject template = CreateObject(Tkn);
 
-                // Do we register what we find?
-                if (registerObjects)
-                {
-                    // Make sure we are trying to create an object that isnt already created
-                    if (ObjectManager.ContainsObject(template.Name, oType))
-                    {
-                        // Fetch the object
-                        ConFileObject Obj = ObjectManager.GetObject(template.Name, oType);
-                        string message = "Object \"" + template.Name + "\" has already been Initialized. "
-                            + Environment.NewLine
-                            + "Original object file: "
-                            + Obj.File.FilePath
-                            + " [" + Obj.Tokens[0].Position + "]"; // 0 index is always the defining index
-                        Logger.Error(message, workingFile, Tkn.Position);
-                        throw new Exception(message);
-                    }
-
-                    // Finally, register the object with the ObjectManager
-                    ObjectManager.RegisterObject(template);
-                    Logger.Info($"Created {template.ReferenceName} \"{template.Name}\"", workingFile, Tkn.Position);
-                }
-                else
-                {
-                    Logger.Info($"Found {template.ReferenceName} \"{template.Name}\"", workingFile, Tkn.Position);
-                }
+                // Finally, register the object with the ObjectManager
+                workingFile.Scope.AddObject(template, Tkn);
+                Logger.Info($"Created {template.ReferenceName} \"{template.Name}\"", workingFile, Tkn.Position);
             }
 
             // ============
@@ -212,163 +297,175 @@ namespace BF2ScriptingEngine
             // Create our needed objects
             RemComment comment = null;
             ConFileObject currentObj = null;
-            ObjectType type;
-            Dictionary<ObjectType, ConFileObject> lastObj = new Dictionary<ObjectType, ConFileObject>();
-            StringBuilder builder = new StringBuilder();
-            StringComparison Comparer = StringComparison.InvariantCultureIgnoreCase;
+            TemplateType type;
+            var builder = new StringBuilder();
 
             // We use a for loop here so we can skip rem blocks and statements
             for (int i = 0; i < fileTokens.Length; i++)
             {
                 // Grab token value
                 Token token = fileTokens[i];
-                switch (token.Kind)
+                try
                 {
-                    case TokenType.ObjectStart:
-                    case TokenType.ActiveSwitch:
-                        // Split line into function call followed by and arguments
-                        tokenArgs = GetTokenArgs(token.Value);
-                        token.TokenArgs = tokenArgs;
-                        token.Comment = comment;
+                    switch (token.Kind)
+                    {
+                        case TokenType.ObjectStart:
+                        case TokenType.ActiveSwitch:
+                            // Split line into function call followed by and arguments
+                            token.TokenArgs = GetTokenArgs(token.Value);
+                            //token.Comment = comment;
 
-                        // Fetch the object
-                        type = ObjectManager.GetObjectType(tokenArgs.ReferenceName, workingFile, token.Position);
-                        string objName = tokenArgs.Arguments.Last();
+                            // NOTE: the object was created before this loop!
+                            currentObj = workingFile.Scope.GetObject(token);
+                            workingFile.Scope.SetActiveObject(currentObj);
 
-                        // Ensure our new working object has been referenced
-                        if (!ObjectManager.ContainsObject(objName, type))
-                        {
-                            string error = $"Failed to load un-initialized object \"{objName}\"";
-                            Logger.Error(error, workingFile, token.Position);
-                            throw new Exception(error);
-                        }
+                            // === Objects are already added to the working file before hand === //
+                            // Add object reference to file
+                            workingFile.AddEntry(currentObj, token);
 
-                        // Fetch our new working object.
-                        currentObj = ObjectManager.GetObject(objName, type);
+                            // Reset comment
+                            comment = null;
 
-                        // === Objects are already added to the working file before hand === //
-                        // Add object reference to file
-                        workingFile.AddEntry(currentObj, token);
+                            // Log
+                            Logger.Info($"Loading object properties for \"{currentObj.Name}\"",
+                                workingFile, token.Position
+                            );
+                            break;
+                        case TokenType.ObjectProperty:
+                            // Convert args to an object
+                            tokenArgs = GetTokenArgs(token.Value);
+                            token.TokenArgs = tokenArgs;
+                            //token.Comment = comment;
 
-                        // Set last loaded object
-                        lastObj[type] = currentObj;
+                            // Get the last used object
+                            type = GetTemplateType(tokenArgs.ReferenceName);
+                            currentObj = workingFile.Scope.GetActiveObject(type);
 
-                        // Reset comment
-                        comment = null;
-
-                        // Log
-                        Logger.Info($"Loading object properties for \"{objName}\"",
-                            workingFile, token.Position
-                        );
-                        break;
-                    case TokenType.ObjectProperty:
-                        // Convert args to an object
-                        tokenArgs = GetTokenArgs(token.Value);
-                        token.TokenArgs = tokenArgs;
-                        token.Comment = comment;
-
-                        // Make sure we have an object to work with and the object
-                        // reference matches our current working object
-                        if (currentObj == null || !currentObj.ReferenceName.Equals(tokenArgs.ReferenceName, Comparer))
-                        {
-                            // ============
-                            // If the object type does not match our current object type, and we didnt use a 
-                            // .Active or .Create command, then we must be referencing an already defined object
-                            // of a different type (IE: switching from ObjectTemplate to GeometryTemplate)
-                            // ============
-                            type = ObjectManager.GetObjectType(tokenArgs.ReferenceName);
-                            if (lastObj.ContainsKey(type))
-                            {
-                                // switch the last active object of this type
-                                currentObj = lastObj[type];
-                            }
-                            else
+                            // Make sure we have an object to work with and the object
+                            // reference matches our current working object
+                            if (currentObj == null)
                             {
                                 // If we are here, we have an issue...
                                 string error = $"Failed to set property \"{tokenArgs.ReferenceName}.{tokenArgs.PropertyName}\""
                                     + ". No object reference set!";
-                                Logger.Error(error, workingFile, token.Position);
                                 throw new Exception(error);
                             }
-                        }
 
-                        // Let the object parse its own lines...
-                        try
-                        {
-                            currentObj.Parse(token);
+                            // Let the object parse its own lines...
+                            try
+                            {
+                                currentObj.Parse(token);
 
-                            // Ensure comment is null
-                            comment = null;
-                        }
-                        catch (Exception e)
-                        {
-                            Logger.Error(e.Message, workingFile, token.Position, e);
-                            ObjectManager.ReleaseAll(workingFile);
-                            throw;
-                        }
-                        break;
-                    case TokenType.RemComment:
-                        // Create a new comment if we need to
-                        if (comment == null)
-                        {
-                            comment = new RemComment(token);
-                        }
+                                // Ensure comment is null
+                                comment = null;
+                            }
+                            catch (Exception e)
+                            {
+                                Logger.Error(e.Message, workingFile, token.Position, e);
+                                throw;
+                            }
+                            break;
+                        case TokenType.RemComment:
+                            // Create a new comment if we need to
+                            if (comment == null)
+                            {
+                                comment = new RemComment(token);
+                            }
 
-                        // Add comment to the current string
-                        comment.AppendLine(token.Value);
-                        break;
-                    case TokenType.BeginRem:
-                        RemComment rem = new RemComment(token);
-                        rem.IsRemBlock = true;
+                            // Add comment to the current string
+                            comment.AppendLine(token.Value);
+                            break;
+                        case TokenType.BeginRem:
+                            RemComment rem = new RemComment(token);
+                            rem.IsRemBlock = true;
 
-                        // Skip every line until we get to the endRem
-                        i = ScopeUntil(TokenType.EndRem, fileTokens, i, builder);
+                            // Skip every line until we get to the endRem
+                            i = ScopeUntil(TokenType.EndRem, fileTokens, i, builder);
 
-                        // Set rem value
-                        rem.Value = builder.ToString().TrimEnd();
-                        workingFile.AddEntry(rem, rem.Token);
-
-                        // Clear the string builder
-                        builder.Clear();
-                        break;
-                    case TokenType.IfStart:
-                    case TokenType.Run:
-                    case TokenType.Include:
-                        Statement statement = new Statement(token);
-                        if (token.Kind == TokenType.IfStart)
-                        {
-                            // Skip every line until we get to the endIf
-                            i = ScopeUntil(TokenType.EndIf, fileTokens, i, builder);
+                            // Set rem value
+                            rem.Value = builder.ToString().TrimEnd();
+                            workingFile.AddEntry(rem, rem.Token);
 
                             // Clear the string builder
-                            statement.Token.Value = builder.ToString().TrimEnd();
                             builder.Clear();
-                        }
+                            break;
+                        case TokenType.IfStart:
+                            Statement statement = new Statement(token);
+                            if (token.Kind == TokenType.IfStart)
+                            {
+                                // Skip every line until we get to the endIf
+                                i = ScopeUntil(TokenType.EndIf, fileTokens, i, builder);
 
-                        // Add entry
-                        workingFile.AddEntry(statement, statement.Token);
-                        break;
-                    case TokenType.Constant:
-                    case TokenType.Variable:
-                        Expression exp = new Expression(token);
-                        workingFile.AddEntry(exp, exp.Token);
-                        break;
-                    case TokenType.None:
-                        // Dont attach comment to a property if we have an empty line here
-                        if (comment != null)
-                        {
-                            workingFile.AddEntry(comment, comment.Token);
-                            comment = null;
-                        }
+                                // Clear the string builder
+                                statement.Token.Value = builder.ToString().TrimEnd();
+                                builder.Clear();
+                            }
 
-                        // Throw error if the line is not empty
-                        if (!String.IsNullOrWhiteSpace(token.Value))
-                        {
-                            string message = $"Unable to parse file entry \"{token.Value}\" on line {token.Position}";
-                            Logger.Error(message, workingFile, token.Position);
-                            throw new Exception(message);
-                        }
-                        break;
+                            // Add entry
+                            workingFile.AddEntry(statement, statement.Token);
+                            break;
+                        case TokenType.Run:
+                        case TokenType.Include:
+                            // Just add to as a string
+                            RunStatement stmt = new RunStatement(token);
+                            workingFile.AddEntry(stmt, stmt.Token);
+
+                            // Do we execute the statement?
+                            if (run == ExecuteInstruction.Skip)
+                                continue;
+
+                            // Create new scope for execution
+                            Scope scp = workingFile.Scope;
+
+                            // Are we executing in a new scope?
+                            if (run == ExecuteInstruction.ExecuteInNewScope)
+                            {
+                                // For now, we just inherit the parent scope type
+                                scp = new Scope(workingFile.Scope, workingFile.Scope.ScopeType);
+                                scp.MissingObjectHandling = MissingObjectHandling.CheckParent;
+                            }
+
+                            // Get the filepath
+                            string filePath = Path.GetDirectoryName(workingFile.FilePath);
+                            string fileName = Path.Combine(filePath, stmt.FileName);
+
+                            // Define file arguments
+                            scp.SetArguments(stmt.Arguments);
+
+                            // Load the file
+                            ConFile include = await LoadFileAsync(fileName, scp, run);
+                            workingFile.ExecutedIncludes.Add(include);
+                            break;
+                        case TokenType.Constant:
+                        case TokenType.Variable:
+                            // Set the new expression reference in Scope
+                            Expression exp = new Expression(token);
+                            workingFile.Scope.Expressions[exp.Name] = exp;
+
+                            // Add expression to the confile as well
+                            workingFile.AddEntry(exp, exp.Token);
+                            break;
+                        case TokenType.None:
+                            // Dont attach comment to a property if we have an empty line here
+                            if (comment != null)
+                            {
+                                workingFile.AddEntry(comment, comment.Token);
+                                comment = null;
+                            }
+
+                            // Throw error if the line is not empty
+                            if (!String.IsNullOrWhiteSpace(token.Value))
+                            {
+                                string message = $"Unable to parse file entry \"{token.Value}\" on line {token.Position}";
+                                throw new Exception(message);
+                            }
+                            break;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Logger.Error(e.Message, token.File, token.Position, e);
+                    throw;
                 }
             }
 
@@ -504,22 +601,88 @@ namespace BF2ScriptingEngine
         /// <param name="tokenArgs">The token arguments that make up the create command line</param>
         /// <param name="Tkn">The token object from the <see cref="Tokenizer"/></param>
         /// <returns></returns>
-        private static ConFileObject CreateObjectType(TokenArgs tokenArgs, Token Tkn)
+        internal static ConFileObject CreateObject(Token Tkn)
         {
-            switch (tokenArgs.ReferenceName.ToLowerInvariant())
+            TokenArgs tokenArgs = Tkn.TokenArgs;
+            var type = GetTemplateType(tokenArgs.ReferenceName, Tkn.File, Tkn.Position);
+
+            switch (type)
             {
-                case "aitemplate": return AiTemplate.Create(tokenArgs, Tkn);
-                case "aitemplateplugin": return AiTemplatePlugin.Create(tokenArgs, Tkn);
-                case "weapontemplate": return WeaponTemplate.Create(tokenArgs, Tkn);
-                case "objecttemplate": return ObjectTemplate.Create(tokenArgs, Tkn);
-                case "kittemplate": return KitTemplate.Create(tokenArgs, Tkn);
-                case "geometrytemplate": return GeometryTemplate.Create(tokenArgs, Tkn);
-                case "aisettings":
+                case TemplateType.AiTemplate: return AiTemplate.Create(tokenArgs, Tkn);
+                case TemplateType.AiTemplatePlugin: return AiTemplatePlugin.Create(tokenArgs, Tkn);
+                case TemplateType.WeaponTemplate: return WeaponTemplate.Create(tokenArgs, Tkn);
+                case TemplateType.ObjectTemplate: return ObjectTemplate.Create(tokenArgs, Tkn);
+                case TemplateType.KitTemplate: return KitTemplate.Create(tokenArgs, Tkn);
+                case TemplateType.GeometryTemplate: return GeometryTemplate.Create(tokenArgs, Tkn);
                 default:
                     string error = $"Reference call to '{tokenArgs.ReferenceName}' is not supported";
                     Logger.Error(error, Tkn.File, Tkn.Position);
                     throw new NotSupportedException(error);
             }
+        }
+
+        /// <summary>
+        /// This method analysis a <see cref="ConFileObject"/> and returns
+        /// the <see cref="TemplateType"/> representation of the object.
+        /// </summary>
+        /// <param name="obj"></param>
+        public static TemplateType GetTemplateType(ConFileObject obj)
+        {
+            return GetTemplateType(obj.ReferenceName, obj.File, obj.Tokens[0]?.Position ?? 0);
+        }
+
+        /// <summary>
+        /// This method analysis a <see cref="ConFileObject.ReferenceName"/> and returns
+        /// the <see cref="TemplateType"/> representation of the object.
+        /// </summary>
+        /// <param name="referenceName">The reference string used to call upon this type of object</param>
+        public static TemplateType GetTemplateType(string referenceName)
+        {
+            TemplateType type;
+            if (!Enum.TryParse<TemplateType>(referenceName, true, out type))
+            {
+                string error = $"No TemplateType definition for \"{referenceName}\"";
+                throw new Exception(error);
+            }
+
+            return type;
+        }
+
+        /// <summary>
+        /// This method analysis a <see cref="ConFileObject.ReferenceName"/> and returns
+        /// the <see cref="TemplateType"/> representation of the object.
+        /// </summary>
+        /// <param name="referenceName">The reference string used to call upon this type of object</param>
+        /// <param name="file">Used in the <see cref="ScriptEngine"/></param>
+        /// <param name="line">Used in the <see cref="ScriptEngine"/></param>
+        public static TemplateType GetTemplateType(string referenceName, ConFile file, int line)
+        {
+            TemplateType type;
+            if (!Enum.TryParse<TemplateType>(referenceName, true, out type))
+            {
+                string error = $"No TemplateType definition for \"{referenceName}\"";
+                Logger.Error(error, file, line);
+                throw new Exception(error);
+            }
+
+            return type;
+        }
+
+        /// <summary>
+        /// This method returns the <see cref="TemplateType"/> representation
+        /// of the supplied confile object type
+        /// </summary>
+        /// <param name="objType">The derived <see cref="ConFileObject"/> type.</param>
+        /// <returns></returns>
+        public static TemplateType GetTemplateType(Type objType)
+        {
+            foreach (KeyValuePair<TemplateType, Type> item in AssignableTypes)
+            {
+                if (item.Value.IsAssignableFrom(objType))
+                    return item.Key;
+            }
+
+            throw new Exception("Invalid template type: " + objType.Name);
         }
     }
 }

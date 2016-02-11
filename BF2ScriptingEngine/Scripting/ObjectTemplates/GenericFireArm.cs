@@ -4,10 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BF2ScriptingEngine.Scripting.Objects
+namespace BF2ScriptingEngine.Scripting
 {
-    public class GenericFireArm // : ObjectTemplate
+    public class GenericFireArm : ObjectTemplate
     {
-        
+        public GenericFireArm(string Name, Token Token) : base(Name, Token) { }
     }
 }
