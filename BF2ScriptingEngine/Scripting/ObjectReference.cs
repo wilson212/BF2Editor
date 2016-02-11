@@ -11,7 +11,7 @@ namespace BF2ScriptingEngine.Scripting
         /// <summary>
         /// Gets the Object reference name (Ex: ObjectTemplate, weaponTempalte etc etc)
         /// </summary>
-        public string ReferenceName => Token.TokenArgs.ReferenceName;
+        public string ReferenceName => Token.TokenArgs.TemplateName;
 
         /// <summary>
         /// Gets the <see cref="ConFileObject"/> that this reference points to.

@@ -168,7 +168,7 @@ namespace BF2ScriptingEngine
             if (ContainsObject(key))
             {
                 // Log warning
-                string err = $"Object \"{obj.Name}\" is already defined, switching to existing reference";
+                string err = $"Object \"{obj.Name}\" is already defined, Setting existing one as active";
                 Logger.Warning(err, token.File, token.Position);
 
                 // Get existing reference
@@ -266,7 +266,7 @@ namespace BF2ScriptingEngine
             string name = token.TokenArgs.Arguments.Last();
 
             // Create our Objects key
-            var type = ScriptEngine.GetTemplateType(tokenArgs.ReferenceName);
+            var type = ScriptEngine.GetTemplateType(tokenArgs.TemplateName);
             var key = new Tuple<string, TemplateType>(name, type);
             return GetObject(key, token);
         }

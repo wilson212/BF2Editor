@@ -22,11 +22,6 @@ namespace BF2ScriptingEngine.Scripting
         public static readonly char[] SplitChars = new char[] { ' ', '\t' };
 
         /// <summary>
-        /// A quote
-        /// </summary>
-        private const string QUOTE = "\"";
-
-        /// <summary>
         /// Gets the filename that this Run command will execute
         /// </summary>
         public string FileName { get; internal set; }
@@ -41,53 +36,16 @@ namespace BF2ScriptingEngine.Scripting
             // Load token args
             // Begin our array builder
             TokenArgs tokenArgs = new TokenArgs();
-            List<string> args = new List<string>();
 
             // Split the line after the reference call into arguments
-            string[] parts = token.Value.Split(SplitChars, StringSplitOptions.RemoveEmptyEntries);
+            string[] parts = token.Value.SplitWithQuotes(SplitChars, true);
 
             // Skip Run/Include
             parts = parts.Skip(1).ToArray();
 
-            // Fix Quotes
-            StringBuilder builder = new StringBuilder();
-            bool inQuote = false;
-            foreach (string part in parts)
-            {
-                if (!inQuote && part.StartsWith(QUOTE))
-                {
-                    if (part.EndsWith(QUOTE))
-                    {
-                        builder.Append($"{part}");
-
-                        // Add the final quoted string as a single part
-                        args.Add(builder.ToString());
-                        builder.Clear();
-                    }
-                    else
-                    {
-                        inQuote = true;
-                        builder.Append($"{part} ");
-                    }
-                }
-                else if (inQuote && part.EndsWith(QUOTE))
-                {
-                    inQuote = false;
-                    builder.Append($"{part}");
-
-                    // Add the final quoted string as a single part
-                    args.Add(builder.ToString());
-                    builder.Clear();
-                }
-                else
-                {
-                    args.Add(part);
-                }
-            }
-
             // Set internals
-            FileName = args[0];
-            Arguments = args.Skip(1).ToArray();
+            FileName = parts[0];
+            Arguments = parts.Skip(1).ToArray();
         }
     }
 }

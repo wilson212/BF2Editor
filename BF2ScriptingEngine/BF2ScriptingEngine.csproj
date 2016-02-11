@@ -42,10 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ExecuteInstruction.cs" />
-    <Compile Include="Extensions\Enum.cs" />
-    <Compile Include="Extensions\EnumerableExtensions.cs" />
     <Compile Include="Extensions\IntExtensions.cs" />
-    <Compile Include="Extensions\PropertyInfoExt.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="ObjectEqualityComparer.cs" />
     <Compile Include="Scripting\RunStatement.cs" />
@@ -53,7 +50,6 @@
     <Compile Include="Scope.cs" />
     <Compile Include="Scripting\Attributes\Comment.cs" />
     <Compile Include="Scripting\Attributes\Component.cs" />
-    <Compile Include="Scripting\Attributes\ExistingObject.cs" />
     <Compile Include="Scripting\Attributes\Quoted.cs" />
     <Compile Include="Scripting\BaseTemplates\GeometryTemplate.cs" />
     <Compile Include="Scripting\ChildTemplate.cs" />

@@ -7,40 +7,33 @@ using System.Threading.Tasks;
 namespace BF2ScriptingEngine.Scripting
 {
     /// <summary>
-    /// This class represents an <see cref="System.Action"/> and 
-    /// <see cref="Func{String}"/> to perform whenever an object 
-    /// method call is found within a <see cref="ConFile"/>
+    /// This class represents an <see cref="Func{Token, ConFileEntry}"/> 
+    /// to perform whenever an object method call is found 
+    /// within a <see cref="ConFile"/>
     /// </summary>
     /// <typeparam name="T">The first method argument's type</typeparam>
     public class ObjectMethod<T> : ObjectMethod
     {
-        protected Func<Token, string> Format;
-        protected Action<Token, T> Action;
+        /// <summary>
+        /// The Func<> to perform when invoked
+        /// </summary>
+        protected Func<Token, T, ConFileEntry> Method;
 
         /// <summary>
         /// Creates a new instance of <see cref="ObjectMethod{T}"/>.
         /// </summary>
-        /// <param name="action">The <see cref="System.Action"/> to perform when this method is called when 
-        /// parsing the <see cref="ConFileObject"/></param>
-        /// <param name="format">The method to invoke when converting this <see cref="ObjectMethod"/>
+        /// <param name="method">The method to invoke when converting this <see cref="ObjectMethod"/>
         /// back to file format, if any</param>
-        /// <remarks>The get method can be null, however the set method cannot be!</remarks>
-        /// <exception cref="ArgumentNullException">Thrown if the <paramref name="action"/> Action is null</exception>
-        public ObjectMethod(Action<Token, T> action, Func<Token, string> format = null)
+        public ObjectMethod(Func<Token, T, ConFileEntry> method)
         {
-            // We at least need a setter
-            if (action == null)
-                throw new ArgumentNullException("action");
-
-            Format = format;
-            Action = action;
+            Method = method;
         }
 
         /// <summary>
-        /// Invokes the underlying <see cref="Action{T}"/>
+        /// Invokes the underlying <see cref="Func{Token, T, ConFileEntry}"/>
         /// </summary>
         /// <param name="token"></param>
-        public override void Invoke(Token token)
+        public override ConFileEntry Invoke(Token token)
         {
             // Shorten this down a bit
             string[] values = token.TokenArgs.Arguments;
@@ -48,30 +41,22 @@ namespace BF2ScriptingEngine.Scripting
             // Ensure the length is correct
             if (token.TokenArgs.Arguments.Length != 1)
             {
-                string error = $"Invalid values count for {token.TokenArgs.ReferenceName}; Got {values.Length}, Expecting 1.";
+                string error = $"Invalid values count for {token.TokenArgs.TemplateName}; Got {values.Length}, Expecting 1.";
                 Logger.Error(error, token.File, token.Position);
                 throw new Exception(error);
             }
 
             // Invoke the method
-            Action.Invoke(token, Converter.ConvertValue<T>(values[0], typeof(T)));
-        }
-
-        /// <summary>
-        /// Invokes the underlying <see cref="Func{T, String}"/> if set.
-        /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        public override string ToFileFormat(Token token)
-        {
-            return (Format == null) ? null : Format.Invoke(token);
+            return Method.Invoke(token, Converter.ConvertValue<T>(values[0], typeof(T)));
         }
     }
 
     public class ObjectMethod<T1, T2, T3, T4> : ObjectMethod
     {
-        protected Func<Token, string> Format;
-        protected Action<Token, T1, T2, T3, T4> Action;
+        /// <summary>
+        /// The Func<> to perform when invoked
+        /// </summary>
+        protected Func<Token, T1, T2, T3, T4, ConFileEntry> Method;
 
         /// <summary>
         /// Creates a new instance of <see cref="ObjectMethod{T1, T2, T3, T4}"/>.
@@ -82,21 +67,16 @@ namespace BF2ScriptingEngine.Scripting
         /// back to file format, if any</param>
         /// <remarks>The get method can be null, however the set method cannot be!</remarks>
         /// <exception cref="ArgumentNullException">Thrown if the <paramref name="action"/> Action is null</exception>
-        public ObjectMethod(Action<Token, T1, T2, T3, T4> action, Func<Token, string> format = null)
+        public ObjectMethod(Func<Token, T1, T2, T3, T4, ConFileEntry> method)
         {
-            // We at least need a setter
-            if (action == null)
-                throw new ArgumentNullException("action");
-
-            Format = format;
-            Action = action;
+            Method = method;
         }
 
         /// <summary>
         /// Invokes the underlying <see cref="Action{T1, T2, T3, T4}"/>
         /// </summary>
         /// <param name="token"></param>
-        public override void Invoke(Token token)
+        public override ConFileEntry Invoke(Token token)
         {
             // Shorten this down a bit
             string[] values = token.TokenArgs.Arguments;
@@ -104,36 +84,25 @@ namespace BF2ScriptingEngine.Scripting
             // Ensure the length is correct
             if (token.TokenArgs.Arguments.Length != 4)
             {
-                string error = $"Invalid values count for {token.TokenArgs.ReferenceName}; Got {values.Length}, Expecting 4.";
+                string error = $"Invalid values count for {token.TokenArgs.TemplateName}; Got {values.Length}, Expecting 4.";
                 Logger.Error(error, token.File, token.Position);
                 throw new Exception(error);
             }
 
             // Invoke the method
-            Action.Invoke(
-                token, 
+            return Method.Invoke(token, 
                 Converter.ConvertValue<T1>(values[0], typeof(T1)),
                 Converter.ConvertValue<T2>(values[1], typeof(T2)),
                 Converter.ConvertValue<T3>(values[2], typeof(T3)),
                 Converter.ConvertValue<T4>(values[3], typeof(T4))
             );
         }
-
-        /// <summary>
-        /// Invokes the underlying <see cref="Func{T, String}"/> if set.
-        /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
-        public override string ToFileFormat(Token token)
-        {
-            return (Format == null) ? null : Format.Invoke(token);
-        }
     }
 
     /// <summary>
-    /// This class represents an <see cref="Action"/> and 
-    /// <see cref="Func{String}"/> to perform whenever an object 
-    /// method call is found within a <see cref="ConFile"/>
+    /// This class represents a <see cref="Func{Token, ConFileEntry}"/> 
+    /// to perform whenever an object method call is found within 
+    /// a <see cref="ConFile"/>
     /// </summary>
     /// <remarks>
     /// Objects that derive from this type will be used to tie in 
@@ -145,18 +114,10 @@ namespace BF2ScriptingEngine.Scripting
     public abstract class ObjectMethod
     {
         /// <summary>
-        /// Invokes an <see cref="Action"/> from a derived class.
+        /// Invokes an <see cref="Func{ConFileEntry}"/> from a derived class.
         /// </summary>
         /// <param name="token">The token of which this call is made from</param>
         /// <param name="arguments"></param>
-        public abstract void Invoke(Token token);
-
-        /// <summary>
-        /// Converts this method call into file format, or null if no 
-        /// <see cref="Func{String}"/> was supplied.
-        /// </summary>
-        /// <param name="token">The token to get the Reference call from</param>
-        /// <returns></returns>
-        public abstract string ToFileFormat(Token token);
+        public abstract ConFileEntry Invoke(Token token);
     }
 }

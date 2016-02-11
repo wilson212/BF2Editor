@@ -6,27 +6,48 @@ namespace BF2ScriptingEngine.Scripting.Components
 {
     public class VehicleHud : ObjectTemplate, IComponent
     {
+        /// <summary>
+        /// Gets or Sets what the vehicle will be called in the Hud.
+        /// </summary>
         [PropertyName("hudName"), Quoted]
         public ObjectProperty<string> HudName { get; set; }
 
+        /// <summary>
+        /// Hud graphics information.
+        /// </summary>
         [PropertyName("miniMapIcon"), Quoted]
         public ObjectProperty<string> MiniMapIcon { get; set; }
 
+        /// <summary>
+        /// Hud graphics information.
+        /// </summary>
         [PropertyName("miniMapIconLeaderSize")]
         public ObjectProperty<MapIconSize> MiniMapIconLeaderSize { get; set; }
 
         [PropertyName("usePlayerIcon"), Quoted]
         public ObjectProperty<bool> UsePlayerIcon { get; set; }
 
+        /// <summary>
+        /// Hud graphics information.
+        /// </summary>
         [PropertyName("vehicleIcon"), Quoted]
         public ObjectProperty<string> VehicleIcon { get; set; }
 
+        /// <summary>
+        /// Hud graphics information.
+        /// </summary>
         [PropertyName("vehicleIconPos")]
         public ObjectProperty<string> VehicleIconPos { get; set; }
 
+        /// <summary>
+        /// Hud graphics information.
+        /// </summary>
         [PropertyName("abilityIcon"), Quoted]
         public ObjectProperty<string> AbilityIcon { get; set; }
 
+        /// <summary>
+        /// Hud graphics information.
+        /// </summary>
         [PropertyName("spottedIcon"), Quoted]
         public ObjectProperty<string> SpottedIcon { get; set; }
 

@@ -143,7 +143,11 @@ namespace BF2ScriptingEngine.Scripting
             {
                 // Object methods are always instantiated in the object's constructor
                 ObjectMethod method = (ObjectMethod)value;
-                method.Invoke(token);
+                ConFileEntry item = method.Invoke(token);
+
+                // Add item to the file entry list
+                if (item != null)
+                    token.File.AddEntry(item, token);
             }
             else
             {
@@ -196,7 +200,7 @@ namespace BF2ScriptingEngine.Scripting
                 TokenArgs args = new TokenArgs()
                 {
                     PropertyName = propertyName,
-                    ReferenceName = this.ReferenceName,
+                    TemplateName = this.ReferenceName,
                 };
                 Token token = Token.Create(TokenType.ObjectProperty, args, File);
 

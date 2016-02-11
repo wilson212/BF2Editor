@@ -17,11 +17,14 @@ namespace BF2ScriptingEngine.Scripting
         /// <summary>
         /// This property is valid for only the debug version of the game engine.
         /// </summary>
+        /// <remarks>
+        /// The root object in the hierarchy should have this as true
+        /// </remarks>
         [PropertyName("saveInSeparateFile", 1)]
         public ObjectProperty<bool> SaveInSeparateFile { get; internal set; }
 
         /// <summary>
-        /// Gets the creator of this object
+        /// Last person to save the tweaks file.
         /// </summary>
         [PropertyName("creator", 2)]
         public ObjectProperty<string> CreatedBy { get; internal set; }
@@ -48,7 +51,7 @@ namespace BF2ScriptingEngine.Scripting
         public ObjectProperty<bool> NotInGrid { get; internal set; }
 
         /// <summary>
-        /// 
+        /// Should be true if object or part does not have a visible mesh.
         /// </summary>
         [PropertyName("createdInEditor", 21)]
         public ObjectProperty<bool> CreatedInEditor { get; internal set; }
@@ -66,7 +69,7 @@ namespace BF2ScriptingEngine.Scripting
         /// <summary>
         /// Gets or Sets the named geometry object
         /// </summary>
-        [PropertyName("geometry", 40), ExistingObject]
+        [PropertyName("geometry", 40)]
         public virtual ObjectProperty<GeometryTemplate> Geometry { get; internal set; }
 
         /// <summary>
@@ -145,9 +148,9 @@ namespace BF2ScriptingEngine.Scripting
         public ObjectTemplate(string Name, Token Token) : base(Name, "ObjectTemplate", Token)
         {
             // === Create method instances
-            CreateComponent = new ObjectMethod<string>(Action_CreateComponent);
-            SetPosition = new ObjectMethod<string>(Action_SetPosition);
-            SetRotation = new ObjectMethod<string>(Action_SetRotation);
+            CreateComponent = new ObjectMethod<string>(Method_CreateComponent);
+            SetPosition = new ObjectMethod<string>(Method_SetPosition);
+            SetRotation = new ObjectMethod<string>(Method_SetRotation);
             // ===
 
             // Grab this derived type information
@@ -185,7 +188,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </summary>
         /// <param name="token"></param>
         /// <param name="comment"></param>
-        public virtual void Action_CreateComponent(Token token, string name)
+        public virtual ConFileEntry Method_CreateComponent(Token token, string name)
         {
             Type type = this.GetType();
 
@@ -218,8 +221,8 @@ namespace BF2ScriptingEngine.Scripting
             // Set value of this.{name}
             property.SetValue(this, objProperty);
 
-            // Add component to file entries
-            token.File.AddEntry(objProperty, token);
+            // Add component to file entries by returning it
+            return objProperty;
         }
 
         /// <summary>
@@ -231,7 +234,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </remarks>
         /// <param name="token"></param>
         /// <param name="arg1"></param>
-        private void Action_SetPosition(Token token, string arg1 = "0/0/0")
+        private ConFileEntry Method_SetPosition(Token token, string arg1 = "0/0/0")
         {
             // Ensure that we have a child template to set the position on
             ChildTemplate item = Templates?.Value?.Last();
@@ -252,6 +255,9 @@ namespace BF2ScriptingEngine.Scripting
 
             // Set the new value
             item.SetPosition.SetValue(token);
+
+            // Don't create an entry!
+            return null;
         }
 
         /// <summary>
@@ -266,7 +272,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </remarks>
         /// <param name="token"></param>
         /// <param name="arg1"></param>
-        private void Action_SetRotation(Token token, string arg1 = "0/0/0")
+        private ConFileEntry Method_SetRotation(Token token, string arg1 = "0/0/0")
         {
             // Ensure that we have a child template
             ChildTemplate item = Templates?.Value?.Last();
@@ -287,6 +293,9 @@ namespace BF2ScriptingEngine.Scripting
 
             // Set the new value
             item.SetRotation.SetValue(token);
+
+            // Don't create an entry!
+            return null;
         }
 
         #endregion

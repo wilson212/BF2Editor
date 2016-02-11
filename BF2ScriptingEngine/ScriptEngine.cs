@@ -109,60 +109,53 @@ namespace BF2ScriptingEngine
         };
 
         /// <summary>
-        /// Contains our list of spliting characters
+        /// Gets a list of characters used to split a confile line into arguments
         /// </summary>
         public static readonly char[] SplitChars = new char[] { ' ', '\t' };
-
-        /// <summary>
-        /// A quote
-        /// </summary>
-        private const string QUOTE = "\"";
-
-        internal static Assembly Assembly { get; set; }
-
-        static ScriptEngine()
-        {
-            Assembly = Assembly.GetExecutingAssembly();
-        }
 
         /// <summary>
         /// Loads a .con or .ai file, and converts the script objects into C# objects
         /// </summary>
         /// <param name="filePath">The path to the .con / .ai file</param>
-        /// <returns></returns>
-        public static Task<ConFile> LoadFileAsync(
-            string filePath, 
-            Scope scope = null, 
+        /// <param name="scope">
+        /// Sets the scope in which the objects from this <see cref="ConFile"/> 
+        /// will be loaded into.
+        /// </param>
+        /// <param name="runInstruction">
+        /// Defines how the script engine should handle nested file includes
+        /// </param>
+        /// <exception cref="Exception">
+        /// Thrown if there is a problem loading the script file in any way.
+        /// </exception>
+        /// <returns>Returns the parsed bf2 script file.</returns>
+        public static async Task<ConFile> LoadFileAsync(string filePath, Scope scope = null, 
             ExecuteInstruction runInstruction = ExecuteInstruction.Skip)
         {
-            return Task.Run(async() =>
+            // Create new ConFile contents
+            ConFile cFile = new ConFile(filePath, scope);
+            Dictionary<int, string> fileContents = new Dictionary<int, string>();
+            int lineNum = 1;
+
+            // Create Log
+            Logger.Info("Loading file: " + filePath);
+
+            // Open the confile, and read its contents
+            using (FileStream fStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+            using (StreamReader reader = new StreamReader(fStream))
             {
-                // Create new ConFile contents
-                ConFile cFile = new ConFile(filePath, scope);
-                Dictionary<int, string> fileContents = new Dictionary<int, string>();
-                int lineNum = 1;
-
-                // Create Log
-                Logger.Info("Loading file: " + filePath);
-
-                // Open the confile, and read its contents
-                using (FileStream fStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-                using (StreamReader reader = new StreamReader(fStream))
+                // While we can keep reading
+                while (!reader.EndOfStream)
                 {
-                    // While we can keep reading
-                    while (!reader.EndOfStream)
-                    {
-                        string line = await reader.ReadLineAsync();
-                        fileContents.Add(lineNum++, line);
-                    }
+                    string line = await reader.ReadLineAsync();
+                    fileContents.Add(lineNum++, line);
                 }
+            }
 
-                // Parse the contents of the Con / Ai file
-                await ParseFileLines(fileContents, cFile, runInstruction);
+            // Parse the contents of the Con / Ai file
+            await ParseFileLines(fileContents, cFile, runInstruction);
 
-                // Return the file
-                return cFile;
-            });
+            // Return the file
+            return cFile;
         }
 
         /// <summary>
@@ -187,9 +180,8 @@ namespace BF2ScriptingEngine
                     // Fetch our object
                     if (token.Kind == TokenType.ActiveSwitch)
                     {
+                        // Fetch the object and Set as the active object
                         currentObj = scope.GetObject(token);
-
-                        // Set as the active object
                         scope.SetActiveObject(currentObj);
                     }
                     else
@@ -198,6 +190,14 @@ namespace BF2ScriptingEngine
                         currentObj = CreateObject(token);
                         scope.AddObject(currentObj, token);
                     }
+
+                    // Add file entry?
+                    if (token.File != null)
+                    {
+                        // see if the object exists in file
+                        if (token.File.Entries.Contains(currentObj))
+                            token.File.AddEntry(currentObj, token);
+                    }
                     break;
                 case TokenType.ObjectProperty:
                     // Convert args to an object
@@ -205,7 +205,7 @@ namespace BF2ScriptingEngine
                     token.TokenArgs = tokenArgs;
 
                     // Get the last used object
-                    TemplateType type = GetTemplateType(tokenArgs.ReferenceName);
+                    TemplateType type = GetTemplateType(tokenArgs.TemplateName);
                     currentObj = scope.GetActiveObject(type);
 
                     // Make sure we have an object to work with and the object
@@ -213,7 +213,7 @@ namespace BF2ScriptingEngine
                     if (currentObj == null)
                     {
                         // If we are here, we have an issue...
-                        string error = $"Failed to set property \"{tokenArgs.ReferenceName}.{tokenArgs.PropertyName}\""
+                        string error = $"Failed to set property \"{tokenArgs.TemplateName}.{tokenArgs.PropertyName}\""
                             + ". No object reference set!";
                         Logger.Error(error, token.File, token.Position);
                         throw new Exception(error);
@@ -268,6 +268,7 @@ namespace BF2ScriptingEngine
             // ============
             Token[] fileTokens = Tokenizer.Tokenize(workingFile, ref fileContents, TokenExpressions);
             TokenArgs tokenArgs;
+            Scope currentScope = workingFile.Scope;
 
             // ============
             // Now we create an object reference of all objects in the Confile
@@ -275,8 +276,7 @@ namespace BF2ScriptingEngine
             // in the same file before its defined
             // NOTE: Do not create object references for .Active and .safeActive
             // ============
-            var Tokens = fileTokens.Where(x => x.Kind == TokenType.ObjectStart).OrderBy(x => x.Position);
-            foreach (Token Tkn in Tokens)
+            foreach (Token Tkn in fileTokens.Where(x => x.Kind == TokenType.ObjectStart).OrderBy(x => x.Position))
             {
                 // Split line into function call followed by and arguments
                 Tkn.TokenArgs = GetTokenArgs(Tkn.Value);
@@ -285,7 +285,7 @@ namespace BF2ScriptingEngine
                 ConFileObject template = CreateObject(Tkn);
 
                 // Finally, register the object with the ObjectManager
-                workingFile.Scope.AddObject(template, Tkn);
+                currentScope.AddObject(template, Tkn);
                 Logger.Info($"Created {template.ReferenceName} \"{template.Name}\"", workingFile, Tkn.Position);
             }
 
@@ -312,12 +312,12 @@ namespace BF2ScriptingEngine
                         case TokenType.ObjectStart:
                         case TokenType.ActiveSwitch:
                             // Split line into function call followed by and arguments
-                            token.TokenArgs = GetTokenArgs(token.Value);
-                            //token.Comment = comment;
+                            if (token.TokenArgs == null)
+                                token.TokenArgs = GetTokenArgs(token.Value);
 
                             // NOTE: the object was created before this loop!
-                            currentObj = workingFile.Scope.GetObject(token);
-                            workingFile.Scope.SetActiveObject(currentObj);
+                            currentObj = currentScope.GetObject(token);
+                            currentScope.SetActiveObject(currentObj);
 
                             // === Objects are already added to the working file before hand === //
                             // Add object reference to file
@@ -338,15 +338,15 @@ namespace BF2ScriptingEngine
                             //token.Comment = comment;
 
                             // Get the last used object
-                            type = GetTemplateType(tokenArgs.ReferenceName);
-                            currentObj = workingFile.Scope.GetActiveObject(type);
+                            type = GetTemplateType(tokenArgs.TemplateName);
+                            currentObj = currentScope.GetActiveObject(type);
 
                             // Make sure we have an object to work with and the object
                             // reference matches our current working object
                             if (currentObj == null)
                             {
                                 // If we are here, we have an issue...
-                                string error = $"Failed to set property \"{tokenArgs.ReferenceName}.{tokenArgs.PropertyName}\""
+                                string error = $"Failed to set property \"{tokenArgs.TemplateName}.{tokenArgs.PropertyName}\""
                                     + ". No object reference set!";
                                 throw new Exception(error);
                             }
@@ -380,6 +380,7 @@ namespace BF2ScriptingEngine
                             rem.IsRemBlock = true;
 
                             // Skip every line until we get to the endRem
+                            builder.AppendLine(token.Value);
                             i = ScopeUntil(TokenType.EndRem, fileTokens, i, builder);
 
                             // Set rem value
@@ -394,6 +395,7 @@ namespace BF2ScriptingEngine
                             if (token.Kind == TokenType.IfStart)
                             {
                                 // Skip every line until we get to the endIf
+                                builder.AppendLine(token.Value);
                                 i = ScopeUntil(TokenType.EndIf, fileTokens, i, builder);
 
                                 // Clear the string builder
@@ -415,14 +417,14 @@ namespace BF2ScriptingEngine
                                 continue;
 
                             // Create new scope for execution
-                            Scope scp = workingFile.Scope;
+                            Scope runScope = currentScope;
 
                             // Are we executing in a new scope?
                             if (run == ExecuteInstruction.ExecuteInNewScope)
                             {
                                 // For now, we just inherit the parent scope type
-                                scp = new Scope(workingFile.Scope, workingFile.Scope.ScopeType);
-                                scp.MissingObjectHandling = MissingObjectHandling.CheckParent;
+                                runScope = new Scope(currentScope, currentScope.ScopeType);
+                                runScope.MissingObjectHandling = MissingObjectHandling.CheckParent;
                             }
 
                             // Get the filepath
@@ -430,17 +432,26 @@ namespace BF2ScriptingEngine
                             string fileName = Path.Combine(filePath, stmt.FileName);
 
                             // Define file arguments
-                            scp.SetArguments(stmt.Arguments);
+                            runScope.SetArguments(stmt.Arguments);
 
                             // Load the file
-                            ConFile include = await LoadFileAsync(fileName, scp, run);
-                            workingFile.ExecutedIncludes.Add(include);
+                            try
+                            {
+                                ConFile include = await LoadFileAsync(fileName, runScope, run);
+                                workingFile.ExecutedIncludes.Add(include);
+                            }
+                            catch (FileNotFoundException) // Only acceptable exception
+                            {
+                                fileName = Path.GetFileName(fileName);
+                                Logger.Warning($"Failed to run file \"{fileName}\". File Not Found", 
+                                    workingFile, token.Position);
+                            }
                             break;
                         case TokenType.Constant:
                         case TokenType.Variable:
                             // Set the new expression reference in Scope
                             Expression exp = new Expression(token);
-                            workingFile.Scope.Expressions[exp.Name] = exp;
+                            currentScope.Expressions[exp.Name] = exp;
 
                             // Add expression to the confile as well
                             workingFile.AddEntry(exp, exp.Token);
@@ -479,67 +490,22 @@ namespace BF2ScriptingEngine
         /// </summary>
         /// <param name="tokenValue">The value of the token</param>
         /// <returns></returns>
-        private static TokenArgs GetTokenArgs(string tokenValue)
+        internal static TokenArgs GetTokenArgs(string tokenValue)
         {
-            // Begin our array builder
+            // Create instance
             TokenArgs tokenArgs = new TokenArgs();
-            List<string> args = new List<string>();
 
-            // Break the line into {0 => referenceCall, 1 => The rest of the line}
+            // Break the line into {0 => Template name, 1 => The rest of the line}
             // We only split into 2 strings, because some values have dots
             string[] temp = tokenValue.Split(new char[] { '.' }, 2);
-            tokenArgs.ReferenceName = temp[0];
+            tokenArgs.TemplateName = temp[0];
 
             // Split the line after the reference call into arguments
-            string[] parts = temp[1].Split(SplitChars, StringSplitOptions.RemoveEmptyEntries);
+            string[] parts = temp[1].SplitWithQuotes(SplitChars, true);
             tokenArgs.PropertyName = parts[0];
 
             // Skip the property/function name
-            parts = parts.Skip(1).ToArray();
-
-            // Fix Quotes
-            if (temp[1].Contains(QUOTE))
-            {
-                StringBuilder builder = new StringBuilder();
-                bool inQuote = false;
-                foreach (string part in parts)
-                {
-                    if (!inQuote && part.StartsWith(QUOTE))
-                    {
-                        if (part.EndsWith(QUOTE))
-                        {
-                            builder.Append($"{part}");
-
-                            // Add the final quoted string as a single part
-                            args.Add(builder.ToString());
-                            builder.Clear();
-                        }
-                        else
-                        {
-                            inQuote = true;
-                            builder.Append($"{part} ");
-                        }
-                    }
-                    else if (inQuote && part.EndsWith(QUOTE))
-                    {
-                        inQuote = false;
-                        builder.Append($"{part}");
-
-                        // Add the final quoted string as a single part
-                        args.Add(builder.ToString());
-                        builder.Clear();
-                    }
-                    else
-                    {
-                        args.Add(part);
-                    }
-                }
-            }
-            else
-                args.AddRange(parts);
-
-            // Convert to array, because I was too lazy to recode all following code to reference a list :S
-            tokenArgs.Arguments = args.ToArray();
+            tokenArgs.Arguments = parts.Skip(1).ToArray();
             return tokenArgs;
         }
 
@@ -604,7 +570,7 @@ namespace BF2ScriptingEngine
         internal static ConFileObject CreateObject(Token Tkn)
         {
             TokenArgs tokenArgs = Tkn.TokenArgs;
-            var type = GetTemplateType(tokenArgs.ReferenceName, Tkn.File, Tkn.Position);
+            var type = GetTemplateType(tokenArgs.TemplateName, Tkn.File, Tkn.Position);
 
             switch (type)
             {
@@ -615,7 +581,7 @@ namespace BF2ScriptingEngine
                 case TemplateType.KitTemplate: return KitTemplate.Create(tokenArgs, Tkn);
                 case TemplateType.GeometryTemplate: return GeometryTemplate.Create(tokenArgs, Tkn);
                 default:
-                    string error = $"Reference call to '{tokenArgs.ReferenceName}' is not supported";
+                    string error = $"Reference call to '{tokenArgs.TemplateName}' is not supported";
                     Logger.Error(error, Tkn.File, Tkn.Position);
                     throw new NotSupportedException(error);
             }
