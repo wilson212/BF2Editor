@@ -63,6 +63,7 @@
     <Compile Include="Extensions\FolderSelect\Reflector.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="Application\AiFileType.cs" />
+    <Compile Include="Scripting\NameSpace.cs" />
     <Compile Include="UI\Controls\OwnerDrawnMenu.cs">
       <SubType>Component</SubType>
     </Compile>

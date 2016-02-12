@@ -162,92 +162,66 @@ namespace BF2Editor
         /// the ObjectManager
         /// </summary>
         /// <param name="templateType">The folder name of .ai files to load</param>
-        protected Task LoadTemplates(string templateType)
+        protected async Task LoadTemplates(string templateType)
         {
-            return Task.Run(async() =>
+            string path = Path.Combine(Program.RootPath, "Temp", "Server Objects", SelectedMod.Name, templateType);
+            TreeNode topNode = new TreeNode(templateType);
+
+            // Make sure our tempalte directory exists
+            if (!Directory.Exists(path))
+                return;
+
+            // Now loop through each object type
+            foreach (string dir in Directory.EnumerateDirectories(path))
             {
-                string path = Path.Combine(Program.RootPath, "Temp", "Server Objects", SelectedMod.Name, templateType);
-                TreeNode topNode = new TreeNode(templateType);
+                string dirName = dir.Remove(0, path.Length + 1);
 
-                // Make sure our tempalte directory exists
-                if (!Directory.Exists(path))
-                    return;
+                // Skip common folder
+                if (dirName.ToLowerInvariant() == "common")
+                    continue;
 
-                // Now loop through each object type
-                foreach (string dir in Directory.EnumerateDirectories(path))
+                TreeNode dirNode = new TreeNode(dirName);
+                foreach (string subdir in Directory.EnumerateDirectories(dir))
                 {
-                    string dirName = dir.Remove(0, path.Length + 1);
+                    string subdirName = subdir.Remove(0, dir.Length + 1);
 
                     // Skip common folder
-                    if (dirName.ToLowerInvariant() == "common")
+                    if (subdirName.ToLowerInvariant() == "common")
                         continue;
 
-                    TreeNode dirNode = new TreeNode(dirName);
-                    foreach (string subdir in Directory.EnumerateDirectories(dir))
+                    // Create namespace, and load files
+                    try
                     {
-                        string subdirName = subdir.Remove(0, dir.Length + 1);
+                        NameSpace nspace = new NameSpace(subdirName, subdir);
+                        await nspace.LoadFile($"{subdirName}.con");
+                        await nspace.LoadFile($"{subdirName}.tweak");
+                        await nspace.LoadFile("ai/Objects.ai");
+                        await nspace.LoadFile("ai/Weapons.ai");
 
-                        // Skip common folder
-                        if (subdirName.ToLowerInvariant() == "common")
-                            continue;
-
-                        // Skip dirs that dont have an ai folder
-                        if (!Directory.Exists(Path.Combine(subdir, "ai")))
-                            continue;
-
-                        TreeNode subNode = new TreeNode(subdirName);
-                        Dictionary<AiFileType, ConFile> files = new Dictionary<AiFileType, ConFile>(2);
-                        ConFile cFile;
-
-                        // Load the Objects.ai file if we have one
-                        string file = Path.Combine(subdir, "ai", "Objects.ai");
-                        if (File.Exists(file))
+                        // Add TreeNode to our object view
+                        if (nspace.Files.Count > 0)
                         {
-                            try
-                            {
-                                cFile = await ScriptEngine.LoadFileAsync(file, null);
-                                files.Add(AiFileType.Object, cFile);
-                            }
-                            catch
-                            {
-
-                            }
-                        }
-
-                        // Load the Weapons.ai file if we have one
-                        file = Path.Combine(subdir, "ai", "Weapons.ai");
-                        if (File.Exists(file))
-                        {
-                            try
-                            {
-                                cFile = await ScriptEngine.LoadFileAsync(file, null);
-                                files.Add(AiFileType.Weapon, cFile);
-                            }
-                            catch
-                            {
-
-                            }
-                        }
-
-                        // Add to tree view
-                        if (files.Count > 0)
-                        {
-                            subNode.Tag = files;
+                            TreeNode subNode = new TreeNode(subdirName);
+                            subNode.Tag = nspace;
                             dirNode.Nodes.Add(subNode);
                         }
                     }
+                    catch
+                    {
 
-                    if (dirNode.Nodes.Count > 0)
-                        topNode.Nodes.Add(dirNode);
-
+                    }
                 }
 
-                // Cross-Thread
-                Invoke((MethodInvoker)delegate
-                {
-                    if (topNode.Nodes.Count > 0)
-                        treeView1.Nodes.Add(topNode);
-                });
+                if (dirNode.Nodes.Count > 0)
+                    topNode.Nodes.Add(dirNode);
+
+            }
+
+            // Cross-Thread
+            Invoke((MethodInvoker)delegate
+            {
+                if (topNode.Nodes.Count > 0)
+                    treeView1.Nodes.Add(topNode);
             });
         }
 
@@ -586,5 +560,14 @@ namespace BF2Editor
         }
 
         #endregion
+
+        private void treeView1_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            TreeNode selectedNode = e.Node as TreeNode;
+            if (selectedNode.Tag is NameSpace)
+            {
+                NameSpace me = selectedNode.Tag as NameSpace;
+            }
+        }
     }
 }

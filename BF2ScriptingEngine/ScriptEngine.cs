@@ -152,7 +152,15 @@ namespace BF2ScriptingEngine
             }
 
             // Parse the contents of the Con / Ai file
-            await ParseFileLines(fileContents, cFile, runInstruction);
+            try
+            {
+                await ParseFileLines(fileContents, cFile, runInstruction);
+            }
+            catch
+            {
+                // Pass the exception up
+                throw;
+            }
 
             // Return the file
             return cFile;

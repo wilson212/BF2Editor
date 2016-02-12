@@ -6,7 +6,7 @@ This project is considered as Alpha, and should not be used in a production envi
 
 ### Current Features
   - Can load all .ai files in the "Objects_Server.zip/[Kits, Weapons, Vehicles]/ai" folders
-  - Can modify objects and their variables in Type string C# objects
+  - Can modify objects and their variables in Type strong C# objects
   - Save modifications to objects back into their file
   - Deep reflection about objects and all entries in a script file
   - No script files needed, just create a Scope and have fun!

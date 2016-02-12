@@ -90,19 +90,21 @@ namespace BF2ScriptingEngine
             }
             else
             {
-                // === Deep Clone! === //
-                if (ParentScope != null)
-                {
-
-                }
-                else { 
-                    ActiveObjects = new Dictionary<TemplateType, ConFileObject>();
-                }
-
-                // Create instances
+                // Create new instances
                 var c = new ObjectEqualityComparer();
+                ActiveObjects = new Dictionary<TemplateType, ConFileObject>();
                 Objects = new Dictionary<Tuple<string, TemplateType>, ConFileObject>(c);
                 Expressions = new Dictionary<string, Expression>();
+
+                // Copy over the active objects from our parent
+                if (ParentScope != null)
+                {
+                    // Perform a deep copy since we are Detached
+                    foreach (var item in ParentScope.ActiveObjects)
+                    {
+                        ActiveObjects[item.Key] = item.Value.Copy();
+                    }
+                }
             }
         }
 
