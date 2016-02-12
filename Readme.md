@@ -6,8 +6,12 @@ This project is considered as Alpha, and should not be used in a production envi
 
 ### Current Features
   - Can load all .ai files in the "Objects_Server.zip/[Kits, Weapons, Vehicles]/ai" folders
+  - Can modify objects and their variables in Type string C# objects
+  - Save modifications to objects back into their file
+  - Deep reflection about objects and all entries in a script file
+  - No script files needed, just create a Scope and have fun!
 
-### Examples
+### Example #1
 ```C#
 using BF2ScriptingEngine;
 using BF2ScriptingEngine.Scripting;
@@ -15,7 +19,7 @@ using BF2ScriptingEngine.Scripting;
 // Loading a file
 ConFile file = await ScriptEngine.LoadFileAsync(filePath);
 
-// Getting a loaded file from its defined scope
+// Getting a loaded object from its defined scope
 AiTemplate obj = file.Scope.GetObject<AiTemplate>("Ahe_Ah1z");
 
 // Fetching an object property Value (Strongly Typed)
@@ -36,13 +40,37 @@ obj.SetValue("basicTemp", 300);
 file.Scope.Execute("ObjectTemplate.create PlayerControlObject ahe_ah1z");
 file.Scope.Execute("ObjectTemplate.maxVertRegAngle 35");
 
-// Any object created in scope via Scope.Execute() can be fetched easily
+// Any object created in scope via Scope.Execute() can be fetched normally
 PlayerControlObject Ah1z = file.Scope.GetObject<PlayerControlObject>("ahe_ah1z");
-Debug.Assert(Ah1z.maxVertRegAngle.Value == 35); // is True
+Debug.Assert(Ah1z.MaxVertRegAngle.Value == 35); // is True
 
 // And formating the object back to Con File format
-string formated = obj.File.ToFileFormat();
+string formated = file.ToFileFormat();
 
 // Saving the Object changes
-obj.File.Save();
+file.Save();
 ```
+
+### Example #2
+Creating and Modifying an object using only Scopes
+```C#
+using BF2ScriptingEngine;
+using BF2ScriptingEngine.Scripting;
+
+// Create a new empty scope for this object
+Scope scope = new Scope();
+
+// First, create our new object
+scope.Execute("ObjectTemplate.create PlayerControlObject ahe_ah1z");
+scope.Execute("ObjectTemplate.creator BL:Wilson");
+scope.Execute("ObjectTemplate.createComponent Armor");
+scope.Execute("ObjectTemplate.armor.maxHitPoints 875");
+
+// Even though the object was created in Scope.Execute(), we can access
+// it just as if the object was created in C#
+PlayerControlObject Ah1z = scope.GetObject<PlayerControlObject>("ahe_ah1z");
+bool isNull = Ah1z.Armor?.MaxHitPoints?.Value == null; // is false
+if (!isNull) // true
+{
+    Debug.Assert( Ah1z.Armor.MaxHitPoints.Value == 875 ); // is True
+}

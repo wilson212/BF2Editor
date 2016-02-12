@@ -15,10 +15,17 @@ namespace BF2ScriptingEngine
     /// Represents a battlefield 2 .con or .ai script file.
     /// </summary>
     /// <remarks>
-    /// Con files are what brings everything together in Battlefield 2. 
-    /// Con files link together the objects, models, sounds, maps, AI, and 
-    /// settings in the game. These are text files, sometimes called script files, 
-    /// with each line defining a property or performing a directive.
+    /// This object is repsonsible for keeping track of all entries in the
+    /// script file, be it objects, properties, statements and expressions.
+    /// 
+    /// Every entry this confile instance keeps track of, will be included in the
+    /// ToFileFormat() and Save() methods. Any objects or properties that
+    /// are not added to the Entries list, will not be included when coverted back
+    /// to file format!
+    /// 
+    /// NOTE: The ConFileObject class will ensure that the objects properties are 
+    /// added to the Entries list, therfor adding properties to the EntryList will
+    /// be ignored.
     /// </remarks>
     /// <seealso cref="http://bfmods.com/mdt/scripting/Intro.html"/>
     public class ConFile
@@ -73,9 +80,10 @@ namespace BF2ScriptingEngine
         public List<ConFile> ExecutedIncludes { get; internal set; }
 
         /// <summary>
-        /// Indicates whether this ConFile has finished parsing
+        /// Indicates whether this ConFile has been successfully processed 
+        /// by the <see cref="ScriptEngine"/>
         /// </summary>
-        protected bool Finalized = false;
+        public bool Finished { get; internal set; } = false;
 
         /// <summary>
         /// Creates a new instance of ConFile
@@ -123,7 +131,11 @@ namespace BF2ScriptingEngine
             else if (token.Kind == TokenType.ActiveSwitch)
             {
                 // Create a new reference and add it
-                var reference = new ObjectReference() { Token = token, Object = (ConFileObject)entry };
+                var reference = new ObjectReference()
+                {
+                    Token = token,
+                    Object = (ConFileObject)entry
+                };
                 References.Add(reference);
 
                 // Set entry to the object reference
@@ -134,23 +146,6 @@ namespace BF2ScriptingEngine
                 Expression exp = entry as Expression;
                 if (!Expressions.ContainsKey(exp.Name))
                 {
-                    // Ensure that we are defined, or we are defining now!
-                    // Note: v_arg{num} are always defined in scope! these are file arguments
-                    //if (!Regex.Match(exp.Name, "^v_arg[0-9]+$").Success)
-                    //{
-                        if (!exp.Token.Value.StartsWithAny("var", "const"))
-                        {
-                            string err;
-                            if (token.Kind == TokenType.Constant)
-                                err = $"Undefined constant \"{exp.Name}\"";
-                            else
-                                err = $"Undefined variable \"{exp.Name}\"";
-
-                            Logger.Error(err, this, token.Position);
-                            throw new Exception(err);
-                        }
-                    //}
-
                     // Add the expression
                     Expressions.Add(exp.Name, new List<Expression>() { exp });
                 }
@@ -164,7 +159,7 @@ namespace BF2ScriptingEngine
         {
             // To speed up the initial parsing, we only insert
             // to position if we are finalized
-            if (Finalized)
+            if (Finished)
             {
                 // Make sure this entry doesnt already exist
                 if (Entries.IndexOf(property) > 0)
@@ -350,6 +345,6 @@ namespace BF2ScriptingEngine
             }
         }
 
-        internal void Finish() => Finalized = true;
+        internal void Finish() => Finished = true;
     }
 }
