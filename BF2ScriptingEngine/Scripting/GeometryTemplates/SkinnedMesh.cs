@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using BF2ScriptingEngine.Scripting.Attributes;
 
-namespace BF2ScriptingEngine.Scripting.GeometryTemplates
+namespace BF2ScriptingEngine.Scripting
 {
     public class SkinnedMesh : GeometryTemplate
     {

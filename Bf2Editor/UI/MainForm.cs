@@ -537,7 +537,12 @@ namespace BF2Editor
             string formated;
 
             try {
+                //var type = new ReferenceType("test", typeof(TestObj));
+                //type.Mappings.Add("create", TestObj.Create);
+                //ReferenceManager.AddType(type);
+
                 Scope scope = new Scope();
+                //scope.Execute("test.create objname");
 
                 string path = @"D:\Programming\C#\Projects\Bf2Editor\Bf2Editor\bin\Debug\Temp\Server Objects\bf2\Kits\US";
                 ConFile file = await ScriptEngine.LoadFileAsync(Path.Combine(path, "us_kits.con"), scope);
@@ -568,6 +573,14 @@ namespace BF2Editor
             {
                 NameSpace me = selectedNode.Tag as NameSpace;
             }
+        }
+    }
+
+    public class TestObj
+    {
+        public static ConFileObject Create(Token token)
+        {
+            return null;
         }
     }
 }

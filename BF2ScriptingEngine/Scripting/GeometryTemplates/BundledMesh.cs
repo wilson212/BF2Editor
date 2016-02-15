@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace BF2ScriptingEngine.Scripting.GeometryTemplates
+namespace BF2ScriptingEngine.Scripting
 {
     public class BundledMesh : GeometryTemplate
     {

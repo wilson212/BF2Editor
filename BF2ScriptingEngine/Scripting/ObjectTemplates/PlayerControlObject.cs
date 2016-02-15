@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using BF2ScriptingEngine.Scripting.Attributes;
-using BF2ScriptingEngine.Scripting.GeometryTemplates;
 
-namespace BF2ScriptingEngine.Scripting.Objects
+namespace BF2ScriptingEngine.Scripting
 {
     /// <summary>
     /// This object is what Battlefield 2 uses as a base object for vehicles and 

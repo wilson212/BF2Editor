@@ -1,6 +1,5 @@
 ﻿using BF2ScriptingEngine.Scripting.Attributes;
 using BF2ScriptingEngine.Scripting.Components;
-using BF2ScriptingEngine.Scripting.GeometryTemplates;
 
 namespace BF2ScriptingEngine.Scripting
 {

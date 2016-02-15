@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using BF2ScriptingEngine.Scripting.Attributes;
-using BF2ScriptingEngine.Scripting.GeometryTemplates;
 
 namespace BF2ScriptingEngine.Scripting
 {
@@ -129,6 +128,15 @@ namespace BF2ScriptingEngine.Scripting
 
         #endregion
 
+        #region Mappings
+
+        /// <summary>
+        /// Contains a Mapping of object types, that derive from <see cref="ObjectTemplate"/>
+        /// </summary>
+        public static Dictionary<string, Type> ObjectTypes { get; set; }
+
+        #endregion
+
         /// <summary>
         /// Contains a map of properties in the deriving classes that are
         /// component objects
@@ -137,7 +145,19 @@ namespace BF2ScriptingEngine.Scripting
 
         static ObjectTemplate()
         {
+            // Create our component map
             ComponentMap = new Dictionary<string, Dictionary<string, PropertyInfo>>();
+
+            // Create object mappings
+            var Comparer = StringComparer.InvariantCultureIgnoreCase;
+            ObjectTypes = new Dictionary<string, Type>(Comparer)
+            {
+                { "SimpleObject", typeof(SimpleObject) },
+                { "Kit", typeof(Kit) },
+                { "ItemContainer", typeof(ItemContainer) },
+                { "PlayerControlObject", typeof(PlayerControlObject) },
+                { "GenericFireArm", typeof(GenericFireArm) }
+            };
         }
 
         /// <summary>
@@ -307,19 +327,26 @@ namespace BF2ScriptingEngine.Scripting
         /// <param name="token">The ConFile token</param>
         public static ConFileObject Create(Token token)
         {
+            // Make sure we have the correct number of arguments
+            if (token.TokenArgs.Arguments.Length != 2)
+            {
+                throw new ArgumentException(String.Concat(
+                    "Invalid arguments count for ObjectTemplate;",
+                     $"Got {token.TokenArgs.Arguments.Length}, Expecting 2."
+                ));
+            }
+
+            // Extract our arguments
             string type = token.TokenArgs.Arguments[0];
             string name = token.TokenArgs.Arguments[1];
 
-            switch (type.ToLowerInvariant())
-            {
-                case "simpleobject": return new SimpleObject(name, token);
-                case "kit": return new Kit(name, token);
-                case "itemcontainer": return new ItemContainer(name, token);
-                case "playercontrolobject":
-                case "genericfirearm":
-                default:
-                    throw new NotSupportedException("Invalid Object Type \"" + type + "\".");
-            }
+            // Ensure this type is supported
+            if (!ObjectTypes.ContainsKey(type))
+                throw new NotSupportedException("Invalid ObjectTemplate derived type \"" + type + "\".");
+
+            // Create and return our object instance
+            var t = ObjectTypes[type];
+            return (ConFileObject)Activator.CreateInstance(t, name, token);
         }
     }
 }

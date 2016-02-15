@@ -10,6 +10,8 @@ This project is considered as Alpha, and should not be used in a production envi
   - Save modifications to objects back into their file
   - Deep reflection about objects and all entries in a script file
   - No script files needed, just create a Scope and have fun!
+  - Extendable and Scalable. Possible to add or override object types, 
+	and object reference types outside of the script engine library
 
 ### Example #1
 ```C#
@@ -76,8 +78,7 @@ if (!isNull) // true
 }
 ```
 ### Custom Object Reference Types
-In the Bf2 Script Engine, it is possible to define custom object ReferenceType's that are not supported by default. In this example, 
-we will use a class called "GameSettings" that is created outside of the BF2ScriptingEngine.dll library.
+In the Bf2 Script Engine, it is possible to define custom object ReferenceType's that are not supported by default. In this example, we will use a class called "GameSettings" that is created outside of the BF2ScriptingEngine.dll library.
 ```C#
 using BF2ScriptingEngine;
 using BF2ScriptingEngine.Scripting;
@@ -100,3 +101,27 @@ Scope scope = new Scope();
 scope.Execute("GameSettings.create {type?} myGameSettings"); // Creates a new GameSettings object named "myGameSettings"
 scope.Execute("GameSettings.hudRBGColor 32/65/96"); // Example custom property
 ```
+
+### Custom Object Types
+As with Reference Types, it is also possible to define custom derived objects that may or may not be supported by default. In this example, we will override the "GenericFireArm" type that derives from the ObjectTemplate Reference Type, that is created outside of the BF2ScriptingEngine.dll library.
+```C#
+using BF2ScriptingEngine;
+using BF2ScriptingEngine.Scripting;
+
+// Create a bare minimum object, with no properties
+namespace MyProject
+{
+    // It is required that the new object derives from ConFileObject, or a class that derives
+    // from ConFileObject
+    public class MyGenericFireArm : ConFileObject
+    {
+        // It is required to pass these arguments to ConFileObject
+        public MyGenericFireArm(string name, Token token) : base(name, token) { }
+    }
+}
+
+// Now, override the default ObjectTemplate GenericFireArm type with our custom defined type.
+// You can use this method to add new object types that are not supported by default.
+ObjectTemplate.ObjectTypes["GenericFireArm"] = typeof(MyGenericFireArm);
+```
+Now whenever a new command is found, attempting to create a new GenericFireArm type, MyGenericFireArm will be created instead of the default GenericFireArm type.
