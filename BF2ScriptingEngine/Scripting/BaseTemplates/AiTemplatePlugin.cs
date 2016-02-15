@@ -7,27 +7,27 @@ namespace BF2ScriptingEngine.Scripting
     /// </summary>
     public abstract class AiTemplatePlugin : ConFileObject
     {
-        public AiTemplatePlugin(string Name, Token Token)  : base(Name, "aiTemplatePlugIn", Token) { }
+        public AiTemplatePlugin(string Name, Token Token)  : base(Name, Token) { }
 
         /// <summary>
         /// Creates a new instance of AiTemplate with the following attributes
         /// </summary>
         /// <param name="tokenArgs">The command line token</param>
-        /// <param name="Token">The ConFile token</param>
-        public static AiTemplatePlugin Create(TokenArgs tokenArgs, Token Token)
+        /// <param name="token">The ConFile token</param>
+        public static AiTemplatePlugin Create(Token token)
         {
-            string type = tokenArgs.Arguments[0];
-            string name = tokenArgs.Arguments[1];
+            string type = token.TokenArgs.Arguments[0];
+            string name = token.TokenArgs.Arguments[1];
 
             // Switch to the object type
             switch (type.ToLowerInvariant())
             {
-                case "armament": return new Armament(name, Token);
-                case "mobile": return new Mobile(name, Token);
-                case "physical": return new Physical(name, Token);
-                case "cover": return new Cover(name, Token);
-                case "unit": return new Unit(name, Token);
-                case "controlinfo": return new ControlInfo(name, Token);
+                case "armament": return new Armament(name, token);
+                case "mobile": return new Mobile(name, token);
+                case "physical": return new Physical(name, token);
+                case "cover": return new Cover(name, token);
+                case "unit": return new Unit(name, token);
+                case "controlinfo": return new ControlInfo(name, token);
                 default:
                     throw new Exception("Invalid AiTemplatePlugIn object type \"" + type + "\"");
             }

@@ -58,6 +58,8 @@ namespace BF2ScriptingEngine.Scripting
         /// </remarks>
         public string Value { get; set; }
 
+        internal Token() { }
+
         /// <summary>
         /// Creates a new Token
         /// </summary>
@@ -68,7 +70,7 @@ namespace BF2ScriptingEngine.Scripting
         /// <returns>The newly created token</returns>
         public static Token Create(TokenType kind, Match match, ConFile file, int index)
         {
-            return new Token
+            Token token = new Token()
             {
                 File = file,
                 Position = match.Index + index,
@@ -76,11 +78,17 @@ namespace BF2ScriptingEngine.Scripting
                 Match = match,
                 Value = match.Value
             };
+
+            // We only create token args for object property types
+            if (token.Kind == TokenType.ObjectProperty)
+                SetTokenArgs(token);
+
+            return token;
         }
 
         public static Token Create(TokenType kind, TokenArgs args, ConFile file)
         {
-            return new Token
+            Token token = new Token()
             {
                 File = file,
                 Position = 0,
@@ -89,6 +97,44 @@ namespace BF2ScriptingEngine.Scripting
                 Match = Match.Empty,
                 Value = args.ToString()
             };
+
+            // We only create token args for object property types
+            if (token.Kind == TokenType.ObjectProperty)
+                SetTokenArgs(token);
+
+            return token;
+        }
+
+        /// <summary>
+        /// Converts the value of a <see cref="Token"/> into an array of parameters.
+        /// Any values that are qouted will remain intact
+        /// </summary>
+        /// <param name="tokenValue">The value of the token</param>
+        /// <returns></returns>
+        internal static void SetTokenArgs(Token token)
+        {
+            // Create instance
+            token.TokenArgs = new TokenArgs();
+
+            // Break the line into {0 => Template name, 1 => The rest of the line}
+            // We only split into 2 strings, because some values have dots
+            string[] temp = token.Value.Split(new char[] { '.' }, 2);
+            token.TokenArgs.ReferenceType = ReferenceManager.GetReferenceType(temp[0]);
+
+            // Check for null
+            if (token.TokenArgs.ReferenceType == null)
+                throw new Exception($"Reference call to '{temp[0]}' is not supported");
+
+            // Split the line after the reference call into arguments
+            string[] parts = temp[1].SplitWithQuotes(ScriptEngine.SplitChars, true);
+            token.TokenArgs.PropertyName = parts[0];
+
+            // Type correction
+            if (token.TokenArgs.ReferenceType.Mappings.ContainsKey(token.TokenArgs.PropertyName))
+                token.Kind = TokenType.ObjectStart;
+
+            // Skip the property/function name
+            token.TokenArgs.Arguments = parts.Skip(1).ToArray();
         }
     }
 }

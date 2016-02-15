@@ -40,7 +40,7 @@ namespace BF2ScriptingEngine.Scripting
         [PropertyName("setRotation")]
         public ObjectProperty<string> SetRotation;
 
-        public ChildTemplate(string name, Token token) : base(name, "ObjectTemplate", token)
+        public ChildTemplate(string name, Token token) : base(name, token)
         {
 
         }

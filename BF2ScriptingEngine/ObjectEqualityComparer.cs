@@ -18,7 +18,7 @@ namespace BF2ScriptingEngine
     ///     GeometryTemplate(us_kits) != GeometryTemplate(US_Kits)
     ///     AiTemplate(Ahz_AH1) != WeaponTemplate(Ahz_AH1)
     /// </remarks>
-    internal class ObjectEqualityComparer : IEqualityComparer<Tuple<string, TemplateType>>
+    internal class ObjectEqualityComparer : IEqualityComparer<Tuple<string, ReferenceType>>
     {
         /// <summary>
         /// Provide a consitant english culture to compare strings
@@ -31,14 +31,19 @@ namespace BF2ScriptingEngine
         /// </summary>
         private static StringComparer Comparer = StringComparer.Create(EnglishCulture, false);
 
-        public bool Equals(Tuple<string, TemplateType> x, Tuple<string, TemplateType> y)
+        /// <summary>
+        /// Case-Insensetive comparison, to compare the Item2 in the Tupple
+        /// </summary>
+        private static StringComparer Comparer2 = StringComparer.Create(EnglishCulture, true);
+
+        public bool Equals(Tuple<string, ReferenceType> x, Tuple<string, ReferenceType> y)
         {
-            return Comparer.Equals(x.Item1, y.Item1) && x.Item2 == y.Item2;
+            return Comparer.Equals(x.Item1, y.Item1) && Comparer2.Equals(x.Item2.Name, y.Item2.Name);
         }
 
-        public int GetHashCode(Tuple<string, TemplateType> tuple)
+        public int GetHashCode(Tuple<string, ReferenceType> tuple)
         {
-            return Comparer.GetHashCode(tuple.Item1) ^ tuple.Item2.GetHashCode();
+            return Comparer.GetHashCode(tuple.Item1) ^ Comparer2.GetHashCode(tuple.Item2); //.GetHashCode();
         }
     }
 }

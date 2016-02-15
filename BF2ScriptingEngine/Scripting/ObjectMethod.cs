@@ -41,7 +41,7 @@ namespace BF2ScriptingEngine.Scripting
             // Ensure the length is correct
             if (token.TokenArgs.Arguments.Length != 1)
             {
-                string error = $"Invalid values count for {token.TokenArgs.TemplateName}; Got {values.Length}, Expecting 1.";
+                string error = $"Invalid values count for {token.TokenArgs.ReferenceType.Name}; Got {values.Length}, Expecting 1.";
                 Logger.Error(error, token.File, token.Position);
                 throw new Exception(error);
             }
@@ -84,7 +84,7 @@ namespace BF2ScriptingEngine.Scripting
             // Ensure the length is correct
             if (token.TokenArgs.Arguments.Length != 4)
             {
-                string error = $"Invalid values count for {token.TokenArgs.TemplateName}; Got {values.Length}, Expecting 4.";
+                string error = $"Invalid values count for {token.TokenArgs.ReferenceType.Name}; Got {values.Length}, Expecting 4.";
                 Logger.Error(error, token.File, token.Position);
                 throw new Exception(error);
             }

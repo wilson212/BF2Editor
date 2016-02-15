@@ -193,8 +193,8 @@ namespace BF2Editor
                     try
                     {
                         NameSpace nspace = new NameSpace(subdirName, subdir);
-                        await nspace.LoadFile($"{subdirName}.con");
-                        await nspace.LoadFile($"{subdirName}.tweak");
+                        //await nspace.LoadFile($"{subdirName}.con");
+                        //await nspace.LoadFile($"{subdirName}.tweak");
                         await nspace.LoadFile("ai/Objects.ai");
                         await nspace.LoadFile("ai/Weapons.ai");
 

@@ -155,16 +155,16 @@ namespace BF2ScriptingEngine.Scripting
         /// </summary>
         /// <param name="Name"></param>
         /// <param name="Token"></param>
-        public WeaponTemplate(string Name, Token Token) : base(Name, "weaponTemplate", Token) { }
+        public WeaponTemplate(string Name, Token Token) : base(Name, Token) { }
 
         /// <summary>
         /// Creates a new instance of WeaponTemplate with the following attributes
         /// </summary>
         /// <param name="tokenArgs">The command line token</param>
-        /// <param name="Token">The ConFile token</param>
-        public static WeaponTemplate Create(TokenArgs tokenArgs, Token Token)
+        /// <param name="token">The ConFile token</param>
+        public static WeaponTemplate Create(Token token)
         {
-            return new WeaponTemplate(tokenArgs.Arguments.Last(), Token);
+            return new WeaponTemplate(token.TokenArgs.Arguments.Last(), token);
         }
     }
 }

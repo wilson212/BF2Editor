@@ -74,3 +74,29 @@ if (!isNull) // true
 {
     Debug.Assert( Ah1z.Armor.MaxHitPoints.Value == 875 ); // is True
 }
+```
+### Custom Object Reference Types
+In the Bf2 Script Engine, it is possible to define custom object ReferenceType's that are not supported by default. In this example, 
+we will use a class called "GameSettings" that is created outside of the BF2ScriptingEngine.dll library.
+```C#
+using BF2ScriptingEngine;
+using BF2ScriptingEngine.Scripting;
+
+// Create a new Reference type for the script engine to use
+var type = new ReferenceType("GameSettings", typeof(MyProject.GameSettings));
+
+// Map the custom object creation methods (granted the ReferenceType is not a static entity)
+type.Mappings.Add("create", MyProject.GameSettings.Create);
+
+// Add new ReferenceType to the ReferenceManager. This tells the ScriptEngine that "GameSettings"
+// is a valid ReferenceType withing a Con file.
+ReferenceManager.AddType(type);
+
+// === Now we can use the custom ReferenceType in con file scripts
+// Create a new empty scope for this object
+Scope scope = new Scope();
+
+// Create our new object using the mapping we supplied above
+scope.Execute("GameSettings.create {type?} myGameSettings"); // Creates a new GameSettings object named "myGameSettings"
+scope.Execute("GameSettings.hudRBGColor 32/65/96"); // Example custom property
+```

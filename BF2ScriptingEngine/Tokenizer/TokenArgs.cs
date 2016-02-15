@@ -15,10 +15,14 @@ namespace BF2ScriptingEngine.Scripting
     public class TokenArgs
     {
         /// <summary>
-        /// Gets or Sets the the Object Template name that owns this token
+        /// Gets or Sets the the Object <see cref="ReferenceType"/> that 
+        /// owns this token
         /// </summary>
-        /// <example>ObjectTemplate, weaponTemplate, aiTemplate etc etc</example>
-        public string TemplateName { get; set; }
+        /// /// <remarks>
+        /// Ex: AiSettings.setMaxNumBots 32 :: AiSettings is the Reference Name
+        /// Ex: [ReferenceType].[PropertyName] [Values seperated by a space/tab]
+        /// </remarks>
+        public ReferenceType ReferenceType { get; set; }
 
         /// <summary>
         /// Gets or Sets the property name or function name

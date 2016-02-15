@@ -63,13 +63,7 @@ namespace BF2ScriptingEngine.Scripting
                 Match match = regex.Match(line);
                 if (match.Success)
                 {
-                    return new Token()
-                    {
-                        Match = match,
-                        Position = 0,
-                        Kind = token.Key,
-                        Value = line
-                    };
+                    return Token.Create(token.Key, match, null, 0);
                 }
             }
 

@@ -46,9 +46,13 @@
     <Compile Include="Extensions\IntExtensions.cs" />
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
+    <Compile Include="MissingObjectHandling.cs" />
     <Compile Include="ObjectEqualityComparer.cs" />
+    <Compile Include="ReferenceManager.cs" />
+    <Compile Include="ScopeType.cs" />
+    <Compile Include="Scripting\CollisionManager.cs" />
     <Compile Include="Scripting\RunStatement.cs" />
-    <Compile Include="TemplateType.cs" />
+    <Compile Include="ReferenceType.cs" />
     <Compile Include="Scope.cs" />
     <Compile Include="Scripting\Attributes\Comment.cs" />
     <Compile Include="Scripting\Attributes\Component.cs" />

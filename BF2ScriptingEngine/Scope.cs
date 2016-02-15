@@ -23,7 +23,7 @@ namespace BF2ScriptingEngine
         /// <summary>
         /// Contains a list of all objects registered in this scope
         /// </summary>
-        private Dictionary<Tuple<string, TemplateType>, ConFileObject> Objects;
+        private Dictionary<Tuple<string, ReferenceType>, ConFileObject> Objects;
 
         /// <summary>
         /// Gets a Key => Value map of expressions found in this file
@@ -49,7 +49,7 @@ namespace BF2ScriptingEngine
         /// <summary>
         /// Keeps a list of all active objects, for each template type
         /// </summary>
-        internal Dictionary<TemplateType, ConFileObject> ActiveObjects;
+        internal Dictionary<ReferenceType, ConFileObject> ActiveObjects;
 
         /// <summary>
         /// Creates a new instance <see cref="Scope"/>
@@ -85,15 +85,15 @@ namespace BF2ScriptingEngine
                 // Create new references because what is added to this Scope, should
                 // NOT be added to the parents scope as well!!!
                 var c = new ObjectEqualityComparer();
-                Objects = new Dictionary<Tuple<string, TemplateType>, ConFileObject>(ParentScope.Objects, c);
+                Objects = new Dictionary<Tuple<string, ReferenceType>, ConFileObject>(ParentScope.Objects, c);
                 Expressions = new Dictionary<string, Expression>(ParentScope.Expressions);
             }
             else
             {
                 // Create new instances
                 var c = new ObjectEqualityComparer();
-                ActiveObjects = new Dictionary<TemplateType, ConFileObject>();
-                Objects = new Dictionary<Tuple<string, TemplateType>, ConFileObject>(c);
+                ActiveObjects = new Dictionary<ReferenceType, ConFileObject>();
+                Objects = new Dictionary<Tuple<string, ReferenceType>, ConFileObject>(c);
                 Expressions = new Dictionary<string, Expression>();
 
                 // Copy over the active objects from our parent
@@ -132,13 +132,16 @@ namespace BF2ScriptingEngine
         /// </summary>
         /// <param name="obj">The object reference to add</param>
         /// <param name="setActive">
-        /// Set this as the active object of its <see cref="TemplateType"/>?
+        /// Set this as the active object of its <see cref="ReferenceType"/>?
         /// </param>
         public void AddObject(ConFileObject obj, bool setActive = true)
         {
+            // Ensure that we aren't passing peoples problems
+            CheckObjectToken(obj);
+
             // Generate key
-            var type = ScriptEngine.GetTemplateType(obj.ReferenceName);
-            var key = new Tuple<string, TemplateType>(obj.Name, type);
+            var type = obj.Token.TokenArgs.ReferenceType;
+            var key = new Tuple<string, ReferenceType>(obj.Name, type);
 
             // If object exists, throw exception
             if (ContainsObject(key))
@@ -162,9 +165,12 @@ namespace BF2ScriptingEngine
         /// <param name="token"></param>
         internal void AddObject(ConFileObject obj, Token token)
         {
+            // Ensure that we aren't passing peoples problems
+            CheckObjectToken(obj);
+
             // Generate key
-            var type = ScriptEngine.GetTemplateType(obj.ReferenceName);
-            var key = new Tuple<string, TemplateType>(obj.Name, type);
+            var type = obj.Token.TokenArgs.ReferenceType;
+            var key = new Tuple<string, ReferenceType>(obj.Name, type);
 
             // If object exists, then we fetch the existing reference
             if (ContainsObject(key))
@@ -193,8 +199,12 @@ namespace BF2ScriptingEngine
         /// <returns>true if the object exists in this scope, otherwise false</returns>
         public bool ContainsObject(ConFileObject obj)
         {
-            var type = ScriptEngine.GetTemplateType(obj.ReferenceName);
-            var key = new Tuple<string, TemplateType>(obj.Name, type);
+            // Ensure that we aren't passing peoples problems
+            CheckObjectToken(obj);
+
+            // Check for object existance
+            var type = obj.Token.TokenArgs.ReferenceType;
+            var key = new Tuple<string, ReferenceType>(obj.Name, type);
             return ContainsObject(key);
         }
 
@@ -202,12 +212,19 @@ namespace BF2ScriptingEngine
         /// Determines whether the specified object name and type exists in this scope.
         /// </summary>
         /// <param name="name">The object name we are searching for</param>
-        /// <param name="type">The <see cref="TemplateType"/> of the object</param>
+        /// <param name="type">The <see cref="ReferenceType"/> of the object</param>
         /// <returns>true if the object exists in this scope, otherwise false</returns>
         public bool ContainsObject(string name, Type type)
         {
-            var ttype = ScriptEngine.GetTemplateType(type);
-            var key = new Tuple<string, TemplateType>(name, ttype);
+            // Ensure that we have a valid Reference Type
+            var ttype = ReferenceManager.GetReferenceType(type);
+            if (ttype == null)
+            {
+                throw new Exception($"Unrecognized object type passed \"{type.Name}\"");
+            }
+
+            // Create our key
+            var key = new Tuple<string, ReferenceType>(name, ttype);
             return ContainsObject(key);
         }
 
@@ -215,7 +232,7 @@ namespace BF2ScriptingEngine
         /// Determines whether the specified object by key exists in this scope.
         /// </summary>
         /// <returns>true if the object exists in this scope, otherwise false</returns>
-        public bool ContainsObject(Tuple<string, TemplateType> key)
+        public bool ContainsObject(Tuple<string, ReferenceType> key)
         {
             // First, check this scope
             if (Objects.ContainsKey(key))
@@ -239,7 +256,9 @@ namespace BF2ScriptingEngine
         /// <param name="obj">The object we are activating</param>
         public void SetActiveObject(ConFileObject obj)
         {
-            TemplateType type = ScriptEngine.GetTemplateType(obj);
+            // Ensure that we aren't passing peoples problems
+            CheckObjectToken(obj);
+            ReferenceType type = obj.Token.TokenArgs.ReferenceType;
             ActiveObjects[type] = obj;
         }
 
@@ -248,7 +267,7 @@ namespace BF2ScriptingEngine
         /// </summary>
         /// <param name="type"></param>
         /// <returns>Returns the active object if one exists for the supplied type, or null</returns>
-        public ConFileObject GetActiveObject(TemplateType type)
+        public ConFileObject GetActiveObject(ReferenceType type)
         {
             if (ActiveObjects.ContainsKey(type))
                 return ActiveObjects[type];
@@ -268,8 +287,8 @@ namespace BF2ScriptingEngine
             string name = token.TokenArgs.Arguments.Last();
 
             // Create our Objects key
-            var type = ScriptEngine.GetTemplateType(tokenArgs.TemplateName);
-            var key = new Tuple<string, TemplateType>(name, type);
+            var type = tokenArgs.ReferenceType;
+            var key = new Tuple<string, ReferenceType>(name, type);
             return GetObject(key, token);
         }
 
@@ -280,7 +299,7 @@ namespace BF2ScriptingEngine
         /// <param name="key"></param>
         /// <param name="token"></param>
         /// <returns></returns>
-        internal ConFileObject GetObject(Tuple<string, TemplateType> key, Token token)
+        internal ConFileObject GetObject(Tuple<string, ReferenceType> key, Token token)
         {
             // Check internal first!
             if (!Objects.ContainsKey(key))
@@ -289,7 +308,11 @@ namespace BF2ScriptingEngine
                 switch (MissingObjectHandling)
                 {
                     case MissingObjectHandling.CreateNew:
-                        Objects[key] = ScriptEngine.CreateObject(token);
+                        // Get our method
+                        var Method = token.TokenArgs.ReferenceType.GetMethod(token.TokenArgs.PropertyName);
+
+                        // Create the object template
+                        Objects[key] = Method.Invoke(token);
                         break;
                     case MissingObjectHandling.CheckParent:
                         // If we dont have a parent to ask, throw an error
@@ -327,8 +350,15 @@ namespace BF2ScriptingEngine
         /// <returns>Returns the requested object if found, otherwise null</returns>
         public T GetObject<T>(string name) where T : ConFileObject
         {
-            var type = ScriptEngine.GetTemplateType(typeof(T));
-            var key = new Tuple<string, TemplateType>(name, type);
+            // Fetch our object type, and make sure its valid
+            var type = ReferenceManager.GetReferenceType(typeof(T));
+            if (type == null)
+            {
+                throw new Exception($"Unrecognized object type passed \"{typeof(T).Name}\"");
+            }
+
+            // Create our key
+            var key = new Tuple<string, ReferenceType>(name, type);
 
             // Make sure the object exists before causing an exception!
             if (ContainsObject(key))
@@ -344,8 +374,15 @@ namespace BF2ScriptingEngine
         /// <returns></returns>
         internal ConFileObject GetObject(string name, Type type, Token token)
         {
-            var ttype = ScriptEngine.GetTemplateType(type);
-            var key = new Tuple<string, TemplateType>(name, ttype);
+            // Get the object type
+            var ttype = ReferenceManager.GetReferenceType(type);
+            if (type == null)
+            {
+                throw new Exception($"Unrecognized object type passed \"{type.Name}\"");
+            }
+
+            // Create our key
+            var key = new Tuple<string, ReferenceType>(name, ttype);
             return GetObject(key, token);
         }
 
@@ -409,51 +446,28 @@ namespace BF2ScriptingEngine
 
             return args.ToArray();
         }
-    }
-
-    public enum ScopeType
-    {
-        /// <summary>
-        /// Indicates that this <see cref="Scope"/> will keep References to Objects
-        /// obtained from the parent <see cref="Scope"/>.
-        /// </summary>
-        Attached,
 
         /// <summary>
-        /// Indicates that any Objects fetched from a Parent <see cref="Scope"/> will 
-        /// be Deeply cloned, and NOT retain their Reference
+        /// Ensures that our token is valid
         /// </summary>
-        Detached
-    }
-
-    /// <summary>
-    /// Provides an instruction to a <see cref="Scope"/> to perform if the said
-    /// Scope does not have a named <see cref="ConFileObject"/> defined.
-    /// </summary>
-    public enum MissingObjectHandling
-    {
-        /// <summary>
-        /// Tells the Scope to just create a new local instance of the
-        /// object if we cannot locate a reference in this <see cref="Scope"/>
-        /// </summary>
-        CreateNew,
-
-        /// <summary>
-        /// Tells the Scope to ask the parent <see cref="Scope"/> for
-        /// the object if we cannot locate a reference in this <see cref="Scope"/>
-        /// </summary>
-        /// <remarks>
-        /// If the ScopeType of the calling scope is set to Detached, then the object
-        /// we obtain from the Parent Scope will be Deeply Cloned, therfor any changes 
-        /// we make to that object inside this scope will not affect changes outside and
-        /// vise-versa
-        /// </remarks>
-        CheckParent,
-
-        /// <summary>
-        /// Tells the Scope to throw an <see cref="Exception"/> if we
-        /// cannot locate the requested object
-        /// </summary>
-        ThrowError
+        /// <param name="obj"></param>
+        private void CheckObjectToken(ConFileObject obj)
+        {
+            // Ensure that we aren't passing peoples problems
+            if (obj?.Token?.TokenArgs == null)
+            {
+                throw new ArgumentNullException(
+                    "obj.Token.TokenArgs",
+                    $"TokenArgs are not defined on \"{obj.Name}\"!"
+                );
+            }
+            else if (obj.Token.TokenArgs.ReferenceType == null)
+            {
+                throw new ArgumentNullException(
+                    "obj.Token.TokenArgs.ReferenceType",
+                    $"ReferenceType is not defined on \"{obj.Name}\"!"
+                );
+            }
+        }
     }
 }

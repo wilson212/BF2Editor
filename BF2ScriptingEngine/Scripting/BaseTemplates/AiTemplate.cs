@@ -64,16 +64,16 @@ namespace BF2ScriptingEngine.Scripting
         /// <param name="Name"></param>
         /// <param name="ConFile"></param>
         /// <param name="Token"></param>
-        public AiTemplate(string Name, Token Token) : base(Name, "aiTemplate", Token) { }
+        public AiTemplate(string Name, Token Token) : base(Name, Token) { }
 
         /// <summary>
         /// Creates a new instance of AiTemplate with the following attributes
         /// </summary>
         /// <param name="tokenArgs">The command line token</param>
-        /// <param name="Token">The ConFile token</param>
-        public static AiTemplate Create(TokenArgs tokenArgs, Token Token)
+        /// <param name="token">The ConFile token</param>
+        public static AiTemplate Create(Token token)
         {
-            return new AiTemplate(tokenArgs.Arguments.Last(), Token);
+            return new AiTemplate(token.TokenArgs.Arguments.Last(), token);
         }
     }
 }

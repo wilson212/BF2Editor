@@ -145,7 +145,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </summary>
         /// <param name="Name">The name of this object</param>
         /// <param name="Token">The ConFile token</param>
-        public ObjectTemplate(string Name, Token Token) : base(Name, "ObjectTemplate", Token)
+        public ObjectTemplate(string Name, Token Token) : base(Name, Token)
         {
             // === Create method instances
             CreateComponent = new ObjectMethod<string>(Method_CreateComponent);
@@ -304,17 +304,17 @@ namespace BF2ScriptingEngine.Scripting
         /// Creates a new instance of ObjectTemplate with the following attributes
         /// </summary>
         /// <param name="tokenArgs">The command line token</param>
-        /// <param name="Token">The ConFile token</param>
-        public static ConFileObject Create(TokenArgs tokenArgs, Token Token)
+        /// <param name="token">The ConFile token</param>
+        public static ConFileObject Create(Token token)
         {
-            string type = tokenArgs.Arguments[0];
-            string name = tokenArgs.Arguments[1];
+            string type = token.TokenArgs.Arguments[0];
+            string name = token.TokenArgs.Arguments[1];
 
             switch (type.ToLowerInvariant())
             {
-                case "simpleobject": return new SimpleObject(name, Token);
-                case "kit": return new Kit(name, Token);
-                case "itemcontainer": return new ItemContainer(name, Token);
+                case "simpleobject": return new SimpleObject(name, token);
+                case "kit": return new Kit(name, token);
+                case "itemcontainer": return new ItemContainer(name, token);
                 case "playercontrolobject":
                 case "genericfirearm":
                 default:

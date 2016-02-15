@@ -33,22 +33,22 @@ namespace BF2ScriptingEngine.Scripting
         /// </summary>
         /// <param name="Name"></param>
         /// <param name="Token"></param>
-        public GeometryTemplate(string Name, Token Token) : base(Name, "GeometryTemplate", Token) { }
+        public GeometryTemplate(string Name, Token Token) : base(Name, Token) { }
 
         /// <summary>
-        /// Creates a new instance of WeaponTemplate with the following attributes
+        /// Creates a new instance of GeometryTemplate with the following attributes
         /// </summary>
         /// <param name="tokenArgs">The command line token</param>
-        /// <param name="Token">The ConFile token</param>
-        public static GeometryTemplate Create(TokenArgs tokenArgs, Token Token)
+        /// <param name="token">The ConFile token</param>
+        public static GeometryTemplate Create(Token token)
         {
-            string type = tokenArgs.Arguments[0];
-            string name = tokenArgs.Arguments[1];
+            string type = token.TokenArgs.Arguments[0];
+            string name = token.TokenArgs.Arguments[1];
 
             switch (type.ToLowerInvariant())
             {
-                case "bundledmesh": return new BundledMesh(name, Token);
-                case "skinnedmesh": return new SkinnedMesh(name, Token);
+                case "bundledmesh": return new BundledMesh(name, token);
+                case "skinnedmesh": return new SkinnedMesh(name, token);
                 default:
                     throw new NotSupportedException("Invalid Object Type \"" + type + "\".");
             }

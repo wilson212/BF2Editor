@@ -185,7 +185,7 @@ namespace BF2ScriptingEngine
             else
             {
                 // Create reference name. 
-                string referenceName = $"{Token.TokenArgs.TemplateName}.{Token.TokenArgs.PropertyName}";
+                string referenceName = $"{Token.TokenArgs.ReferenceType.Name}.{Token.TokenArgs.PropertyName}";
 
                 // Append comment if we have one
                 //if (!String.IsNullOrEmpty(Token.Comment?.Value))
@@ -291,7 +291,7 @@ namespace BF2ScriptingEngine
             // Ensure that we have the correct number of arguments
             if (values.Length != 1)
             {
-                string error = $"Invalid values count for {tkn.TokenArgs.TemplateName}; Got {values.Length}, Expecting 1.";
+                string error = $"Invalid values count for {tkn.TokenArgs.ReferenceType.Name}; Got {values.Length}, Expecting 1.";
                 Logger.Error(error, token?.File, token?.Position ?? 0);
                 throw new Exception(error);
             }
@@ -353,7 +353,7 @@ namespace BF2ScriptingEngine
             // Ensure that we have the correct number of arguments
             if (values.Length != 2)
             {
-                string error = $"Invalid values count for {tkn.TokenArgs.TemplateName}; Got {values.Length}, Expecting 2.";
+                string error = $"Invalid values count for {tkn.TokenArgs.ReferenceType.Name}; Got {values.Length}, Expecting 2.";
                 Logger.Error(error, token?.File, token?.Position ?? 0);
                 throw new Exception(error);
             }
@@ -366,7 +366,7 @@ namespace BF2ScriptingEngine
         public override string ToFileFormat()
         {
             // Create reference name. 
-            string referenceName = $"{Token.TokenArgs.TemplateName}.{Token.TokenArgs.PropertyName}";
+            string referenceName = $"{Token.TokenArgs.ReferenceType.Name}.{Token.TokenArgs.PropertyName}";
             StringBuilder sb = new StringBuilder(referenceName);
 
             // Add Items
@@ -442,7 +442,7 @@ namespace BF2ScriptingEngine
             // Ensure that we have the correct number of arguments
             if (values.Length != 3)
             {
-                string error = $"Invalid values count for {tkn.TokenArgs.TemplateName}; Got {values.Length}, Expecting 3.";
+                string error = $"Invalid values count for {tkn.TokenArgs.ReferenceType.Name}; Got {values.Length}, Expecting 3.";
                 Logger.Error(error, token?.File, token?.Position ?? 0);
                 throw new Exception(error);
             }
@@ -456,7 +456,7 @@ namespace BF2ScriptingEngine
         public override string ToFileFormat()
         {
             // Create reference name. 
-            string referenceName = $"{Token.TokenArgs.TemplateName}.{Token.TokenArgs.PropertyName}";
+            string referenceName = $"{Token.TokenArgs.ReferenceType.Name}.{Token.TokenArgs.PropertyName}";
             StringBuilder sb = new StringBuilder(referenceName);
 
             // Add Items
@@ -547,7 +547,7 @@ namespace BF2ScriptingEngine
             // Ensure that we have the correct number of arguments
             if (values.Length != 4)
             {
-                string error = $"Invalid values count for {tkn.TokenArgs.TemplateName}; Got {values.Length}, Expecting 4.";
+                string error = $"Invalid values count for {tkn.TokenArgs.ReferenceType.Name}; Got {values.Length}, Expecting 4.";
                 Logger.Error(error, token?.File, token?.Position ?? 0);
                 throw new Exception(error);
             }
@@ -562,7 +562,7 @@ namespace BF2ScriptingEngine
         public override string ToFileFormat()
         {
             // Create reference name. 
-            string referenceName = $"{Token.TokenArgs.TemplateName}.{Token.TokenArgs.PropertyName}";
+            string referenceName = $"{Token.TokenArgs.ReferenceType.Name}.{Token.TokenArgs.PropertyName}";
             StringBuilder sb = new StringBuilder(referenceName);
 
             // Add Items

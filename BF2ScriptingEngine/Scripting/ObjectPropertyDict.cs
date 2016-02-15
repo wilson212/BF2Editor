@@ -67,7 +67,7 @@ namespace BF2ScriptingEngine.Scripting
             // Ensure that we have the correct number of arguments
             if (values.Length != 2)
             {
-                string error = $"Invalid values count for {tkn.TokenArgs.TemplateName}; Got {values.Length}, Expecting 2.";
+                string error = $"Invalid values count for {tkn.TokenArgs.ReferenceType.Name}; Got {values.Length}, Expecting 2.";
                 Logger.Error(error, token?.File, token?.Position ?? 0);
                 throw new Exception(error);
             }

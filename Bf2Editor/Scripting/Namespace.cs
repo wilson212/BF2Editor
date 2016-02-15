@@ -52,6 +52,21 @@ namespace BF2Editor
             Files = new Dictionary<string, ConFile>(StringComparer.InvariantCultureIgnoreCase);
         }
 
+        /// <summary>
+        /// Loads the file name specified, with a relative path from the 
+        /// <see cref="NameSpace.Directory"/> property. Use a forward slash 
+        /// to represent files in sub folders.
+        /// </summary> 
+        /// <param name="fileName">
+        /// The fileName to load in this <see cref="NameSpace.Directory"/>, or sub
+        /// folder path and filename from this NameSpace directory.
+        /// </param>
+        /// <param name="overwrite">
+        /// If the file is already loaded in this NameSpace, do we overwrite the existing
+        /// loaded file and its objects? If false, and Exception will be thrown if this file 
+        /// is already loaded.
+        /// </param>
+        /// <returns>Returns true if the file exists and loaded successfully, false otherwise</returns>
         public async Task<bool> LoadFile(string fileName, bool overwrite = false)
         {
             // Make sure this isnt loaded already...
@@ -79,10 +94,16 @@ namespace BF2Editor
             }
             catch
             {
+                // Pass the exception up
                 throw;
             }
         }
 
+        /// <summary>
+        /// Loads an array of files, with a relative path from the 
+        /// <see cref="NameSpace.Directory"/> property.
+        /// </summary>
+        /// <param name="fileNames"></param>
         public async Task LoadFiles(string[] fileNames)
         {
             foreach (string file in fileNames)
@@ -93,6 +114,7 @@ namespace BF2Editor
 
         protected Scope CreateScope()
         {
+            // Create a new Detached scope
             Scope scope = new Scope(GlobalScope, ScopeType.Detached);
             scope.MissingObjectHandling = MissingObjectHandling.CheckParent;
             return scope;

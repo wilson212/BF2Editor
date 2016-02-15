@@ -52,11 +52,6 @@ namespace BF2ScriptingEngine
 
             // === Objects === //
 
-            // Object creation
-            new KeyValuePair<TokenType, string>(TokenType.ObjectStart, 
-                @"^(?<reference>[a-z]+)\.create([\s|\t]+)(?<value>.*)$"
-            ),
-
             new KeyValuePair<TokenType, string>(TokenType.ActiveSwitch,
                 @"^(?<reference>[a-z]+)\.active(?<type>[a-z_]*)([\s|\t]+)(?<value>.*)?$"
             ),
@@ -90,22 +85,6 @@ namespace BF2ScriptingEngine
 
             // Finally, match everything else
             new KeyValuePair<TokenType, string>(TokenType.None, @"^(?<value>.*?)$")
-        };
-
-        /// <summary>
-        /// Gets a list of Assignable types for the GetObjectType method
-        /// </summary>
-        /// <remarks>
-        /// This list just contains what we can parse so far...
-        /// </remarks>
-        private static Dictionary<TemplateType, Type> AssignableTypes = new Dictionary<TemplateType, Type>()
-        {
-            { TemplateType.ObjectTemplate, typeof(ObjectTemplate) },
-            { TemplateType.WeaponTemplate, typeof(WeaponTemplate) },
-            { TemplateType.AiTemplate, typeof(AiTemplate) },
-            { TemplateType.AiTemplatePlugin, typeof(AiTemplatePlugin) },
-            { TemplateType.KitTemplate, typeof(KitTemplate) },
-            { TemplateType.GeometryTemplate, typeof(GeometryTemplate) },
         };
 
         /// <summary>
@@ -174,17 +153,12 @@ namespace BF2ScriptingEngine
         public static void ExecuteInScope(Token token, Scope scope)
         {
             // create properties
-            TokenArgs tokenArgs;
             ConFileObject currentObj;
 
             switch (token.Kind)
             {
                 case TokenType.ObjectStart:
                 case TokenType.ActiveSwitch:
-                    // Split line into function call followed by and arguments
-                    tokenArgs = GetTokenArgs(token.Value);
-                    token.TokenArgs = tokenArgs;
-
                     // Fetch our object
                     if (token.Kind == TokenType.ActiveSwitch)
                     {
@@ -194,8 +168,13 @@ namespace BF2ScriptingEngine
                     }
                     else
                     {
+                        // Get our method
+                        var Method = token.TokenArgs.ReferenceType.GetMethod(
+                            token.TokenArgs.PropertyName
+                        );
+
                         // Fetch our new working object.
-                        currentObj = CreateObject(token);
+                        currentObj = Method.Invoke(token);
                         scope.AddObject(currentObj, token);
                     }
 
@@ -208,12 +187,8 @@ namespace BF2ScriptingEngine
                     }
                     break;
                 case TokenType.ObjectProperty:
-                    // Convert args to an object
-                    tokenArgs = GetTokenArgs(token.Value);
-                    token.TokenArgs = tokenArgs;
-
                     // Get the last used object
-                    TemplateType type = GetTemplateType(tokenArgs.TemplateName);
+                    ReferenceType type = token.TokenArgs.ReferenceType;
                     currentObj = scope.GetActiveObject(type);
 
                     // Make sure we have an object to work with and the object
@@ -221,8 +196,8 @@ namespace BF2ScriptingEngine
                     if (currentObj == null)
                     {
                         // If we are here, we have an issue...
-                        string error = $"Failed to set property \"{tokenArgs.TemplateName}.{tokenArgs.PropertyName}\""
-                            + ". No object reference set!";
+                        string error = $"Failed to set property \"{token.TokenArgs.ReferenceType.Name}.\""
+                            + $"{token.TokenArgs.PropertyName}. No object reference set!";
                         Logger.Error(error, token.File, token.Position);
                         throw new Exception(error);
                     }
@@ -284,17 +259,15 @@ namespace BF2ScriptingEngine
             // in the same file before its defined
             // NOTE: Do not create object references for .Active and .safeActive
             // ============
-            foreach (Token Tkn in fileTokens.Where(x => x.Kind == TokenType.ObjectStart).OrderBy(x => x.Position))
+            foreach (Token token in fileTokens.Where(x => x.Kind == TokenType.ObjectStart).OrderBy(x => x.Position))
             {
-                // Split line into function call followed by and arguments
-                Tkn.TokenArgs = GetTokenArgs(Tkn.Value);
-
-                // Create the object template
-                ConFileObject template = CreateObject(Tkn);
+                // Create the object
+                var Method = token.TokenArgs.ReferenceType.GetMethod(token.TokenArgs.PropertyName);
+                ConFileObject template = Method.Invoke(token);
 
                 // Finally, register the object with the ObjectManager
-                currentScope.AddObject(template, Tkn);
-                Logger.Info($"Created {template.ReferenceName} \"{template.Name}\"", workingFile, Tkn.Position);
+                currentScope.AddObject(template, token);
+                Logger.Info($"Created {token.TokenArgs.ReferenceType} \"{template.Name}\"", workingFile, token.Position);
             }
 
             // ============
@@ -305,7 +278,7 @@ namespace BF2ScriptingEngine
             // Create our needed objects
             RemComment comment = null;
             ConFileObject currentObj = null;
-            TemplateType type;
+            ReferenceType type;
             var builder = new StringBuilder();
 
             // We use a for loop here so we can skip rem blocks and statements
@@ -319,10 +292,6 @@ namespace BF2ScriptingEngine
                     {
                         case TokenType.ObjectStart:
                         case TokenType.ActiveSwitch:
-                            // Split line into function call followed by and arguments
-                            if (token.TokenArgs == null)
-                                token.TokenArgs = GetTokenArgs(token.Value);
-
                             // NOTE: the object was created before this loop!
                             currentObj = currentScope.GetObject(token);
                             currentScope.SetActiveObject(currentObj);
@@ -341,12 +310,10 @@ namespace BF2ScriptingEngine
                             break;
                         case TokenType.ObjectProperty:
                             // Convert args to an object
-                            tokenArgs = GetTokenArgs(token.Value);
-                            token.TokenArgs = tokenArgs;
-                            //token.Comment = comment;
+                            tokenArgs = token.TokenArgs;
 
                             // Get the last used object
-                            type = GetTemplateType(tokenArgs.TemplateName);
+                            type = tokenArgs.ReferenceType;
                             currentObj = currentScope.GetActiveObject(type);
 
                             // Make sure we have an object to work with and the object
@@ -354,8 +321,8 @@ namespace BF2ScriptingEngine
                             if (currentObj == null)
                             {
                                 // If we are here, we have an issue...
-                                string error = $"Failed to set property \"{tokenArgs.TemplateName}.{tokenArgs.PropertyName}\""
-                                    + ". No object reference set!";
+                                string error = $"Failed to set property \"{token.TokenArgs.ReferenceType.Name}.\""
+                                    + $"{token.TokenArgs.PropertyName}. No object reference set!";
                                 throw new Exception(error);
                             }
 
@@ -493,31 +460,6 @@ namespace BF2ScriptingEngine
         }
 
         /// <summary>
-        /// Converts the value of a <see cref="Token"/> into an array of parameters.
-        /// Any values that are qouted will remain intact
-        /// </summary>
-        /// <param name="tokenValue">The value of the token</param>
-        /// <returns></returns>
-        internal static TokenArgs GetTokenArgs(string tokenValue)
-        {
-            // Create instance
-            TokenArgs tokenArgs = new TokenArgs();
-
-            // Break the line into {0 => Template name, 1 => The rest of the line}
-            // We only split into 2 strings, because some values have dots
-            string[] temp = tokenValue.Split(new char[] { '.' }, 2);
-            tokenArgs.TemplateName = temp[0];
-
-            // Split the line after the reference call into arguments
-            string[] parts = temp[1].SplitWithQuotes(SplitChars, true);
-            tokenArgs.PropertyName = parts[0];
-
-            // Skip the property/function name
-            tokenArgs.Arguments = parts.Skip(1).ToArray();
-            return tokenArgs;
-        }
-
-        /// <summary>
         /// Starting at <paramref name="offset"/>, this method will not parse any of the 
         /// <paramref name="fileTokens"/> until the current Token type matches the 
         /// <paramref name="endType"/> specified. All contents starting at the offset are stored
@@ -564,99 +506,6 @@ namespace BF2ScriptingEngine
             string error = $"No closing tag found for \"{currentToken.Kind}\" ({currentToken.Position}) found!";
             Logger.Error(error, currentToken.File, currentToken.Position);
             throw new Exception(error);
-        }
-
-        /// <summary>
-        /// The Create command is used to inform the scripting engine that a new object 
-        /// is going to be created. All properties and commands following a create command 
-        /// will be applied to that object, until another create command or the end of the 
-        /// file is encountered.
-        /// </summary>
-        /// <param name="tokenArgs">The token arguments that make up the create command line</param>
-        /// <param name="Tkn">The token object from the <see cref="Tokenizer"/></param>
-        /// <returns></returns>
-        internal static ConFileObject CreateObject(Token Tkn)
-        {
-            TokenArgs tokenArgs = Tkn.TokenArgs;
-            var type = GetTemplateType(tokenArgs.TemplateName, Tkn.File, Tkn.Position);
-
-            switch (type)
-            {
-                case TemplateType.AiTemplate: return AiTemplate.Create(tokenArgs, Tkn);
-                case TemplateType.AiTemplatePlugin: return AiTemplatePlugin.Create(tokenArgs, Tkn);
-                case TemplateType.WeaponTemplate: return WeaponTemplate.Create(tokenArgs, Tkn);
-                case TemplateType.ObjectTemplate: return ObjectTemplate.Create(tokenArgs, Tkn);
-                case TemplateType.KitTemplate: return KitTemplate.Create(tokenArgs, Tkn);
-                case TemplateType.GeometryTemplate: return GeometryTemplate.Create(tokenArgs, Tkn);
-                default:
-                    string error = $"Reference call to '{tokenArgs.TemplateName}' is not supported";
-                    Logger.Error(error, Tkn.File, Tkn.Position);
-                    throw new NotSupportedException(error);
-            }
-        }
-
-        /// <summary>
-        /// This method analysis a <see cref="ConFileObject"/> and returns
-        /// the <see cref="TemplateType"/> representation of the object.
-        /// </summary>
-        /// <param name="obj"></param>
-        public static TemplateType GetTemplateType(ConFileObject obj)
-        {
-            return GetTemplateType(obj.ReferenceName, obj.File, obj.Tokens[0]?.Position ?? 0);
-        }
-
-        /// <summary>
-        /// This method analysis a <see cref="ConFileObject.ReferenceName"/> and returns
-        /// the <see cref="TemplateType"/> representation of the object.
-        /// </summary>
-        /// <param name="referenceName">The reference string used to call upon this type of object</param>
-        public static TemplateType GetTemplateType(string referenceName)
-        {
-            TemplateType type;
-            if (!Enum.TryParse<TemplateType>(referenceName, true, out type))
-            {
-                string error = $"No TemplateType definition for \"{referenceName}\"";
-                throw new Exception(error);
-            }
-
-            return type;
-        }
-
-        /// <summary>
-        /// This method analysis a <see cref="ConFileObject.ReferenceName"/> and returns
-        /// the <see cref="TemplateType"/> representation of the object.
-        /// </summary>
-        /// <param name="referenceName">The reference string used to call upon this type of object</param>
-        /// <param name="file">Used in the <see cref="ScriptEngine"/></param>
-        /// <param name="line">Used in the <see cref="ScriptEngine"/></param>
-        public static TemplateType GetTemplateType(string referenceName, ConFile file, int line)
-        {
-            TemplateType type;
-            if (!Enum.TryParse<TemplateType>(referenceName, true, out type))
-            {
-                string error = $"No TemplateType definition for \"{referenceName}\"";
-                Logger.Error(error, file, line);
-                throw new Exception(error);
-            }
-
-            return type;
-        }
-
-        /// <summary>
-        /// This method returns the <see cref="TemplateType"/> representation
-        /// of the supplied confile object type
-        /// </summary>
-        /// <param name="objType">The derived <see cref="ConFileObject"/> type.</param>
-        /// <returns></returns>
-        public static TemplateType GetTemplateType(Type objType)
-        {
-            foreach (KeyValuePair<TemplateType, Type> item in AssignableTypes)
-            {
-                if (item.Value.IsAssignableFrom(objType))
-                    return item.Key;
-            }
-
-            throw new Exception("Invalid template type: " + objType.Name);
         }
     }
 }

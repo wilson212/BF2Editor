@@ -18,27 +18,24 @@ namespace BF2ScriptingEngine.Scripting
     /// the values in their ObjectProperty fields using reflection.
     /// 
     /// Property Value Types:
-    ///  - A <see cref="List{T}"/> represents that the property is used multiple times,
+    ///  - A <see cref="ObjectPropertyList{T1}"/> represents that the property is used multiple times,
     ///    and each item will be seperated onto a new line. Ex: addTemplatePlugin. The
     ///    Generic Type {T} must be a supported value.
     ///    NOTE: if the list is meant to display its index before its values, then the 
     ///      IndexedCollection attribute should be attached to the Property.
-    ///  - An Array of T represents that the property has multiple arguments for its value,
-    ///    and uses just 1 line for all of its arguments. This can only be a single dimmension
-    ///    of Double, Int32, String, or an internal Enum.
-    ///  - A <see cref="Dictionary{TKey, TValue}"/> is used much like a List, wheras the
+    ///  - A <see cref="ObjectPropertyDict{TKey, TVal}"/> is used much like a List, wheras the
     ///    property can be used multiple times to add values, and will be seperated onto a new line,
     ///    however this collection uses a key as an identifier. Ex: setStrength. The Generic Type {TVal} 
     ///    must be a supported value.
     ///    
-    /// Supported values (single dimmension array of the follwing or are single value):
+    /// Supported values (single value, no Arrays or IEnumerables):
     ///  - Int32
-    ///  - Double
-    ///  - Decimal
+    ///  - Double (Keeps up to 4 decimals, removes trailing zeros)
+    ///  - Decimal (Keeps up to 16 decimals, does NOT remove trailing zeroes)
     ///  - String
     ///  - Bool used as an int ( 1 or 0 )
-    ///  - Internal Enum
-    ///  - ObjectProperty{T}
+    ///  - Enum
+    ///  - ConFileObject (Only if the the ObjectProperty has 1 argument)
     /// </remarks>
     public abstract class ConFileObject : ConFileEntry
     {
@@ -51,15 +48,6 @@ namespace BF2ScriptingEngine.Scripting
         /// The name of this Object given in the create command
         /// </summary>
         public string Name { get; protected set; }
-
-        /// <summary>
-        /// The reference string used to reference this object entry
-        /// </summary>
-        /// <remarks>
-        /// Ex: AiSettings.setMaxNumBots 32 :: AiSettings is the Reference Name
-        /// Ex: [ReferenceName].[PropertyName] [Values seperated by a space/tab]
-        /// </remarks>
-        public string ReferenceName { get; protected set; }
 
         /// <summary>
         /// Gets or Sets the comment if there is one
@@ -97,13 +85,12 @@ namespace BF2ScriptingEngine.Scripting
         /// <param name="name">The name of this object</param>
         /// <param name="referenceAs">How this object is referenced (ObjectTemplate, weaponTemplate etc etc)</param>
         /// <param name="token">The token which creates this object</param>
-        public ConFileObject(string name, string referenceAs, Token token)
+        public ConFileObject(string name, Token token)
         {
             // Set object variables
             this.Name = name;
             this.File = token.File;
             this.Tokens = new List<Token>() { token };
-            this.ReferenceName = referenceAs;
 
             // Set base token too
             base.Token = token;
@@ -200,7 +187,7 @@ namespace BF2ScriptingEngine.Scripting
                 TokenArgs args = new TokenArgs()
                 {
                     PropertyName = propertyName,
-                    TemplateName = this.ReferenceName,
+                    ReferenceType = this.Token.TokenArgs.ReferenceType,
                 };
                 Token token = Token.Create(TokenType.ObjectProperty, args, File);
 
@@ -231,6 +218,11 @@ namespace BF2ScriptingEngine.Scripting
             Remove(prop.Value);
         }
 
+        /// <summary>
+        /// Removes the <see cref="ObjectProperty"/> isntance from this object.
+        /// As a result, the property will be excluded when calling <see cref="ConFileObject.ToFileFormat"/>
+        /// and the <see cref="ConFile.Save"/> methods
+        /// </summary>
         protected void Remove(PropertyInfo property)
         {
             // Grab the current value
@@ -349,21 +341,6 @@ namespace BF2ScriptingEngine.Scripting
             throw new Exception("Invalid Object Property \"" + propertyName + "\".");
         }
 
-        /// <summary>
-        /// This method is used to ensure that 2 Types match
-        /// </summary>
-        /// <param name="sourceType"></param>
-        /// <param name="destType"></param>
-        protected void EnsureTypeMatch(Type sourceType, Type destType)
-        {
-            // Make sure the types match!
-            if (sourceType.GenericTypeArguments[0] != destType) // && !sourceType.IsAssignableFrom(destType))
-                throw new Exception("Cannot convert " + destType.Name + " to " + sourceType.Name);
-        }
-
-        public override string ToString()
-        {
-            return Name;
-        }
+        public override string ToString() => Name;
     }
 }
