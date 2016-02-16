@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace BF2ScriptingEngine.Scripting.Components
 {
-    public class WeaponHud : ConFileObject, IComponent
+    public abstract class FireComp : ConFileObject, IComponent
     {
-        public WeaponHud(string name, Token token) : base("WeaponHud", token)
+        public FireComp(string name, Token token) : base(name, token)
         {
 
         }

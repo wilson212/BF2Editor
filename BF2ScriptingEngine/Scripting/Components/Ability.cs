@@ -3,7 +3,7 @@ using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting.Components
 {
-    public class Ability : ObjectTemplate, IComponent
+    public class Ability : ConFileObject, IComponent
     {
         [PropertyName("hasRepairingAbility")]
         public ObjectProperty<bool> HasRepairingAbility { get; set; }

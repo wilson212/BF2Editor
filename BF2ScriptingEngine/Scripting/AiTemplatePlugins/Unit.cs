@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting
@@ -15,8 +16,8 @@ namespace BF2ScriptingEngine.Scripting
         /// <remarks>Protected variable. Use <paramref name="OffensiveStrategicStrength"/> and 
         /// <paramref name="DefensiveStrategicStrength"/> instead
         /// </remarks>
-        [PropertyName("setStrategicStrength"), IndexedList]
-        protected ObjectProperty<List<int>> Strengths { get; set; }
+        [PropertyName("setStrategicStrength")]
+        protected ObjectPropertyList<int, int> Strengths { get; set; }
 
         [PropertyName("setSelectKey")]
         public ObjectProperty<string> SetSelectKey { get; set; }
@@ -49,18 +50,22 @@ namespace BF2ScriptingEngine.Scripting
             get
             {
                 // Ensure we have the proper amount of elements
-                if (Strengths == null || Strengths.Value.Count < 2)
+                if (Strengths == null || Strengths.Items.Count < 2)
                     throw new Exception("Property not set");
 
-                return Strengths.Value[0];
+                // Fetch the item
+                var item = Strengths.Where(x => x.Value1 == 0).FirstOrDefault();
+                return item.Value2;
             }
             set
             {
                 // Ensure we have the proper amount of elements
-                if (Strengths == null || Strengths.Value.Count < 2)
+                if (Strengths == null || Strengths.Items.Count < 2)
                     throw new Exception("Property not set");
 
-                Strengths.Value[0] = value;
+                // Fetch the item
+                var item = Strengths.Where(x => x.Value1 == 0).FirstOrDefault();
+                item.Value2 = value;
             }
         }
 
@@ -69,21 +74,25 @@ namespace BF2ScriptingEngine.Scripting
         /// </summary>
         public int DefensiveStrategicStrength
         {
-            get 
+            get
             {
                 // Ensure we have the proper amount of elements
-                if (Strengths == null || Strengths.Value.Count < 2)
+                if (Strengths == null || Strengths.Items.Count < 2)
                     throw new Exception("Property not set");
 
-                return Strengths.Value[1]; 
+                // Fetch the item
+                var item = Strengths.Where(x => x.Value1 == 1).FirstOrDefault();
+                return item.Value2;
             }
-            set 
+            set
             {
                 // Ensure we have the proper amount of elements
-                if (Strengths == null || Strengths.Value.Count < 2)
+                if (Strengths == null || Strengths.Items.Count < 2)
                     throw new Exception("Property not set");
 
-                Strengths.Value[1] = value; 
+                // Fetch the item
+                var item = Strengths.Where(x => x.Value1 == 1).FirstOrDefault();
+                item.Value2 = value;
             }
         }
 

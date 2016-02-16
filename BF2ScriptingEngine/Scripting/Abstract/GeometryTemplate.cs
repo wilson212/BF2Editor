@@ -25,7 +25,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </remarks>
         /// <seealso cref="http://bfmods.com/mdt/scripting/GeometryTemplate/Properties/SetLodDistance.html"/>
         [PropertyName("setSubGeometryLodDistance")]
-        public ObjectPropertyList<int, int, int> SubGeometryLodDistances { get; internal set; }
+        public ObjectPropertyList<int, int, int> SubGeometryLodDistances { get; internal set; } 
 
         #region Mappings
 
@@ -47,11 +47,10 @@ namespace BF2ScriptingEngine.Scripting
         {
             // Create object mappings
             var Comparer = StringComparer.InvariantCultureIgnoreCase;
-            ObjectTypes = new Dictionary<string, Type>(Comparer)
-            {
-                { "BundledMesh", typeof(BundledMesh) },
-                { "SkinnedMesh", typeof(SkinnedMesh) }
-            };
+            Type baseType = typeof(GeometryTemplate);
+            Type[] typelist = TypeCache.GetTypesInNamespace("BF2ScriptingEngine.Scripting")
+                .Where(x => baseType.IsAssignableFrom(x)).ToArray();
+            ObjectTypes = typelist.ToDictionary(x => x.Name, v => v, Comparer);
         }
 
         /// <summary>
@@ -76,7 +75,7 @@ namespace BF2ScriptingEngine.Scripting
 
             // Ensure this type is supported
             if (!ObjectTypes.ContainsKey(type))
-                throw new NotSupportedException("Invalid GeometryTemplate derived type \"" + type + "\".");
+                throw new ParseException("Invalid GeometryTemplate derived type \"" + type + "\".", token);
 
             // Create and return our object instance
             var t = ObjectTypes[type];

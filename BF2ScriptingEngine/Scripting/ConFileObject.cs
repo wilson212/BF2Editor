@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Text.RegularExpressions;
 using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting
@@ -52,7 +53,7 @@ namespace BF2ScriptingEngine.Scripting
         /// <summary>
         /// Gets or Sets the comment if there is one
         /// </summary>
-        public RemComment Comment;
+        public RemComment Comment { get; protected set; }
 
         /// <summary>
         /// Gets a list of <see cref="Token"/> objects, which represent all reference points
@@ -339,6 +340,13 @@ namespace BF2ScriptingEngine.Scripting
         protected void ThrowUnsuportedField(string propertyName)
         {
             throw new Exception("Invalid Object Property \"" + propertyName + "\".");
+        }
+
+        public ConFileObject Clone()
+        {
+            ConFile file = new ConFile(this.File.FilePath);
+            Token newToken = Token.Create(this.Token.Kind, Match.Empty, file, this.Token.Position);
+            return (ConFileObject)Activator.CreateInstance(this.GetType(), this.Name, newToken);
         }
 
         public override string ToString() => Name;

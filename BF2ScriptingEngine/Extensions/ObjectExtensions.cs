@@ -70,7 +70,7 @@ namespace BF2ScriptingEngine
             }
             visited.Add(originalObject, cloneObject);
             CopyFields(originalObject, visited, cloneObject, typeToReflect, info => !info.IsStatic && !info.FieldType.GetTypeInfo().IsPrimitive);
-            CopyProperties(originalObject, visited, cloneObject, typeToReflect, info => !info.GetMethod.IsStatic && !info.PropertyType.GetTypeInfo().IsPrimitive);
+            //CopyProperties(originalObject, visited, cloneObject, typeToReflect, info => !info.GetMethod.IsStatic && !info.PropertyType.GetTypeInfo().IsPrimitive);
             RecursiveCopyBaseTypeFields(originalObject, visited, cloneObject, typeToReflect);
             return cloneObject;
         }
@@ -81,7 +81,7 @@ namespace BF2ScriptingEngine
             {
                 RecursiveCopyBaseTypeFields(originalObject, visited, cloneObject, typeToReflect.GetTypeInfo().BaseType);
                 CopyFields(originalObject, visited, cloneObject, typeToReflect.GetTypeInfo().BaseType, info => !info.IsStatic && !info.FieldType.GetTypeInfo().IsPrimitive);
-                CopyProperties(originalObject, visited, cloneObject, typeToReflect.GetTypeInfo().BaseType, info => !info.GetMethod.IsStatic && !info.PropertyType.GetTypeInfo().IsPrimitive);
+                //CopyProperties(originalObject, visited, cloneObject, typeToReflect.GetTypeInfo().BaseType, info => !info.GetMethod.IsStatic && !info.PropertyType.GetTypeInfo().IsPrimitive);
             }
         }
 

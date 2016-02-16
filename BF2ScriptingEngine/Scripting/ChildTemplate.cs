@@ -16,7 +16,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </remarks>
         /// <seealso cref="http://bfmods.com/mdt/scripting/ObjectTemplate/Properties/SetPosition.html"/>
         [PropertyName("setPosition")]
-        public ObjectProperty<string> SetPosition;
+        public ObjectProperty<string> SetPosition { get; internal set; }
 
         /// <summary>
         /// Gets or Sets the direction and angles of a child object attached to the 
@@ -38,7 +38,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </example>
         /// <seealso cref="http://bfmods.com/mdt/scripting/ObjectTemplate/Properties/SetRotation.html"/>
         [PropertyName("setRotation")]
-        public ObjectProperty<string> SetRotation;
+        public ObjectProperty<string> SetRotation { get; internal set; }
 
         public ChildTemplate(string name, Token token) : base(name, token)
         {

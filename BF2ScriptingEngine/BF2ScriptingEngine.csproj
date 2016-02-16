@@ -48,9 +48,35 @@
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="MissingObjectHandling.cs" />
     <Compile Include="ObjectEqualityComparer.cs" />
+    <Compile Include="ParseException.cs" />
     <Compile Include="ReferenceManager.cs" />
     <Compile Include="ScopeType.cs" />
     <Compile Include="Scripting\Abstract\CollisionManager.cs" />
+    <Compile Include="Scripting\Components\DefaultAmmoComp.cs" />
+    <Compile Include="Scripting\Components\DefaultZoomComp.cs" />
+    <Compile Include="Scripting\Components\Abstract\FireComp.cs" />
+    <Compile Include="Scripting\Components\MultiFireComp.cs" />
+    <Compile Include="Scripting\Components\SimpleDeviationComp.cs" />
+    <Compile Include="Scripting\Components\SingleFireComp.cs" />
+    <Compile Include="Scripting\Components\ToggleCameraComp.cs" />
+    <Compile Include="Scripting\Components\WeaponBasedRecoilComp.cs" />
+    <Compile Include="Scripting\Components\Abstract\ZoomComp.cs" />
+    <Compile Include="Scripting\GeometryTemplates\StaticMesh.cs" />
+    <Compile Include="Scripting\Interfaces\ICastable.cs" />
+    <Compile Include="Scripting\ObjectTemplates\AnimatedBundle.cs" />
+    <Compile Include="Scripting\ObjectTemplates\Bundle.cs" />
+    <Compile Include="Scripting\ObjectTemplates\Camera.cs" />
+    <Compile Include="Scripting\ObjectTemplates\Engine.cs" />
+    <Compile Include="Scripting\ObjectTemplates\EntryPoint.cs" />
+    <Compile Include="Scripting\ObjectTemplates\GenericProjectile.cs" />
+    <Compile Include="Scripting\ObjectTemplates\LandingGear.cs" />
+    <Compile Include="Scripting\ObjectTemplates\Parachute.cs" />
+    <Compile Include="Scripting\ObjectTemplates\RotationalBundle.cs" />
+    <Compile Include="Scripting\ObjectTemplates\Spring.cs" />
+    <Compile Include="Scripting\ObjectTemplates\SupplyObject.cs" />
+    <Compile Include="Scripting\ObjectTemplates\UAVVehicle.cs" />
+    <Compile Include="Scripting\ObjectTemplates\Wing.cs" />
+    <Compile Include="Scripting\Point3D.cs" />
     <Compile Include="Scripting\RunStatement.cs" />
     <Compile Include="ReferenceType.cs" />
     <Compile Include="Scope.cs" />
@@ -118,6 +144,7 @@
     <Compile Include="Scripting\Abstract\WeaponTemplate.cs" />
     <Compile Include="Scripting\AiTemplatePlugins\Unit.cs" />
     <Compile Include="Tokenizer\TokenType.cs" />
+    <Compile Include="TypeCache.cs" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

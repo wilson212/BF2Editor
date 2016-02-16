@@ -22,20 +22,6 @@ namespace BF2ScriptingEngine.Scripting
     /// <example>The PlayerControlObject object type is created by ObjectTemplate.Create.</example>
     public class PlayerControlObject : ObjectTemplate
     {
-        [PropertyName("collisionMesh")]
-        public ObjectProperty<string> CollisionMesh { get; internal set; }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <remarks>
-        /// First Param is the meterial index of the mesh
-        /// Second Param is The material name
-        /// 3rd Param is material number
-        /// </remarks>
-        [PropertyName("mapMaterial")]
-        public ObjectPropertyList<int, string, int> Materials { get; internal set; }
-
         public PlayerControlObject(string Name, Token Token) : base(Name, Token)
         { 
 

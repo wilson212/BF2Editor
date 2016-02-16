@@ -11,7 +11,7 @@ namespace BF2ScriptingEngine.Scripting
         /// Contains a list of Object types that dsecribe this object
         /// </summary>
         [PropertyName("addType")]
-        public ObjectProperty<List<string>> Types { get; set; }
+        public ObjectPropertyList<string> Types { get; set; }
 
         /// <summary>
         /// Gets or Sets how fast the bots forget the object once they cannot see it anymore. 
@@ -56,7 +56,7 @@ namespace BF2ScriptingEngine.Scripting
         /// Contains a list of AiTemplatePlugins for this object
         /// </summary>
         [PropertyName("addPlugIn")]
-        public ObjectProperty<List<string>> Plugins { get; set; }
+        public ObjectPropertyList<string> Plugins { get; set; }
 
         /// <summary>
         /// Creates a new instance of AiTemplate

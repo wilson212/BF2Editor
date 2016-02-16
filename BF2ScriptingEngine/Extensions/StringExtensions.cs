@@ -26,6 +26,40 @@ namespace BF2ScriptingEngine
         }
 
         /// <summary>
+        /// Determines whether the beginning of this string instance matches any 
+        /// of the specified strings.
+        /// </summary>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        public static bool StartsWithAny(this string text, StringComparison comparer, params string[] items)
+        {
+            foreach (string item in items)
+            {
+                if (text.StartsWith(item, comparer))
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Determines whether the end of this string instance matches any 
+        /// of the specified strings.
+        /// </summary>
+        /// <param name="items"></param>
+        /// <returns></returns>
+        public static bool EndsWithAny(this string text, params string[] items)
+        {
+            foreach (string item in items)
+            {
+                if (text.EndsWith(item))
+                    return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Splits a string into substrings that are based on the characters in an array,
         /// while keeping double quoted text intact.
         /// </summary>

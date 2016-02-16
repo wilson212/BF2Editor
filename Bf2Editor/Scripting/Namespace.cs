@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using BF2ScriptingEngine;
 
@@ -36,6 +37,12 @@ namespace BF2Editor
         protected Scope GlobalScope;
 
         /// <summary>
+        /// FOR TESTING
+        /// </summary>
+        public static int TotalObjectsLoaded = 0;
+        public static int TotalFilesLoaded = 0;
+
+        /// <summary>
         /// Creates a new instance of <seealso cref="NameSpace"/>
         /// </summary>
         /// <param name="name">The name of this namespace</param>
@@ -67,7 +74,11 @@ namespace BF2Editor
         /// is already loaded.
         /// </param>
         /// <returns>Returns true if the file exists and loaded successfully, false otherwise</returns>
-        public async Task<bool> LoadFile(string fileName, bool overwrite = false)
+        public async Task<bool> LoadFile(
+            string fileName, 
+            bool overwrite = false, 
+            Scope scope = null,
+            ExecuteInstruction instruction = ExecuteInstruction.Skip)
         {
             // Make sure this isnt loaded already...
             if (!overwrite && Files.ContainsKey(fileName))
@@ -81,12 +92,19 @@ namespace BF2Editor
             if (!File.Exists(filePath))
                 return false;
 
+            // Create variables
+            Scope fileScope = scope ?? CreateScope();
+            ConFile cFile;
+
             // Try-Catch this beast
             try
             {
                 // Create sub scope for this file, and load it
-                Scope fileScope = CreateScope();
-                ConFile cFile = await ScriptEngine.LoadFileAsync(filePath, fileScope);
+                cFile = await ScriptEngine.LoadFileAsync(filePath, fileScope, instruction);
+
+                // For dev purposes, will be removed later
+                Interlocked.Increment(ref TotalFilesLoaded);
+                Interlocked.Add(ref TotalObjectsLoaded, cFile.Scope.GetObjects().Count());
 
                 // Add item
                 Files[fileName] = cFile;

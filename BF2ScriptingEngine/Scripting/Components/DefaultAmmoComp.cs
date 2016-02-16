@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace BF2ScriptingEngine.Scripting.Components
 {
-    public class WeaponHud : ConFileObject, IComponent
+    public class DefaultAmmoComp : ConFileObject, IComponent
     {
-        public WeaponHud(string name, Token token) : base("WeaponHud", token)
+        public DefaultAmmoComp(string name, Token token) : base("DefaultAmmoComp", token)
         {
 
         }

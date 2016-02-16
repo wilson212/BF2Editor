@@ -4,7 +4,7 @@ using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting.Components
 {
-    public class VehicleHud : ObjectTemplate, IComponent
+    public class VehicleHud : ConFileObject, IComponent
     {
         /// <summary>
         /// Gets or Sets what the vehicle will be called in the Hud.

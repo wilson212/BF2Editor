@@ -118,7 +118,10 @@ namespace BF2ScriptingEngine.Scripting
         /// <returns></returns>
         protected K ConvertValue<K>(object Value, Type PropertyType)
         {
-            return Converter.ConvertValue<K>(Value, PropertyType);
+            if (Value is String)
+                return Converter.ConvertValue<K>(Value as String, PropertyType);
+            else
+                return Converter.ConvertValue<K>(Value, PropertyType);
         }
 
         /// <summary>

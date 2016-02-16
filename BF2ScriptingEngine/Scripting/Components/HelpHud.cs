@@ -3,7 +3,7 @@ using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting.Components
 {
-    public class HelpHud : ObjectTemplate, IComponent
+    public class HelpHud : ConFileObject, IComponent
     {
         [PropertyName("helpStringKey")]
         public ObjectProperty<string> HelpStringKey { get; set; }

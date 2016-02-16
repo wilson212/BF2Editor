@@ -15,13 +15,13 @@ namespace BF2ScriptingEngine.Scripting
         /// is encountered.
         /// </remarks>
         [Comment(Before = "", After = "")] // Override base comments
-        public override ObjectProperty<List<ChildTemplate>> Templates { get; internal set; }
+        public override ObjectPropertyList<ChildTemplate> Templates { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("replaceItem")]
-        public ObjectProperty<List<string>> Replaces { get; internal set; }
+        public ObjectPropertyList<string> Replaces { get; internal set; }
 
         /// <summary>
         /// 

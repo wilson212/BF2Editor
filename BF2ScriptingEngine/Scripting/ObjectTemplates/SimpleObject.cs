@@ -18,7 +18,7 @@ namespace BF2ScriptingEngine.Scripting
         /// The SimpleObject cannot have any child templates attached!
         /// </summary>
         /// <exception cref="NotSupportedException">Thrown Always for this class type!</exception>
-        public override ObjectProperty<List<ChildTemplate>> Templates
+        public override ObjectPropertyList<ChildTemplate> Templates
         {
             get
             {

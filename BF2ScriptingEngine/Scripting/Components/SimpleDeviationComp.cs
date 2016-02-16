@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 
 namespace BF2ScriptingEngine.Scripting.Components
 {
-    public class WeaponHud : ConFileObject, IComponent
+    public class SimpleDeviationComp : ConFileObject, IComponent
     {
-        public WeaponHud(string name, Token token) : base("WeaponHud", token)
+        public SimpleDeviationComp(string name, Token token) 
+            : base("SimpleDeviationComp", token)
         {
 
         }

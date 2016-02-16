@@ -38,7 +38,7 @@ namespace BF2ScriptingEngine.Scripting
             }
 
             // No need to change type if types match
-            if (Value.GetType() == PropertyType)
+            if (Value.GetType() == PropertyType || PropertyType.GetInterface("ICastable") != null)
             {
                 return new ValueInfo<K>((K)Value, exp);
             }
@@ -76,8 +76,10 @@ namespace BF2ScriptingEngine.Scripting
         /// <returns></returns>
         public static K ConvertValue<K>(object Value, Type PropertyType)
         {
+            Type valType = Value.GetType();
+
             // No need to change type if types match
-            if (Value.GetType() == PropertyType)
+            if (valType == PropertyType)
             {
                 return (K)Value;
             }
@@ -105,7 +107,14 @@ namespace BF2ScriptingEngine.Scripting
                 }
             }
 
-            return (K)Convert.ChangeType(Value, PropertyType);
+            try
+            {
+                return (K)Convert.ChangeType(Value, PropertyType);
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         /// <summary>

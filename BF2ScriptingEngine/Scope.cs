@@ -23,7 +23,7 @@ namespace BF2ScriptingEngine
         /// <summary>
         /// Contains a list of all objects registered in this scope
         /// </summary>
-        private Dictionary<Tuple<string, ReferenceType>, ConFileObject> Objects;
+        internal Dictionary<Tuple<string, ReferenceType>, ConFileObject> Objects;
 
         /// <summary>
         /// Gets a Key => Value map of expressions found in this file
@@ -102,7 +102,14 @@ namespace BF2ScriptingEngine
                     // Perform a deep copy since we are Detached
                     foreach (var item in ParentScope.ActiveObjects)
                     {
-                        ActiveObjects[item.Key] = item.Value.Copy();
+                        try
+                        {
+                            ActiveObjects[item.Key] = item.Value.Clone();
+                        }
+                        catch
+                        {
+                            throw;
+                        }
                     }
                 }
             }

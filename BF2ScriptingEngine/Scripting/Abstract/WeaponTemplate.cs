@@ -114,7 +114,7 @@ namespace BF2ScriptingEngine.Scripting
         /// Gets or Sets the Weights assigned to chance of bots selecting this type target
         /// </summary>
         [PropertyName("setStrength")]
-        public ObjectProperty<Dictionary<StrengthType, double>> Strengths { get; set; }
+        public ObjectPropertyDict<StrengthType, double> Strengths { get; set; }
 
         /// <summary>
         /// For bots only: Specifies the rate that the AI will fire the weapon at.

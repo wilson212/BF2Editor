@@ -13,6 +13,8 @@ namespace BF2ScriptingEngine.Scripting
     {
         #region Object Properties
 
+        #region Flags
+
         /// <summary>
         /// This property is valid for only the debug version of the game engine.
         /// </summary>
@@ -21,18 +23,6 @@ namespace BF2ScriptingEngine.Scripting
         /// </remarks>
         [PropertyName("saveInSeparateFile", 1)]
         public ObjectProperty<bool> SaveInSeparateFile { get; internal set; }
-
-        /// <summary>
-        /// Last person to save the tweaks file.
-        /// </summary>
-        [PropertyName("creator", 2)]
-        public ObjectProperty<string> CreatedBy { get; internal set; }
-
-        /// <summary>
-        /// Gets the last user to modify this object
-        /// </summary>
-        [PropertyName("modifiedByUser", 3)]
-        public ObjectProperty<string> ModifiedBy { get; internal set; }
 
         /// <summary>
         /// This command tells the game that the object is not limited to any space constraints, 
@@ -56,6 +46,28 @@ namespace BF2ScriptingEngine.Scripting
         public ObjectProperty<bool> CreatedInEditor { get; internal set; }
 
         /// <summary>
+        /// Do not change, Unknown Function!
+        /// </summary>
+        [PropertyName("PreCacheObject", 22)]
+        public ObjectProperty<bool> PreCacheObject { get; internal set; }
+
+        #endregion Flags
+
+        #region Default
+
+        /// <summary>
+        /// Last person to save the tweaks file.
+        /// </summary>
+        [PropertyName("creator", 2)]
+        public ObjectProperty<string> CreatedBy { get; internal set; }
+
+        /// <summary>
+        /// Gets the last user to modify this object
+        /// </summary>
+        [PropertyName("modifiedByUser", 3)]
+        public ObjectProperty<string> ModifiedBy { get; internal set; }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <remarks>
@@ -71,11 +83,41 @@ namespace BF2ScriptingEngine.Scripting
         [PropertyName("geometry", 40)]
         public virtual ObjectProperty<GeometryTemplate> Geometry { get; internal set; }
 
+        [PropertyName("geometryPart")]
+        public ObjectProperty<int> GeometryPart { get; internal set; }
+
         /// <summary>
         /// Gets or Sets the name of the network id for this object.
         /// </summary>
         [PropertyName("networkableInfo", 50)]
-        public ObjectProperty<string> NetworkableInfo { get; internal set; }
+        public ObjectProperty<NetworkableInfo> NetworkableInfo { get; internal set; }
+
+        [PropertyName("collisionMesh")]
+        public ObjectProperty<string> CollisionMesh { get; internal set; }
+
+        [PropertyName("collisionPart")]
+        public ObjectProperty<int> CollisionPart { get; internal set; }
+
+        /// <summary>
+        /// Do not change, Unknown Function!
+        /// </summary>
+        [PropertyName("anchor")]
+        public ObjectProperty<string> Anchor { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <remarks>
+        /// First Param is the meterial index of the mesh
+        /// Second Param is The material name
+        /// 3rd Param is material number
+        /// </remarks>
+        [PropertyName("mapMaterial")]
+        public ObjectPropertyList<int, string, int> Materials { get; internal set; }
+
+        #endregion Default
+
+        #region Physics
 
         /// <summary>
         /// Gets or Sets that this object can collide with other objects
@@ -83,8 +125,36 @@ namespace BF2ScriptingEngine.Scripting
         /// <remarks>
         /// When set, the geometry mesh associated with this object must have at least one collision mesh
         /// </remarks>
-        [PropertyName("setHasCollisionPhysics", 60)]
+        [PropertyName("hasCollisionPhysics", 60)]
         public ObjectProperty<bool> HasCollisionPhysics { get; internal set; }
+
+        [PropertyName("setHasCollisionPhysics", 60)]
+        internal ObjectProperty<bool> SetHasCollisionPhysics
+        {
+            get { return HasCollisionPhysics; }
+            set { HasCollisionPhysics = value; }
+        }
+
+        /// <summary>
+        /// Gets or Sets that this object can collide with other objects
+        /// </summary>
+        /// <remarks>
+        /// When set, the geometry mesh associated with this object must have at least one collision mesh
+        /// </remarks>
+        [PropertyName("physicsType", 60)]
+        public ObjectProperty<int> PhysicsType { get; internal set; }
+
+        /// <summary>
+        /// Gets or Sets whether this object is mobile
+        /// </summary>
+        /// <remarks>
+        /// If the object is mobile, this should be set to 1 so that the physics engine knows. 
+        /// This property sets the physics engine to calculate the object in the world as a mobile object. 
+        /// </remarks>
+        [PropertyName("hasMobilePhysics", 60)]
+        public ObjectProperty<bool> HasMobilePhysics { get; internal set; }
+
+        #endregion Physics
 
         /// <summary>
         /// 
@@ -106,25 +176,24 @@ namespace BF2ScriptingEngine.Scripting
         /// apply to the attached object, until another AddTemplate command 
         /// is encountered.
         /// </remarks>
-        [PropertyName("addTemplate", 400)]
-        [Comment(
-            Before = "-------------------------------------",
-            After =  "-------------------------------------"
-        )]
-        public virtual ObjectProperty<List<ChildTemplate>> Templates { get; internal set; }
+        [PropertyName("__addTemplate")]
+        public virtual ObjectPropertyList<ChildTemplate> Templates { get; internal set; }
 
         #endregion
 
         #region Object Methods
 
+        [PropertyName("addTemplate", 400)]
+        protected ObjectMethod<string> AddTemplate { get; set; }
+
         [PropertyName("setPosition")]
-        protected ObjectMethod<string> SetPosition { get; }
+        protected ObjectMethod<string> SetPosition { get; set; }
 
         [PropertyName("setRotation")]
-        protected ObjectMethod<string> SetRotation { get; }
+        protected ObjectMethod<string> SetRotation { get; set; }
 
         [PropertyName("createComponent")]
-        protected ObjectMethod<string> CreateComponent { get; }
+        protected ObjectMethod<string> CreateComponent { get; set; }
 
         #endregion
 
@@ -150,14 +219,10 @@ namespace BF2ScriptingEngine.Scripting
 
             // Create object mappings
             var Comparer = StringComparer.InvariantCultureIgnoreCase;
-            ObjectTypes = new Dictionary<string, Type>(Comparer)
-            {
-                { "SimpleObject", typeof(SimpleObject) },
-                { "Kit", typeof(Kit) },
-                { "ItemContainer", typeof(ItemContainer) },
-                { "PlayerControlObject", typeof(PlayerControlObject) },
-                { "GenericFireArm", typeof(GenericFireArm) }
-            };
+            Type baseType = typeof(ObjectTemplate);
+            Type[] typelist = TypeCache.GetTypesInNamespace("BF2ScriptingEngine.Scripting")
+                .Where(x => baseType.IsAssignableFrom(x)).ToArray();
+            ObjectTypes = typelist.ToDictionary(x => x.Name, v => v, Comparer);
         }
 
         /// <summary>
@@ -169,6 +234,7 @@ namespace BF2ScriptingEngine.Scripting
         {
             // === Create method instances
             CreateComponent = new ObjectMethod<string>(Method_CreateComponent);
+            AddTemplate = new ObjectMethod<string>(Method_AddTemplate);
             SetPosition = new ObjectMethod<string>(Method_SetPosition);
             SetRotation = new ObjectMethod<string>(Method_SetRotation);
             // ===
@@ -246,6 +312,31 @@ namespace BF2ScriptingEngine.Scripting
         }
 
         /// <summary>
+        /// Action method for adding child templates to this object
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public virtual ConFileEntry Method_AddTemplate(Token token, string name)
+        {
+            // Get the internal property, and check if templates is null
+            var info = GetProperty("__addTemplate").Value;
+            if (Templates == null)
+                Templates = new ObjectPropertyList<ChildTemplate>("addTemplate", token, info, this);
+
+            // Create the object template value, and the object property
+            ChildTemplate ct = new ChildTemplate(token.TokenArgs.Arguments.Last(), token);
+            var prop = new ObjectProperty<ChildTemplate>("addTemplate", token, info, this);
+
+            // We must also manually define the ValueInfo, because ChildTemplate
+            // is NOT a RefernceType object
+            prop.Argument = new ValueInfo<ChildTemplate>(ct);
+            Templates.Items.Add(prop);
+
+            return prop;
+        }
+
+        /// <summary>
         /// Action method for setting the position of a child object attached 
         /// to the current object with the AddTemplate command.
         /// </summary>
@@ -257,7 +348,7 @@ namespace BF2ScriptingEngine.Scripting
         private ConFileEntry Method_SetPosition(Token token, string arg1 = "0/0/0")
         {
             // Ensure that we have a child template to set the position on
-            ChildTemplate item = Templates?.Value?.Last();
+            ChildTemplate item = Templates?.Items?.LastOrDefault()?.Value;
             if (item == null)
             {
                 string err = $"SetPosition called on a non-instantiated child object";
@@ -295,7 +386,7 @@ namespace BF2ScriptingEngine.Scripting
         private ConFileEntry Method_SetRotation(Token token, string arg1 = "0/0/0")
         {
             // Ensure that we have a child template
-            ChildTemplate item = Templates?.Value?.Last();
+            ChildTemplate item = Templates?.Items?.LastOrDefault()?.Value;
             if (item == null)
             {
                 string err = $"SetRotation called on a non-instantiated child object";
@@ -342,7 +433,7 @@ namespace BF2ScriptingEngine.Scripting
 
             // Ensure this type is supported
             if (!ObjectTypes.ContainsKey(type))
-                throw new NotSupportedException("Invalid ObjectTemplate derived type \"" + type + "\".");
+                throw new ParseException("Invalid ObjectTemplate derived type \"" + type + "\".", token);
 
             // Create and return our object instance
             var t = ObjectTypes[type];

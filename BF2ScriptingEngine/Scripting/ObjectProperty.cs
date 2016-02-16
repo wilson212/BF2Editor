@@ -19,7 +19,7 @@ namespace BF2ScriptingEngine
         /// <summary>
         /// Gets the argument information that provided the Value of this property
         /// </summary>
-        public ValueInfo<T> Argument { get; protected set; }
+        public ValueInfo<T> Argument { get; internal set; }
 
         /// <summary>
         /// Gets or Sets the value for this property
@@ -99,57 +99,10 @@ namespace BF2ScriptingEngine
                     Argument = new ValueInfo<T>((T)(object)obj);
                 }
             }
-
-            // Check for Generic types, as they are handled differently
             else if (PropertyType.IsGenericType)
             {
-                // Grab our types interfaces and generic types
-                Type[] interfaces = PropertyType.GetInterfaces();
-                Type[] types = PropertyType.GetGenericArguments();
-
-                // Check for List<T>
-                if (interfaces.Any(i => i.Name == "IList"))
-                {
-                    // Grab our current list... if the Value isnt created yet, make it
-                    IList obj = (IList)Value ?? CreateList(types);
-
-                    // If we are indexed, then skip the first argument which is the index identifier
-                    if (Property.GetCustomAttribute(typeof(IndexedList)) != null)
-                        tokenArgs.Arguments = tokenArgs.Arguments.Skip(1).ToArray();
-
-                    // Add our value to the list
-                    if (typeof(ConFileObject).IsAssignableFrom(types[0]))
-                        obj.Add(CreateObject(types[0], tokenArgs.Arguments.Last(), token));
-                    else if (types[0].IsArray)
-                        obj.Add(ConvertArray(tokenArgs.Arguments, types[0]));
-                    else
-                        obj.Add(ConvertValue<object>(tokenArgs.Arguments[0], types[0]));
-
-                    // Set internal value
-                    Argument = new ValueInfo<T>((T)obj);
-                }
-
-                // Check for Dictionary<TKey, TVal>
-                else if (interfaces.Any(i => i.Name == "IDictionary"))
-                {
-                    // Grab our current Dictionary... if the Value isnt created yet, make it
-                    IDictionary obj = (IDictionary)Value ?? CreateCollection(types);
-
-                    // Grab our key
-                    object key = ConvertValue<object>(tokenArgs.Arguments[0], types[0]);
-
-                    // Add our value to the list
-                    if (types[1].IsArray)
-                        obj[key] = ConvertArray(tokenArgs.Arguments.Skip(1).ToArray(), types[1]);
-                    else
-                        obj[key] = ConvertValue<object>(tokenArgs.Arguments[1], types[1]);
-
-                    // Set internal value
-                    //Value = (T)obj;
-                    Argument = new ValueInfo<T>((T)obj);
-                }
-                else
-                    throw new Exception($"Invalid Generic Type found \"{PropertyType}\"");
+                // Check for Generic types, we don't support these!
+                throw new Exception($"Invalid Generic Type found \"{PropertyType}\"");
             }
             else
             {
@@ -166,8 +119,6 @@ namespace BF2ScriptingEngine
         /// <summary>
         /// Converts the value of this property to file format
         /// </summary>
-        /// <param name="obj">The confile object that contains this property</param>
-        /// <param name="field">This object property's field info</param>
         /// <returns></returns>
         public override string ToFileFormat()
         {
@@ -191,93 +142,8 @@ namespace BF2ScriptingEngine
                 //if (!String.IsNullOrEmpty(Token.Comment?.Value))
                     //builder.AppendLine(Token.Comment.Value.TrimEnd());
 
-                // Check for Generic types, as they are handled differently
-                if (PropertyType.IsGenericType)
-                {
-                    // Grab our types interfaces and generic types
-                    Type[] interfaces = PropertyType.GetInterfaces();
-                    Type[] types = PropertyType.GetGenericArguments();
-
-                    // Check for List<T>
-                    if (interfaces.Any(i => i.Name == "IList"))
-                    {
-                        // Grab our current list... if the Value isnt created yet, make it
-                        IList list = (IList)Value;
-                        bool indexed = Property.GetCustomAttribute(typeof(IndexedList)) != null;
-                        bool isObj = typeof(ConFileObject).IsAssignableFrom(types[0]);
-                        int i = 0;
-
-                        // Add a new line in the string builder for each item
-                        foreach (object item in list)
-                        {
-
-                            // CON File objects
-                            if (isObj)
-                            {
-                                var subObj = (ConFileObject)item;
-                                builder.AppendLine(subObj.ToFileFormat());
-                            }
-                            else
-                            {
-                                // Append this reference and property name
-                                builder.Append(referenceName);
-                                if (indexed)
-                                    builder.Append($" {i++}");
-
-                                // Implode arrays into a string
-                                if (types[0].IsArray)
-                                {
-                                    // Thanks to the handy dynamic keyword, this is simplified
-                                    foreach (object val in (dynamic)item)
-                                        builder.Append($" {ValueToString(val, val.GetType())}");
-
-                                    // Close line
-                                    builder.AppendLine();
-                                }
-                                else
-                                {
-                                    // Add formated value
-                                    builder.AppendLine($" {ValueToString(item, types[0])}");
-                                }
-                            }
-                        }
-                    }
-
-                    // Check for Dictionary<TKey, TVal>
-                    else if (interfaces.Any(i => i.Name == "IDictionary"))
-                    {
-                        // Grab our current Dictionary... if the Value isnt created yet, make it
-                        IDictionary dic = (IDictionary)Value;
-
-                        // Add a new line in the string builder for each item
-                        foreach (dynamic item in dic)
-                        {
-                            // Append this reference and property name
-                            builder.Append($"{referenceName} {ValueToString(item.Key, types[0])}");
-
-                            // Implode arrays into a string
-                            if (types[1].IsArray)
-                            {
-                                // Thanks to the handy dynamic keyword, this is simplified
-                                foreach (object val in (dynamic)item)
-                                    builder.Append($" {ValueToString(val, val.GetType())}");
-
-                                // Close line
-                                builder.AppendLine();
-                            }
-                            else
-                            {
-                                // Add formated value
-                                builder.AppendLine($" {ValueToString(item, types[1])}");
-                            }
-                        }
-                    }
-                }
-                else
-                {
-                    // Append reference call and property name
-                    builder.AppendLine($"{referenceName} {ValueToString(Value, PropertyType)}");
-                }
+                // Append reference call and property name
+                builder.AppendLine($"{referenceName} {ValueToString(Value, PropertyType)}");
             }
 
             // return our built string

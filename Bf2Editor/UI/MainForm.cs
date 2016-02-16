@@ -106,6 +106,7 @@ namespace BF2Editor
 
             try
             {
+                var timer = Stopwatch.StartNew();
 
                 // Load Kits
                 LoadKitTemplate();
@@ -116,20 +117,23 @@ namespace BF2Editor
                 // Load Weapon templates
                 await LoadTemplates("Weapons");
 
-                /* Create a new log entry with parsing details
+                //Create a new log entry with parsing details
+                timer.Stop();
                 LogEntry entry = new LogEntry()
                 {
                     Type = LogEntryType.Info,
                     Message = String.Format(
-                    "========== Loaded Objects: {0} succeeded, {2} failed, {1} skipped ==========",
-                        ObjectManager.ObjectsCount, Logger.Warnings.Count, Logger.Errors.Count
+                    "========== Loaded Objects in {3} seconds: {0} succeeded, {2} failed, {1} skipped ==========",
+                        NameSpace.TotalObjectsLoaded, 
+                        Logger.Warnings.Count, 
+                        Logger.Errors.Count,
+                        $"{timer.Elapsed.Seconds}.{timer.Elapsed.Milliseconds}"
                     )
                 };
 
                 // Append an empry entry (line break), and the Final message
                 Logger.Messages.Add(new LogEntry());
                 Logger.Messages.Add(entry);
-                */
 
                 // Update Loaded objects
                 //ObjectsLoadedLabel.Text = ObjectManager.ObjectsCount.ToString();
@@ -192,9 +196,15 @@ namespace BF2Editor
                     // Create namespace, and load files
                     try
                     {
+                        // Create namespace and load the base object
                         NameSpace nspace = new NameSpace(subdirName, subdir);
-                        //await nspace.LoadFile($"{subdirName}.con");
-                        //await nspace.LoadFile($"{subdirName}.tweak");
+                        await nspace.LoadFile($"{subdirName}.con");
+
+                        // Load tweak
+                        //Scope tweakScope = new Scope(nspace.Files[$"{subdirName}.con"].Scope, ScopeType.Detached);
+                        //bool loaded = await nspace.LoadFile($"{subdirName}.tweak", scope: tweakScope);
+
+                        // Load Ai Files
                         await nspace.LoadFile("ai/Objects.ai");
                         await nspace.LoadFile("ai/Weapons.ai");
 
@@ -278,10 +288,12 @@ namespace BF2Editor
                     // Extract just the files we need
                     ZipEntry[] Entries = Zip.Entries.Where(
                         x => (
-                            x.FileName.StartsWith("Vehicles", StringComparison.InvariantCultureIgnoreCase) ||
-                            x.FileName.StartsWith("Weapons", StringComparison.InvariantCultureIgnoreCase) ||
-                            x.FileName.StartsWith("Kits", StringComparison.InvariantCultureIgnoreCase)
-                        ) && x.FileName.EndsWith(".ai", StringComparison.InvariantCultureIgnoreCase)
+                            x.FileName.StartsWithAny(
+                                StringComparison.InvariantCultureIgnoreCase,
+                                "Vehicles", "Weapons", "Kits"
+                            ) && 
+                            x.FileName.EndsWithAny(".ai", ".con", ".tweak")
+                        )
                     ).ToArray();
 
                     // Extract entries

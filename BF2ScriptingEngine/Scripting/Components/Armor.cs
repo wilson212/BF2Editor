@@ -3,7 +3,7 @@ using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting.Components
 {
-    public class Armor : ObjectTemplate, IComponent
+    public class Armor : ConFileObject, IComponent
     {
         #region Object Properties
 

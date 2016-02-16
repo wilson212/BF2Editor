@@ -199,7 +199,7 @@ namespace BF2ScriptingEngine
                         string error = $"Failed to set property \"{token.TokenArgs.ReferenceType.Name}.\""
                             + $"{token.TokenArgs.PropertyName}. No object reference set!";
                         Logger.Error(error, token.File, token.Position);
-                        throw new Exception(error);
+                        throw new ParseException(error, token);
                     }
 
                     // Let the object parse its own lines...
@@ -230,7 +230,7 @@ namespace BF2ScriptingEngine
                     {
                         string message = $"Unable to parse file entry \"{token.Value}\" on line {token.Position}";
                         Logger.Error(message, token.File, token.Position);
-                        throw new Exception(message);
+                        throw new ParseException(message, token);
                     }
                     break;
             }
@@ -323,7 +323,7 @@ namespace BF2ScriptingEngine
                                 // If we are here, we have an issue...
                                 string error = $"Failed to set property \"{token.TokenArgs.ReferenceType.Name}.\""
                                     + $"{token.TokenArgs.PropertyName}. No object reference set!";
-                                throw new Exception(error);
+                                throw new ParseException(error, token);
                             }
 
                             // Let the object parse its own lines...
@@ -443,7 +443,7 @@ namespace BF2ScriptingEngine
                             if (!String.IsNullOrWhiteSpace(token.Value))
                             {
                                 string message = $"Unable to parse file entry \"{token.Value}\" on line {token.Position}";
-                                throw new Exception(message);
+                                throw new ParseException(message, token);
                             }
                             break;
                     }
@@ -504,8 +504,8 @@ namespace BF2ScriptingEngine
 
             // Log error
             string error = $"No closing tag found for \"{currentToken.Kind}\" ({currentToken.Position}) found!";
-            Logger.Error(error, currentToken.File, currentToken.Position);
-            throw new Exception(error);
+            //Logger.Error(error, currentToken.File, currentToken.Position);
+            throw new ParseException(error, currentToken);
         }
     }
 }

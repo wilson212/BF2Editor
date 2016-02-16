@@ -1,15 +1,18 @@
 # Battlefield 2 Script Editor
 
-The Battlefield 2 Script Engine converts Con file objects from the popular Battlefield series into modifiable C# objects.
+The Battlefield 2 Script Engine converts Con file objects from the popular Battlefield series into mutable C# objects.
 
 This project is considered as Alpha, and should not be used in a production environment.
 
 ### Current Features
-  - Can load all .ai files in the "Objects_Server.zip/[Kits, Weapons, Vehicles]/ai" folders
-  - Can modify objects and their variables in Type strong C# objects
+  - All objects loaded asynchronously using Async/Await 
+  - Very fast parsing (roughly 15,000 lines per second, depending on hardware)
+  - Loads all .ai and .con files in the "Objects_Server.zip/[Kits, Weapons, Vehicles]" 
+	folders (.tweak files are a WIP still)
+  - The ability modify objects and their variables in Type strong C# objects
   - Save modifications to objects back into their file
   - Deep reflection about objects and all entries in a script file
-  - No script files needed, just create a Scope and have fun!
+  - No script files needed, it is totally possible to just create a Scope and have fun!
   - Extendable and Scalable. Possible to add or override object types, 
 	and object reference types outside of the script engine library
 

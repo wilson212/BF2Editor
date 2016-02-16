@@ -4,13 +4,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting
 {
     /// <summary>
     /// Contains a collection of <see cref="ObjectProperty"/> objects. Every
     /// time a property is assigned a value in the Bf2 con file, a new
-    /// <see cref="ObjectProperty"/> object is created with the vaules.
+    /// <see cref="ObjectProperty"/> object is created, and added to this properties
+    /// internal list.
     /// </summary>
     /// <typeparam name="T1"></typeparam>
     public class ObjectPropertyList<T1> : ObjectProperty, IObjectPropertyCollection, IEnumerable
@@ -58,7 +60,7 @@ namespace BF2ScriptingEngine.Scripting
             tkn.File.AddProperty(item);
 
             // Set values
-            item.SetValues(values);
+            item.SetValue(token);
             Items.Add(item);
         }
 
@@ -73,7 +75,12 @@ namespace BF2ScriptingEngine.Scripting
 
         public IEnumerator GetEnumerator()
         {
-            return ((IEnumerable)Items).GetEnumerator();
+            return Items.GetEnumerator();
+        }
+
+        public IEnumerable<ObjectProperty<T1>> Where(Func<ObjectProperty<T1>, bool> predicate)
+        {
+            return Items.Where(predicate);
         }
     }
 
@@ -137,7 +144,12 @@ namespace BF2ScriptingEngine.Scripting
 
         public IEnumerator GetEnumerator()
         {
-            return ((IEnumerable)Items).GetEnumerator();
+            return Items.GetEnumerator();
+        }
+
+        public IEnumerable<ObjectProperty<T1, T2>> Where(Func<ObjectProperty<T1, T2>, bool> predicate)
+        {
+            return Items.Where(predicate);
         }
     }
 
@@ -201,7 +213,14 @@ namespace BF2ScriptingEngine.Scripting
 
         public IEnumerator GetEnumerator()
         {
-            return ((IEnumerable)Items).GetEnumerator();
+            return Items.GetEnumerator();
+        }
+
+        public IEnumerable<ObjectProperty<T1, T2, T3>> Where(
+            Func<ObjectProperty<T1, T2, T3>, bool> predicate
+        )
+        {
+            return Items.Where(predicate);
         }
     }
 }
