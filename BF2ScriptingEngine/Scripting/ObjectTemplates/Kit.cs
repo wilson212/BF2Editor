@@ -10,7 +10,7 @@ namespace BF2ScriptingEngine.Scripting
     {
         #region Properties
 
-        [PropertyName("kitType", 2)]
+        [PropertyName("kitType")]
         public ObjectProperty<string> KitType { get; set; }
 
         #endregion
@@ -21,7 +21,7 @@ namespace BF2ScriptingEngine.Scripting
         /// The Ability Hud Component
         /// </summary>
         [Component("AbilityHud")]
-        [PropertyName("abilityHud", 500)]
+        [PropertyName("abilityHud")]
         [Comment(
             Before = "---BeginComp:AbilityHud ---"
             //After = "---EndComp ---"
@@ -32,7 +32,7 @@ namespace BF2ScriptingEngine.Scripting
         /// The Vehicle Hud Component
         /// </summary>
         [Component("VehicleHud")]
-        [PropertyName("vehicleHud", 502)]
+        [PropertyName("vehicleHud")]
         [Comment(
             Before = "---BeginComp:VehicleHud ---"
             //After = "---EndComp ---"
@@ -43,7 +43,7 @@ namespace BF2ScriptingEngine.Scripting
         /// The Radio Hud Component
         /// </summary>
         [Component("Radio")]
-        [PropertyName("Radio", 510)]
+        [PropertyName("Radio")]
         [Comment(
             Before = "---BeginComp:Radio ---"
             //After = "---EndComp ---"
@@ -55,7 +55,7 @@ namespace BF2ScriptingEngine.Scripting
         /// <summary>
         /// Increasing this value will decrease the time a soldier can run.
         /// </summary>
-        [PropertyName("sprintStaminaDissipationFactor", 502)]
+        [PropertyName("sprintStaminaDissipationFactor")]
         public ObjectProperty<double> SprintStaminaDissipationFactor { get; set; }
 
         /// <summary>

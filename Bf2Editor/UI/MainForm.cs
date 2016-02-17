@@ -200,9 +200,8 @@ namespace BF2Editor
                         NameSpace nspace = new NameSpace(subdirName, subdir);
                         await nspace.LoadFile($"{subdirName}.con");
 
-                        // Load tweak
-                        //Scope tweakScope = new Scope(nspace.Files[$"{subdirName}.con"].Scope, ScopeType.Detached);
-                        //bool loaded = await nspace.LoadFile($"{subdirName}.tweak", scope: tweakScope);
+                        // Load tweak (if it exists)
+                        //await nspace.LoadFile($"{subdirName}.tweak");
 
                         // Load Ai Files
                         await nspace.LoadFile("ai/Objects.ai");

@@ -80,6 +80,11 @@ namespace BF2ScriptingEngine.Scripting
         /// <summary>
         /// Represents a Run command
         /// </summary>
-        Run
+        Run,
+
+        /// <summary>
+        /// Represents a static object
+        /// </summary>
+        StaticObject
     }
 }

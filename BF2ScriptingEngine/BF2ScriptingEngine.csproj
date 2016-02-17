@@ -59,8 +59,13 @@
     <Compile Include="Scripting\Components\SimpleDeviationComp.cs" />
     <Compile Include="Scripting\Components\SingleFireComp.cs" />
     <Compile Include="Scripting\Components\ToggleCameraComp.cs" />
+    <Compile Include="Scripting\Components\WarningHud.cs" />
     <Compile Include="Scripting\Components\WeaponBasedRecoilComp.cs" />
     <Compile Include="Scripting\Components\Abstract\ZoomComp.cs" />
+    <Compile Include="Scripting\ConFileStringEntry.cs" />
+    <Compile Include="Scripting\Enumerations\ControlsCategory.cs" />
+    <Compile Include="Scripting\Enumerations\PhysicsType.cs" />
+    <Compile Include="Scripting\Enumerations\VehicleCategory.cs" />
     <Compile Include="Scripting\GeometryTemplates\StaticMesh.cs" />
     <Compile Include="Scripting\Interfaces\ICastable.cs" />
     <Compile Include="Scripting\ObjectTemplates\AnimatedBundle.cs" />
@@ -72,6 +77,7 @@
     <Compile Include="Scripting\ObjectTemplates\LandingGear.cs" />
     <Compile Include="Scripting\ObjectTemplates\Parachute.cs" />
     <Compile Include="Scripting\ObjectTemplates\RotationalBundle.cs" />
+    <Compile Include="Scripting\ObjectTemplates\Sound.cs" />
     <Compile Include="Scripting\ObjectTemplates\Spring.cs" />
     <Compile Include="Scripting\ObjectTemplates\SupplyObject.cs" />
     <Compile Include="Scripting\ObjectTemplates\UAVVehicle.cs" />

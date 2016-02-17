@@ -58,6 +58,9 @@ namespace BF2ScriptingEngine.Scripting
         /// </remarks>
         public string Value { get; set; }
 
+        /// <summary>
+        /// Do not let outsiders create tokens!!
+        /// </summary>
         internal Token() { }
 
         /// <summary>
@@ -68,7 +71,7 @@ namespace BF2ScriptingEngine.Scripting
         /// <param name="file">The con file this token is generating from</param>
         /// <param name="index">The line number this match is found on</param>
         /// <returns>The newly created token</returns>
-        public static Token Create(TokenType kind, Match match, ConFile file, int index)
+        internal static Token Create(TokenType kind, Match match, ConFile file, int index)
         {
             Token token = new Token()
             {
@@ -80,26 +83,7 @@ namespace BF2ScriptingEngine.Scripting
             };
 
             // We only create token args for object property types
-            if (token.Kind == TokenType.ObjectProperty)
-                SetTokenArgs(token);
-
-            return token;
-        }
-
-        public static Token Create(TokenType kind, TokenArgs args, ConFile file)
-        {
-            Token token = new Token()
-            {
-                File = file,
-                Position = 0,
-                Kind = kind,
-                TokenArgs = args,
-                Match = Match.Empty,
-                Value = args.ToString()
-            };
-
-            // We only create token args for object property types
-            if (token.Kind == TokenType.ObjectProperty)
+            if (token.Kind == TokenType.ObjectProperty || token.Kind == TokenType.ActiveSwitch)
                 SetTokenArgs(token);
 
             return token;

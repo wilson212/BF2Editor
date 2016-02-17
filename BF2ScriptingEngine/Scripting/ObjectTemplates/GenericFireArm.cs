@@ -14,7 +14,7 @@ namespace BF2ScriptingEngine.Scripting
         /// The Fire Component
         /// </summary>
         [Component("MultiFireComp", "SingleFireComp")]
-        [PropertyName("fire", 500)]
+        [PropertyName("fire")]
         [Comment(
             Before = "---BeginComp:FireComp ---"
         //After = "---EndComp ---"
@@ -25,7 +25,7 @@ namespace BF2ScriptingEngine.Scripting
         /// The Ammo Component
         /// </summary>
         [Component("DefaultAmmoComp")]
-        [PropertyName("ammo", 501)]
+        [PropertyName("ammo")]
         [Comment(
             Before = "---BeginComp:DefaultAmmoComp ---"
         //After = "---EndComp ---"

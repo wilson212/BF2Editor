@@ -12,6 +12,24 @@ namespace BF2ScriptingEngine.Scripting
         [PropertyName("nrOfAnimatedUVMatrix")]
         public ObjectPropertyList<int> NumOfAnimatedUVMatrix { get; internal set; }
 
+        [PropertyName("setMaterialReflectionScale")]
+        public ObjectPropertyList<int, int, int, double> MaterialReflectionScale
+        {
+            get; internal set;
+        }
+
+        [PropertyName("setSpecularStaticGloss")]
+        public ObjectPropertyList<int, int, int, int> SpecularStaticGloss
+        {
+            get; internal set;
+        }
+
+        [PropertyName("compressVertexData")]
+        public ObjectPropertyList<bool> CompressVertexData { get; internal set; }
+
+        [PropertyName("maxTextureRepeat")]
+        public ObjectPropertyList<int> MaxTextureRepeat { get; internal set; }
+
         public BundledMesh(string name, Token token) : base(name, token)
         {
 

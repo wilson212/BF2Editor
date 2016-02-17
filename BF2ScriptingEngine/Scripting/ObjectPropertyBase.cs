@@ -73,7 +73,7 @@ namespace BF2ScriptingEngine.Scripting
             PropertyName fieldAttr = attribute as PropertyName;
             return (ObjectProperty)Activator.CreateInstance(
                 property.PropertyType,
-                new object[] { fieldAttr.Name, token, property, owner }
+                new object[] { fieldAttr.Names[0], token, property, owner }
             );
         }
 
@@ -97,7 +97,7 @@ namespace BF2ScriptingEngine.Scripting
             PropertyName fieldAttr = attribute as PropertyName;
             return (T)Activator.CreateInstance(
                 typeof(T),
-                new object[] { fieldAttr.Name, token, property, owner }
+                new object[] { fieldAttr.Names[0], token, property, owner }
             );
         }
 

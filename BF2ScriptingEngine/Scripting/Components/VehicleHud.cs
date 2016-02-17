@@ -13,6 +13,12 @@ namespace BF2ScriptingEngine.Scripting.Components
         public ObjectProperty<string> HudName { get; set; }
 
         /// <summary>
+        /// Gets or Sets an icon
+        /// </summary>
+        [PropertyName("typeIcon"), Quoted]
+        public ObjectProperty<string> TypeIcon { get; set; }
+
+        /// <summary>
         /// Hud graphics information.
         /// </summary>
         [PropertyName("miniMapIcon"), Quoted]

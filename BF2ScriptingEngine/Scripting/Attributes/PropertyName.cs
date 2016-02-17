@@ -3,35 +3,28 @@
 namespace BF2ScriptingEngine.Scripting.Attributes
 {
     /// <summary>
-    /// This attribute represents the proper name (camel case) name
+    /// This attribute represents the proper name (camel case)
     /// for a property in a .con or .ai file
     /// </summary>
+    /// <remarks>
+    /// The script engine uses this attribute to map confile
+    /// properties to a C# object properties
+    /// </remarks>
     public class PropertyName : Attribute
     {
         /// <summary>
-        /// The name of this property, using camel case
+        /// The name of this property and all of its aliases, 
+        /// using the proper camel case notation
         /// </summary>
-        public string Name { get; protected set; }
-
-        /// <summary>
-        /// Gets the order weight of this property. Lower numbers will
-        /// be ordered before higher ones.
-        /// </summary>
-        /// <remarks>
-        /// By default, properties are ordered by when they are defined in the 
-        /// C# object, but this does not account for derived properties like 
-        /// from the <see cref="ObjectTemplate"/> class.
-        /// </remarks>
-        public int Priority { get; protected set; }
+        public string[] Names { get; protected set; }
 
         /// <summary>
         /// Creates a new instance of PropertyName
         /// </summary>
         /// <param name="name"></param>
-        public PropertyName(string name, int priority = 999)
+        public PropertyName(params string[] names)
         {
-            this.Name = name;
-            this.Priority = priority;
+            this.Names = names;
         }
     }
 }

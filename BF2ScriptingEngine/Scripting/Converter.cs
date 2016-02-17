@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -37,36 +38,8 @@ namespace BF2ScriptingEngine.Scripting
                 Value = exp.Value;
             }
 
-            // No need to change type if types match
-            if (Value.GetType() == PropertyType || PropertyType.GetInterface("ICastable") != null)
-            {
-                return new ValueInfo<K>((K)Value, exp);
-            }
-
-            // Enums need special care
-            if (PropertyType.IsEnum)
-            {
-                return new ValueInfo<K>((K)Enum.Parse(PropertyType, Value.ToString(), true), exp);
-            }
-
-            // Bools need special care, since a string of "1" or "0" fails to
-            // parse in bool.TryParse, but a 1 or 0 parses fine (as an Int)
-            if (PropertyType == typeof(bool))
-            {
-                bool boolValue;
-                if (bool.TryParse(Value.ToString(), out boolValue))
-                {
-                    return new ValueInfo<K>((K)(boolValue as object), exp);
-                }
-                else
-                {
-                    int intValue;
-                    if (Int32.TryParse(Value.ToString(), out intValue))
-                        return new ValueInfo<K>((K)Convert.ChangeType(intValue, PropertyType), exp);
-                }
-            }
-
-            return new ValueInfo<K>((K)Convert.ChangeType(Value, PropertyType), exp);
+            K newValue = ConvertValue<K>(Value, PropertyType);
+            return new ValueInfo<K>(newValue, exp);
         }
 
         /// <summary>
@@ -76,10 +49,10 @@ namespace BF2ScriptingEngine.Scripting
         /// <returns></returns>
         public static K ConvertValue<K>(object Value, Type PropertyType)
         {
-            Type valType = Value.GetType();
+            Type ValueType = Value.GetType();
 
             // No need to change type if types match
-            if (valType == PropertyType)
+            if (ValueType == PropertyType)
             {
                 return (K)Value;
             }
@@ -107,14 +80,23 @@ namespace BF2ScriptingEngine.Scripting
                 }
             }
 
-            try
+            if (PropertyType.IsClass || PropertyType.IsSealed)
             {
-                return (K)Convert.ChangeType(Value, PropertyType);
+                var converter = TypeDescriptor.GetConverter(PropertyType);
+                if (converter?.CanConvertFrom(ValueType) ?? false)
+                {
+                    object newObject = converter.ConvertFrom(Value);
+                    return (K)newObject;
+                }
+                else
+                {
+                    throw new Exception(
+                        $"Invalid Object TypeConversion from {ValueType.Name} -> {PropertyType.Name}"
+                    );
+                }
             }
-            catch
-            {
-                throw;
-            }
+
+            return (K)Convert.ChangeType(Value, PropertyType);
         }
 
         /// <summary>

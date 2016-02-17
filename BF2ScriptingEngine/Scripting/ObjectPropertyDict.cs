@@ -20,6 +20,16 @@ namespace BF2ScriptingEngine.Scripting
         internal Dictionary<TKey, ObjectProperty<TKey, TVal>> Items;
 
         /// <summary>
+        /// Gets the number of items in this ObjectProperty dictionary
+        /// </summary>
+        public int Count => Items.Count;
+
+        /// <summary>
+        /// Gets the number of Generic Arguments in this collection
+        /// </summary>
+        //int IObjectPropertyCollection.Size => 2;
+
+        /// <summary>
         /// Gets the <see cref="ObjectProperty{TKey, TVal}"/> value associated 
         /// with the specified key.
         /// </summary>
@@ -52,7 +62,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
-        public bool ContaintsKey(TKey key) => Items.ContainsKey(key);
+        public bool ContainsKey(TKey key) => Items.ContainsKey(key);
 
         /// <summary>
         /// Sets the Value of the specified key (item #1 in <paramref name="values"/>
@@ -78,17 +88,54 @@ namespace BF2ScriptingEngine.Scripting
             Items[item.Value1] = item;
 
             // Add item to the Entries list
-            tkn.File.AddProperty(item);
+            tkn.File?.AddProperty(item);
         }
 
+        /// <summary>
+        /// Removes the specified ObjectProperty by key from this
+        /// Object Property Dictionary
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public bool Remove(TKey key)
+        {
+            if (!Items.ContainsKey(key))
+                return false;
+
+            // Fetch item
+            var item = Items[key];
+
+            // Remove item from ConFile
+            item.Owner.File?.Entries.Remove(item);
+
+            // Remove item
+            return Items.Remove(key);
+        }
+
+        /// <summary>
+        /// Converts the value of this property to file format.
+        /// Each ObjectProperty in this list is returned on a new
+        /// line.
+        /// </summary>
         public override string ToFileFormat()
         {
-            return null;
+            StringBuilder builder = new StringBuilder();
+            foreach (var item in Items)
+                builder.AppendLine(item.Value.ToFileFormat());
+
+            return builder.ToString();
         }
 
-        public IEnumerator GetEnumerator()
+        /// <summary>
+        /// Returns an <see cref="IEnumerator"/> that itterates
+        /// through this ObjectProperty Dictionary
+        /// </summary>
+        public IEnumerator GetEnumerator() => Items.GetEnumerator();
+
+        public IEnumerable<KeyValuePair<TKey, ObjectProperty<TKey, TVal>>> Where(
+            Func<KeyValuePair<TKey, ObjectProperty<TKey, TVal>>, bool> predicate)
         {
-            return ((IEnumerable)Items).GetEnumerator();
+            return Items.Where(predicate);
         }
     }
 }

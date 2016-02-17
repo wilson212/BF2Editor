@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,7 @@ using BF2ScriptingEngine.Scripting.Interfaces;
 
 namespace BF2ScriptingEngine.Scripting
 {
+    [TypeConverter(typeof(Point3DConverter))]
     public struct Point3D : ICastable
     {
         private decimal x;
@@ -77,6 +79,23 @@ namespace BF2ScriptingEngine.Scripting
         public static implicit operator String(Point3D value)
         {
             return value.ToString();
+        }
+    }
+
+    internal class Point3DConverter : TypeConverter
+    {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+        {
+            return (sourceType == typeof(string));
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
+        {
+            var val = value as string;
+            if (val != null)
+                return (Point3D)val;
+            else
+                return base.ConvertFrom(context, culture, value);
         }
     }
 }

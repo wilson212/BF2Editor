@@ -18,76 +18,6 @@ namespace BF2ScriptingEngine
     public static class ScriptEngine
     {
         /// <summary>
-        /// An array of all the expressions needed to tokenize the contents
-        /// of a Con file.
-        /// </summary>
-        /// <remarks>
-        /// Order is important here, as we itterate through these expressions, lines
-        /// that match an expression are removed from our source. As we get to the bottom
-        /// of this array, the source will get smaller and smaller as we match our expressions.
-        /// </remarks>
-        internal static KeyValuePair<TokenType, string>[] TokenExpressions = new[]
-        {
-            // === Parse comments first, as somethings like objects and properties can be commented out === //
-
-            // Multiline Rem Comment on a single line
-            new KeyValuePair<TokenType, string>(TokenType.RemComment,
-                @"^beginRem(?<value>.*?)endRem$"
-            ),
-
-            // Multiline Rem Comment START
-            new KeyValuePair<TokenType, string>(TokenType.BeginRem,
-                @"^beginRem(?<value>.*?)$"
-            ),
-
-            // Multiline Rem Comment END
-            new KeyValuePair<TokenType, string>(TokenType.EndRem,
-                @"^(?<value>.*)endRem$"
-            ),
-
-            // Single line Rem Comment
-            new KeyValuePair<TokenType, string>(TokenType.RemComment,
-                @"^rem([\s|\t]+)(?<value>.*)?$"
-            ),
-
-            // === Objects === //
-
-            new KeyValuePair<TokenType, string>(TokenType.ActiveSwitch,
-                @"^(?<reference>[a-z]+)\.active(?<type>[a-z_]*)([\s|\t]+)(?<value>.*)?$"
-            ),
-
-            // Object property value, HAS TO FOLLOW everything else with a similar expression
-            // due to the ungreediness of this regular expression
-            new KeyValuePair<TokenType, string>(TokenType.ObjectProperty,
-                @"^(?<reference>[a-z]+)\.(?<property>[a-z_\.]+)([\s|\t]+)(?<value>.*)?$"
-            ),
-
-            // === Vars Conditionals === //
-
-            // If statements
-            new KeyValuePair<TokenType, string>(TokenType.IfStart, @"^if(?<value>.*)?$"),
-
-            // End If
-            new KeyValuePair<TokenType, string>(TokenType.EndIf, @"^(?<value>.*)endIf$"),
-
-            // Variable
-            new KeyValuePair<TokenType, string>(TokenType.Variable, @"^(?:var[\s\t]+)(?<name>[a-z0-9_]+)[\s\t]*(?:=[\s\t]*)?(?<value>.*?)?$"),
-            new KeyValuePair<TokenType, string>(TokenType.Variable, @"^(?<name>[a-z0-9_]+)[\s\t]*(?:=[\s\t]*)(?<value>.*?)$"),
-
-            // Constant
-            new KeyValuePair<TokenType, string>(TokenType.Constant, @"^(?:const[\s\t]+)(?<name>[a-z0-9_]+)[\s\t]*(?:=[\s\t]*)(?<value>.*?)$"),
-
-            // Include command
-            new KeyValuePair<TokenType, string>(TokenType.Include, @"^include(?<value>.*)?$"),
-
-            // Run command
-            new KeyValuePair<TokenType, string>(TokenType.Run, @"^run(?<value>.*)?$"),
-
-            // Finally, match everything else
-            new KeyValuePair<TokenType, string>(TokenType.None, @"^(?<value>.*?)$")
-        };
-
-        /// <summary>
         /// Gets a list of characters used to split a confile line into arguments
         /// </summary>
         public static readonly char[] SplitChars = new char[] { ' ', '\t' };
@@ -249,7 +179,7 @@ namespace BF2ScriptingEngine
             // ============
             // First we convert our confile lines into parsed tokens
             // ============
-            Token[] fileTokens = Tokenizer.Tokenize(workingFile, ref fileContents, TokenExpressions);
+            Token[] fileTokens = Tokenizer.Tokenize(workingFile, ref fileContents);
             TokenArgs tokenArgs;
             Scope currentScope = workingFile.Scope;
 

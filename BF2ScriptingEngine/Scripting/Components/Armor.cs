@@ -40,10 +40,10 @@ namespace BF2ScriptingEngine.Scripting.Components
         public ObjectProperty<int> HpLostWhileCriticalDamage { get; internal set; }
 
         [PropertyName("waterDamageDelay")]
-        public ObjectProperty<int> WaterDamageDelay { get; internal set; }
+        public ObjectProperty<double> WaterDamageDelay { get; internal set; }
 
         [PropertyName("deepWaterDamageDelay")]
-        public ObjectProperty<int> DeepWaterDamageDelay { get; internal set; }
+        public ObjectProperty<double> DeepWaterDamageDelay { get; internal set; }
 
         [PropertyName("waterLevel")]
         public ObjectProperty<double> WaterLevel { get; internal set; }
@@ -123,9 +123,21 @@ namespace BF2ScriptingEngine.Scripting.Components
         [PropertyName("timeToStayAsWreck")]
         public ObjectProperty<int> TimeToStayAsWreck { get; internal set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [PropertyName("criticalDamage")]
         public ObjectProperty<int> CriticalDamage { get; internal set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        [PropertyName("destroyOnSpectacularDeath")]
+        public ObjectProperty<bool> DestroyOnSpectacularDeath { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
         [PropertyName("hideChildrenOnSpectacularDeath")]
         public ObjectProperty<bool> HideChildrenOnSpectacularDeath { get; internal set; }
 
@@ -139,7 +151,13 @@ namespace BF2ScriptingEngine.Scripting.Components
         /// stay on until it reaches the next armor effect.
         /// </summary>
         [PropertyName("addArmorEffect")]
-        public ObjectMethod<int, string, string, string> AddArmorEffect { get; internal set; }
+        protected ObjectMethod<int, string, string, string> AddArmorEffect { get; set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [PropertyName("addArmorEffectSpectacular")]
+        protected ObjectMethod<int, string, string, string> AddArmorEffectSpectacular { get; set; }
 
         #endregion
 
@@ -147,6 +165,9 @@ namespace BF2ScriptingEngine.Scripting.Components
         {
             // Instantiate Object Methods
             AddArmorEffect = new ObjectMethod<int, string, string, string>(Method_AddArmorEffect);
+            AddArmorEffectSpectacular = new ObjectMethod<int, string, string, string>(
+                Method_AddArmorEffectSpectacular
+            );
         }
 
         /// <summary>
@@ -159,9 +180,32 @@ namespace BF2ScriptingEngine.Scripting.Components
         /// <param name="name"></param>
         /// <param name="position"></param>
         /// <param name="rotation"></param>
-        private ConFileEntry Method_AddArmorEffect(Token token, int hitPoints, string name, string position, string rotation)
+        private ConFileEntry Method_AddArmorEffect(
+            Token token,
+            int hitPoints,
+            string name,
+            string position,
+            string rotation)
         {
-            throw new NotImplementedException();
+            return new ConFileStringEntry(token);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <param name="hitPoints"></param>
+        /// <param name="name"></param>
+        /// <param name="position"></param>
+        /// <param name="rotation"></param>
+        private ConFileEntry Method_AddArmorEffectSpectacular(
+            Token token, 
+            int hitPoints, 
+            string name, 
+            string position, 
+            string rotation)
+        {
+            return new ConFileStringEntry(token);
         }
     }
 }

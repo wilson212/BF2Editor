@@ -20,14 +20,10 @@ namespace BF2ScriptingEngine.Scripting
         /// </summary>
         /// <param name="File">The ConFile object where these lines are located</param>
         /// <param name="Lines">The indexed input strings to break up into tokens</param>
-        /// <param name="TokenExpressions">A KeyValuePair array of Token Kind => Regex Expression.</param>
         /// <returns>The set of tokens located within the string. 
         /// <paramref name="Lines"/> is updated as a result of this call, and will contain entries that did not
         /// match any of the token expressions</returns>
-        public static Token[] Tokenize(
-            ConFile File, 
-            ref Dictionary<int, string> Lines, 
-            KeyValuePair<TokenType, string>[] TokenExpressions)
+        public static Token[] Tokenize(ConFile File, ref Dictionary<int, string> Lines)
         {
             List<Token> tokens = new List<Token>();
 
@@ -44,16 +40,15 @@ namespace BF2ScriptingEngine.Scripting
         /// Performs tokenization on a non-tokenized input string with the specified patterns
         /// </summary>
         /// <param name="input">The input string we are trying to tokenize</param>
-        /// <param name="tokenExpressions">The expressions to use against the input string</param>
         /// <exception cref="ArgumentException">
         /// Thrown in the input string cannot be tokenized (unrecognized input)
         /// </exception>
-        public static Token Tokenize(string input, KeyValuePair<TokenType, string>[] tokenExpressions)
+        public static Token Tokenize(string input)
         {
             Regex regex;
 
             // Tokenize and add each token to the list of matched rules
-            foreach (KeyValuePair<TokenType, string> token in tokenExpressions)
+            foreach (KeyValuePair<TokenType, string> token in TokenExpressions)
             {
                 // Create our regex and remove excess whitespace on our input
                 regex = new Regex(token.Value, RegexOptions.Multiline | RegexOptions.IgnoreCase);
@@ -119,5 +114,81 @@ namespace BF2ScriptingEngine.Scripting
             // Return the tokens we were able to extract
             return resultTokens;
         }
+
+        /// <summary>
+        /// An array of all the expressions needed to tokenize the contents
+        /// of a Con file.
+        /// </summary>
+        /// <remarks>
+        /// Order is important here, as we itterate through these expressions, lines
+        /// that match an expression are removed from our source. As we get to the bottom
+        /// of this array, the source will get smaller and smaller as we match our expressions.
+        /// </remarks>
+        internal static KeyValuePair<TokenType, string>[] TokenExpressions = new[]
+        {
+            // === Parse comments first, as somethings like objects and properties can be commented out === //
+
+            // Multiline Rem Comment on a single line
+            new KeyValuePair<TokenType, string>(TokenType.RemComment,
+                @"^beginRem(?<value>.*?)endRem$"
+            ),
+
+            // Multiline Rem Comment START
+            new KeyValuePair<TokenType, string>(TokenType.BeginRem,
+                @"^beginRem(?<value>.*?)$"
+            ),
+
+            // Multiline Rem Comment END
+            new KeyValuePair<TokenType, string>(TokenType.EndRem,
+                @"^(?<value>.*)endRem$"
+            ),
+
+            // Single line Rem Comment
+            new KeyValuePair<TokenType, string>(TokenType.RemComment,
+                @"^rem([\s|\t]+)(?<value>.*)?$"
+            ),
+
+            // === Objects === //
+
+            new KeyValuePair<TokenType, string>(TokenType.ActiveSwitch,
+                @"^(?<reference>[a-z]+)\.active(?<type>[a-z_]*)([\s|\t]+)(?<value>.*)?$"
+            ),
+
+            // Object property value, HAS TO FOLLOW everything else with a similar expression
+            // due to the ungreediness of this regular expression
+            new KeyValuePair<TokenType, string>(TokenType.ObjectProperty,
+                @"^(?<reference>[a-z]+)\.(?<property>[a-z_0-9\.]+)([\s|\t]+)(?<value>.*)?$"
+            ),
+
+            // === Vars Conditionals === //
+
+            // If statements
+            new KeyValuePair<TokenType, string>(TokenType.IfStart, @"^if(?<value>.*)?$"),
+
+            // End If
+            new KeyValuePair<TokenType, string>(TokenType.EndIf, @"^(?<value>.*)endIf$"),
+
+            // Variable
+            new KeyValuePair<TokenType, string>(TokenType.Variable, 
+                @"^(?:var[\s\t]+)(?<name>[a-z0-9_]+)[\s\t]*(?:=[\s\t]*)?(?<value>.*?)?$"
+            ),
+            new KeyValuePair<TokenType, string>(TokenType.Variable, 
+                @"^(?<name>[a-z0-9_]+)[\s\t]*(?:=[\s\t]*)(?<value>.*?)$"
+            ),
+
+            // Constant
+            new KeyValuePair<TokenType, string>(TokenType.Constant,
+                @"^(?:const[\s\t]+)(?<name>[a-z0-9_]+)[\s\t]*(?:=[\s\t]*)(?<value>.*?)$"
+            ),
+
+            // Include command
+            new KeyValuePair<TokenType, string>(TokenType.Include, @"^include(?<value>.*)?$"),
+
+            // Run command
+            new KeyValuePair<TokenType, string>(TokenType.Run, @"^run(?<value>.*)?$"),
+
+            // Finally, match everything else
+            new KeyValuePair<TokenType, string>(TokenType.None, @"^(?<value>.*?)$")
+        };
     }
 }

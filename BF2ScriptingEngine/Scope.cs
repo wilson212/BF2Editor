@@ -47,6 +47,16 @@ namespace BF2ScriptingEngine
         public MissingObjectHandling MissingObjectHandling { get; set; } = MissingObjectHandling.CreateNew;
 
         /// <summary>
+        /// Gets or Sets whether this Scope is required to pass created objects
+        /// up to the parent <see cref="Scope"/> if one is defined
+        /// </summary>
+        /// <remarks>
+        /// The ScopeType will be respected, if this Scope is Detached, then a clone
+        /// copy of the object will be givin to the parent scope
+        /// </remarks>
+        public bool RegisterObjects { get; set; } = false;
+
+        /// <summary>
         /// Keeps a list of all active objects, for each template type
         /// </summary>
         internal Dictionary<ReferenceType, ConFileObject> ActiveObjects;
@@ -127,7 +137,7 @@ namespace BF2ScriptingEngine
         public void Execute(string input, ConFile file = null) 
         {
             // === Create Token
-            Token token = Tokenizer.Tokenize(input, ScriptEngine.TokenExpressions);
+            Token token = Tokenizer.Tokenize(input);
             token.File = file;
 
             // === Execute on Scope
@@ -157,6 +167,15 @@ namespace BF2ScriptingEngine
             // Do we set as the active object?
             if (setActive)
                 SetActiveObject(obj);
+
+            // Register object?
+            if (ParentScope != null && RegisterObjects)
+            {
+                if (ScopeType == ScopeType.Attached)
+                    ParentScope.AddObject(obj, setActive);
+                else
+                    ParentScope.AddObject(obj.Clone(), setActive);
+            }
 
             // Add object
             Objects.Add(key, obj);
@@ -193,6 +212,15 @@ namespace BF2ScriptingEngine
             {
                 // Add object
                 Objects.Add(key, obj);
+
+                // Register object?
+                if (ParentScope != null && RegisterObjects)
+                {
+                    if (ScopeType == ScopeType.Attached)
+                        ParentScope.AddObject(obj, token);
+                    else
+                        ParentScope.AddObject(obj.Clone(), token);
+                }
             }
 
             // Set object as active
@@ -290,13 +318,22 @@ namespace BF2ScriptingEngine
         internal ConFileObject GetObject(Token token)
         {
             // Pull info
-            TokenArgs tokenArgs = token.TokenArgs;
-            string name = token.TokenArgs.Arguments.Last();
+            try
+            {
+                TokenArgs tokenArgs = token.TokenArgs;
+                string name = token.TokenArgs.Arguments.Last();
 
-            // Create our Objects key
-            var type = tokenArgs.ReferenceType;
-            var key = new Tuple<string, ReferenceType>(name, type);
-            return GetObject(key, token);
+                // Create our Objects key
+                var type = tokenArgs.ReferenceType;
+                var key = new Tuple<string, ReferenceType>(name, type);
+                return GetObject(key, token);
+            }
+            catch
+            {
+                throw;
+            }
+
+            
         }
 
         /// <summary>
@@ -335,6 +372,7 @@ namespace BF2ScriptingEngine
                         else
                         {
                             // === Deep Clone === //
+                            Objects[key] = ParentScope.GetObject(key, token).Clone();
                         }
                         break;
                     default:

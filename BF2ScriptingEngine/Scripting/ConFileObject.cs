@@ -56,12 +56,6 @@ namespace BF2ScriptingEngine.Scripting
         public RemComment Comment { get; protected set; }
 
         /// <summary>
-        /// Gets a list of <see cref="Token"/> objects, which represent all reference points
-        /// where this object is used at.
-        /// </summary>
-        public List<Token> Tokens { get; protected set; }
-
-        /// <summary>
         /// A collection of detached versions of this object. Any changes made to this object
         /// outside of its defined file, are stored here.
         /// </summary>
@@ -81,23 +75,30 @@ namespace BF2ScriptingEngine.Scripting
         }
 
         /// <summary>
-        /// Creates a new instance of ConFileObject
+        /// Creates a new instance of <see cref="ConFileObject"/>
         /// </summary>
-        /// <param name="name">The name of this object</param>
-        /// <param name="referenceAs">How this object is referenced (ObjectTemplate, weaponTemplate etc etc)</param>
-        /// <param name="token">The token which creates this object</param>
-        public ConFileObject(string name, Token token)
+        /// <param name="name">The unique name of this object</param>
+        /// <param name="token">
+        /// The token which creates this object. If null, an attempt to make a token will be
+        /// made by getting using this objects <see cref="ReferenceType"/>.
+        /// </param>
+        public ConFileObject(string name, Token token = null)
         {
+            Type type = this.GetType();
+
+            // Check for null token!
+            if (token == null)
+            {
+                // === We need a token, so try and create one === //
+                token = CreateToken(name, type, token.File);
+            }
+
             // Set object variables
             this.Name = name;
             this.File = token.File;
-            this.Tokens = new List<Token>() { token };
-
-            // Set base token too
             base.Token = token;
 
             // Build our property Map
-            Type type = this.GetType();
             if (!PropertyMap.ContainsKey(type.Name))
                 PropertyMap.Add(type.Name, GetPropertyMap(type));
         }
@@ -121,13 +122,14 @@ namespace BF2ScriptingEngine.Scripting
 
             // Fetch our property that we are setting the value to
             KeyValuePair<string, PropertyInfo> prop = GetProperty(propName);
-            bool isCollection = prop.Value.PropertyType.GetInterface("IEnumerable") != null;
+            Type propType = prop.Value.PropertyType;
+            bool isCollection = propType.GetInterface("IObjectPropertyCollection") != null;
 
             // Get the value that is set
             var value = prop.Value.GetValue(this);
 
             // Is this an object method, or Object Property?
-            if (prop.Value.PropertyType.BaseType.Name == "ObjectMethod")
+            if (propType.BaseType.Name == "ObjectMethod")
             {
                 // Object methods are always instantiated in the object's constructor
                 ObjectMethod method = (ObjectMethod)value;
@@ -135,7 +137,7 @@ namespace BF2ScriptingEngine.Scripting
 
                 // Add item to the file entry list
                 if (item != null)
-                    token.File.AddEntry(item, token);
+                    token.File?.AddEntry(item, token);
             }
             else
             {
@@ -146,9 +148,9 @@ namespace BF2ScriptingEngine.Scripting
                     // Create instance and add it to the entries list
                     obj = ObjectProperty.Create(prop.Value, this, token);
 
-                    // Add entry? IEnumerables add thier own properties
+                    // Add entry? Property Collections add thier own properties
                     if (!isCollection)
-                        token.File.AddProperty(obj);
+                        token.File?.AddProperty(obj);
                 }
 
                 // Create our instance, and parse
@@ -184,21 +186,27 @@ namespace BF2ScriptingEngine.Scripting
             var obj = (ObjectProperty)prop.Value.GetValue(this);
             if (obj == null)
             {
+                // === 
+                // Since the property is null, we must create a con script command.
+                // So here, we will use the ReferenceType of this object, and property
+                // name to create a fake token, and use that to set the value
+                // ===
+                StringBuilder builder = new StringBuilder();
+                builder.Append($"{Token.TokenArgs.ReferenceType.Name}.{propertyName}");
+                foreach (object value in values)
+                    builder.Append($" {value}");
+
                 // Create a new Token
-                TokenArgs args = new TokenArgs()
-                {
-                    PropertyName = propertyName,
-                    ReferenceType = this.Token.TokenArgs.ReferenceType,
-                };
-                Token token = Token.Create(TokenType.ObjectProperty, args, File);
+                Token token = Tokenizer.Tokenize(builder.ToString());
+                token.File = File;
 
                 // Create the ObjectProperty instance, and set this Property to that instance
                 obj = ObjectProperty.Create(prop.Value, this, token);
 
-                // Add entry? IEnumerables add thier own properties
+                // Add entry? IObjectPropertyCollection's add thier own properties
                 Type type = obj.GetType();
-                if (type.GetInterface("IEnumerable") == null)
-                    Token.File.AddProperty(obj);
+                if (type.GetInterface("IObjectPropertyCollection") == null)
+                    Token.File?.AddProperty(obj);
             }
 
             // Set the new object property values
@@ -234,7 +242,7 @@ namespace BF2ScriptingEngine.Scripting
             property.SetValue(this, null);
 
             // Remove entry
-            File.Entries.Remove(obj);
+            File?.Entries.Remove(obj);
         }
 
         /// <summary>
@@ -263,8 +271,10 @@ namespace BF2ScriptingEngine.Scripting
             // Define our type
             Type objType = this.GetType();
 
-            // Make sure we have a te correct token
+            // Make sure we have a token
             Token tkn = token ?? Token;
+
+            // Components use our own token!
             if (typeof(IComponent).IsAssignableFrom(objType))
                 tkn = Token;
 
@@ -319,14 +329,17 @@ namespace BF2ScriptingEngine.Scripting
                     PropertyName fieldAttr = attribute as PropertyName;
 
                     // Check for Duplicates
-                    if (Properties.ContainsKey(fieldAttr.Name))
+                    foreach (string name in fieldAttr.Names)
                     {
-                        string Message = $"Duplicate PropertyName found \"{fieldAttr.Name}\" in {objectType.FullName}";
-                        Logger.Error(Message, this.File, this.Tokens[0].Position);
-                        throw new Exception(Message);
-                    }
+                        if (Properties.ContainsKey(name))
+                        {
+                            string Message = $"Duplicate PropertyName found \"{name}\" in {objectType.FullName}";
+                            Logger.Error(Message, this.File, this.Token.Position);
+                            throw new Exception(Message);
+                        }
 
-                    Properties.Add(fieldAttr.Name, property);
+                        Properties.Add(name, property);
+                    }
                 }
             }
 
@@ -342,11 +355,64 @@ namespace BF2ScriptingEngine.Scripting
             throw new Exception("Invalid Object Property \"" + propertyName + "\".");
         }
 
-        public ConFileObject Clone()
+        /// <summary>
+        /// Creates a new token instance, that can be used to create a new
+        /// instance of this object type.
+        /// </summary>
+        /// <param name="name">The unique name of the object</param>
+        /// <param name="type">The derived type of this object</param>
+        /// <returns></returns>
+        private static Token CreateToken(string name, Type type, ConFile file)
         {
-            ConFile file = new ConFile(this.File.FilePath);
-            Token newToken = Token.Create(this.Token.Kind, Match.Empty, file, this.Token.Position);
-            return (ConFileObject)Activator.CreateInstance(this.GetType(), this.Name, newToken);
+            Token token;
+
+            // NOTE: an exception will be thrown in method if this object
+            // type isnt added to the ReferenceManager
+            var refType = ReferenceManager.GetReferenceType(type);
+            var method = refType.Mappings.FirstOrDefault();
+
+            // If we have a Mapping, we assume a non-static object
+            if (method.Key != null && method.Value != null)
+            {
+                // Build a create string... this is pretty Generic
+                // and may not cover custom types very well!!!
+                string input = $"{refType.Name}.{method.Key} {type.Name} {name}";
+
+                // Create a new Token
+                token = Tokenizer.Tokenize(input);
+                token.File = file;
+            }
+            else
+            {
+                // Must be a static class, just create a very generic token!
+                token = new Token()
+                {
+                    Kind = TokenType.StaticObject,
+                    File = file,
+                    Value = name,
+                    TokenArgs = new TokenArgs()
+                    {
+                        Arguments = new string[0],
+                        ReferenceType = refType
+                    }
+                };
+            }
+
+            return token;
+        }
+
+        /// <summary>
+        /// Creates a new, empty object of this type
+        /// </summary>
+        /// <returns></returns>
+        public ConFileObject Clone(ConFile file = null)
+        {
+            // Create a new token, with no reference to our current one
+            Type type = GetType();
+            Token newToken = CreateToken(Name, type, file ?? new ConFile(this.File?.FilePath));
+
+            // Return a new instance of this object, with the same name
+            return (ConFileObject)Activator.CreateInstance(type, this.Name, newToken);
         }
 
         public override string ToString() => Name;

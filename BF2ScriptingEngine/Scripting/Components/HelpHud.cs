@@ -5,13 +5,31 @@ namespace BF2ScriptingEngine.Scripting.Components
 {
     public class HelpHud : ConFileObject, IComponent
     {
+        /// <summary>
+        /// 
+        /// </summary>
         [PropertyName("helpStringKey")]
-        public ObjectProperty<string> HelpStringKey { get; set; }
+        public ObjectProperty<string> HelpStringKey { get; internal set; }
 
+        /// <summary>
+        /// 
+        /// </summary>
         [PropertyName("helpSoundKey")]
-        public ObjectProperty<string> HelpSoundKey { get; set; }
+        public ObjectProperty<string> HelpSoundKey { get; internal set; }
 
-        public HelpHud(string name, Token token) : base(name, token)
+        /// <summary>
+        /// 
+        /// </summary>
+        [PropertyName("lowArmorHelpStringKey")]
+        public ObjectProperty<string> LowArmorHelpStringKey { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [PropertyName("lowArmorHelpSoundKey")]
+        public ObjectProperty<string> LowArmorHelpSoundKey { get; internal set; }
+
+        public HelpHud(string name, Token token) : base("HelpHud", token)
         {
 
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using BF2ScriptingEngine.Scripting.Attributes;
+using BF2ScriptingEngine.Scripting.Enumerations;
 
 namespace BF2ScriptingEngine.Scripting
 {
@@ -21,7 +22,7 @@ namespace BF2ScriptingEngine.Scripting
         /// <remarks>
         /// The root object in the hierarchy should have this as true
         /// </remarks>
-        [PropertyName("saveInSeparateFile", 1)]
+        [PropertyName("saveInSeparateFile")]
         public ObjectProperty<bool> SaveInSeparateFile { get; internal set; }
 
         /// <summary>
@@ -36,19 +37,22 @@ namespace BF2ScriptingEngine.Scripting
         /// </remarks>
         /// <seealso cref="GenericProjectile"/>
         /// <seealso cref="http://bfmods.com/mdt/scripting/ObjectTemplate/Properties/CreateNotInGrid.html"/>
-        [PropertyName("createNotInGrid", 20)]
+        [PropertyName("createNotInGrid")]
         public ObjectProperty<bool> NotInGrid { get; internal set; }
 
         /// <summary>
         /// Should be true if object or part does not have a visible mesh.
         /// </summary>
-        [PropertyName("createdInEditor", 21)]
+        [PropertyName("createdInEditor")]
         public ObjectProperty<bool> CreatedInEditor { get; internal set; }
+
+        [PropertyName("castsDynamicShadow")]
+        public ObjectProperty<bool> CastsDynamicShadow { get; internal set; }
 
         /// <summary>
         /// Do not change, Unknown Function!
         /// </summary>
-        [PropertyName("PreCacheObject", 22)]
+        [PropertyName("preCacheObject")]
         public ObjectProperty<bool> PreCacheObject { get; internal set; }
 
         #endregion Flags
@@ -58,13 +62,13 @@ namespace BF2ScriptingEngine.Scripting
         /// <summary>
         /// Last person to save the tweaks file.
         /// </summary>
-        [PropertyName("creator", 2)]
+        [PropertyName("creator")]
         public ObjectProperty<string> CreatedBy { get; internal set; }
 
         /// <summary>
         /// Gets the last user to modify this object
         /// </summary>
-        [PropertyName("modifiedByUser", 3)]
+        [PropertyName("modifiedByUser")]
         public ObjectProperty<string> ModifiedBy { get; internal set; }
 
         /// <summary>
@@ -74,13 +78,13 @@ namespace BF2ScriptingEngine.Scripting
         /// Storing this as a string name for now... since AiTemplate and KitTemplate
         /// are trying to be stored here...
         /// </remarks>
-        [PropertyName("aiTemplate", 30)] //, ExistingObject]
+        [PropertyName("aiTemplate")] //, ExistingObject]
         public ObjectProperty<string> AiTemplate { get; internal set; }
 
         /// <summary>
         /// Gets or Sets the named geometry object
         /// </summary>
-        [PropertyName("geometry", 40)]
+        [PropertyName("geometry")]
         public virtual ObjectProperty<GeometryTemplate> Geometry { get; internal set; }
 
         [PropertyName("geometryPart")]
@@ -89,10 +93,10 @@ namespace BF2ScriptingEngine.Scripting
         /// <summary>
         /// Gets or Sets the name of the network id for this object.
         /// </summary>
-        [PropertyName("networkableInfo", 50)]
+        [PropertyName("networkableInfo", "setNetworkableInfo")]
         public ObjectProperty<NetworkableInfo> NetworkableInfo { get; internal set; }
 
-        [PropertyName("collisionMesh")]
+        [PropertyName("collisionMesh", "setCollisionMesh")]
         public ObjectProperty<string> CollisionMesh { get; internal set; }
 
         [PropertyName("collisionPart")]
@@ -125,15 +129,8 @@ namespace BF2ScriptingEngine.Scripting
         /// <remarks>
         /// When set, the geometry mesh associated with this object must have at least one collision mesh
         /// </remarks>
-        [PropertyName("hasCollisionPhysics", 60)]
+        [PropertyName("hasCollisionPhysics", "setHasCollisionPhysics")]
         public ObjectProperty<bool> HasCollisionPhysics { get; internal set; }
-
-        [PropertyName("setHasCollisionPhysics", 60)]
-        internal ObjectProperty<bool> SetHasCollisionPhysics
-        {
-            get { return HasCollisionPhysics; }
-            set { HasCollisionPhysics = value; }
-        }
 
         /// <summary>
         /// Gets or Sets that this object can collide with other objects
@@ -141,8 +138,8 @@ namespace BF2ScriptingEngine.Scripting
         /// <remarks>
         /// When set, the geometry mesh associated with this object must have at least one collision mesh
         /// </remarks>
-        [PropertyName("physicsType", 60)]
-        public ObjectProperty<int> PhysicsType { get; internal set; }
+        [PropertyName("physicsType")]
+        public ObjectProperty<PhysicsType> PhysicsType { get; internal set; }
 
         /// <summary>
         /// Gets or Sets whether this object is mobile
@@ -151,21 +148,176 @@ namespace BF2ScriptingEngine.Scripting
         /// If the object is mobile, this should be set to 1 so that the physics engine knows. 
         /// This property sets the physics engine to calculate the object in the world as a mobile object. 
         /// </remarks>
-        [PropertyName("hasMobilePhysics", 60)]
+        [PropertyName("hasMobilePhysics")]
         public ObjectProperty<bool> HasMobilePhysics { get; internal set; }
-
-        #endregion Physics
 
         /// <summary>
         /// 
         /// </summary>
-        [PropertyName("unlockIndex", 100)]
+        [PropertyName("floaterMod")]
+        public ObjectProperty<decimal> FloaterMod { get; internal set; }
+
+        #endregion Physics
+
+        /// <summary>
+        /// Gets or Sets the minimum rotation angles in degrees for an object, 
+        /// from its initial position.
+        /// </summary>
+        /// <remarks>
+        /// This and <see cref="SetMaxRotation"/> define the range of motion of any object, 
+        /// be it a gun emplacement, a view out of a vehicle, etc. 
+        /// 
+        /// The first value is the yaw rotation, i.e. how much you can turn your head left or right. 
+        /// The second value is the pitch rotation, i.e. how much you can nod up and down. 
+        /// The last number is the backwards movement of the object such as an Engine, or the 
+        /// minimum roll rotation (e.g. for a steering wheel).
+        /// 
+        /// When used in an Engine, SetMinRotation and SetMaxRotation for the Engine set how fine the 
+        /// control scale is for the engine (basically how many distinct speeds the engine can be at). 
+        /// For example, a SetMinRotation of -100 and SetMaxRotation of 200 means that the total speed 
+        /// is split into 100 different speeds for reversing and and 200 different speeds for going 
+        /// forward (so feasibly you could control the engine in such a way as to be able to go at 
+        /// 200 different speeds but none between them).
+        /// 
+        /// If you set the engine to SetAutomaticReset 0 and then set SetMinRotation to -1 and SetMaxRotation 
+        /// to 1 then basically if you press forward once, your car will speed up till maximum speed is reached, 
+        /// pressing back once will basically make your car just set throttle to 0 so you will come to a stop 
+        /// eventually, pressing back again will reverse. Basically having -1 and 1 makes it so that the engine 
+        /// has 3 different positions that it can be in (Forward, idle, reverse). Although the engine will take a 
+        /// while to get up to max speed, set by the differential and torque, your input to the engine is going 
+        /// to be either full reverse, idle or full forward.
+        /// </remarks>
+        /// <seealso cref="http://bfmods.com/mdt/scripting/ObjectTemplate/Properties/SetMinRotation.html"/>
+        [PropertyName("setMinRotation")]
+        public ObjectProperty<Point3D> SetMinRotation { get; internal set; }
+
+        /// <summary>
+        /// Gets or Sets the maximum rotation angles in degrees for an object, 
+        /// from its initial position.
+        /// </summary>
+        /// <remarks>
+        /// See SetMinRotation for a full explanation.
+        /// </remarks>
+        [PropertyName("setMaxRotation")]
+        public ObjectProperty<Point3D> SetMaxRotation { get; internal set; }
+
+        /// <summary>
+        /// Gets or Sets the maximum speed an object rotates in a plane of rotation in 
+        /// response to the mouse. When used in an Engine, this setting controls how 
+        /// an engine responds to player input,
+        /// </summary>
+        [PropertyName("setMaxSpeed")]
+        public ObjectProperty<Point3D> SetMaxSpeed { get; internal set; }
+
+        /// <summary>
+        /// Gets or Sets the amount of acceleration per second an object can gain 
+        /// or lose when rotating in a plane of rotation. When used in an Engine object, 
+        /// acceleration sets how quickly the engine accelerates when changing between 
+        /// speed settings
+        /// </summary>
+        /// <remarks>
+        /// A lower value means it is slower to get the object moving in response to the mouse. 
+        /// For example, the defgun has 0/75/0 and tank turrets are 0/1000/0, meaning that you 
+        /// can whip the tank turrets around but it's slow going to get the defgun to start 
+        /// turning and to reverse its direction. SetMaxSpeed sets the maximum speed an object 
+        /// can turn in response to a mouse move.
+        /// 
+        /// When used in an Engine object, low acceleration will make turning sluggish but will 
+        /// increase in response the longer you hold the throttle key. Having it set very high 
+        /// should make the car start to alter speed settings more rapidly (which results in 
+        /// faster response). This controls how quickly the SetMaxSpeed part can get up to its 
+        /// set speeds, which in turn sets how quickly the engine changes between the individual 
+        /// speed segments
+        /// </remarks>
+        /// <seealso cref="http://bfmods.com/mdt/scripting/ObjectTemplate/Properties/SetAcceleration.html"/>
+        [PropertyName("setAcceleration")]
+        public ObjectProperty<Point3D> SetAcceleration { get; internal set; }
+
+        [PropertyName("setDeAcceleration")]
+        public ObjectProperty<Point3D> SetDeAcceleration { get; internal set; }
+
+        [PropertyName("setUseDeAcceleration")]
+        public ObjectProperty<bool> UseDeAcceleration { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [PropertyName("setInputToYaw")]
+        public ObjectProperty<PlayerInput> SetInputToYaw { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [PropertyName("setInputToPitch")]
+        public ObjectProperty<PlayerInput> SetInputToPitch { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <remarks>
+        /// Limits the response speed of yaw functions?
+        /// </remarks>
+        [PropertyName("regulatePitch")]
+        public ObjectProperty<string> RegulatePitch { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [PropertyName("setInputToRoll")]
+        public ObjectProperty<PlayerInput> SetInputToRoll { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [PropertyName("regulateYawInput")]
+        public ObjectProperty<PlayerInput> RegulateYawInput { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <remarks>
+        /// Limits the response speed of yaw functions?
+        /// </remarks>
+        [PropertyName("regulateYaw")]
+        public ObjectProperty<string> RegulateYaw { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [PropertyName("regulateVerticalPosInput")]
+        public ObjectProperty<PlayerInput> RegulateVerticalPosInput { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <remarks>
+        /// Limits the response speed of vertical functions?
+        /// </remarks>
+        [PropertyName("regulateVerticalPos")]
+        public ObjectProperty<string> RegulateVerticalPos { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [PropertyName("maxVertRegAngle")]
+        public ObjectProperty<double> MaxVertRegAngle { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [PropertyName("noVertRegAngle")]
+        public ObjectProperty<double> NoVertRegAngle { get; internal set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        [PropertyName("unlockIndex")]
         public ObjectProperty<int> UnlockIndex { get; internal set; }
 
         /// <summary>
         /// This property determines at what distance an object is entirely culled out from display.
         /// </summary>
-        [PropertyName("cullRadiusScale", 110)]
+        [PropertyName("cullRadiusScale")]
         public ObjectProperty<double> CullRadiusScale { get; internal set; }
 
         /// <summary>
@@ -183,7 +335,7 @@ namespace BF2ScriptingEngine.Scripting
 
         #region Object Methods
 
-        [PropertyName("addTemplate", 400)]
+        [PropertyName("addTemplate")]
         protected ObjectMethod<string> AddTemplate { get; set; }
 
         [PropertyName("setPosition")]
@@ -360,7 +512,7 @@ namespace BF2ScriptingEngine.Scripting
             if (item.SetPosition == null)
             {
                 PropertyInfo field = item.GetProperty("SetPosition").Value;
-                item.SetPosition = new ObjectProperty<string>("setPosition", token, field, this);
+                item.SetPosition = new ObjectProperty<Point3D>("setPosition", token, field, this);
                 token.File.AddProperty(item.SetPosition);
             }
 
@@ -398,7 +550,7 @@ namespace BF2ScriptingEngine.Scripting
             if (item.SetRotation == null)
             {
                 PropertyInfo field = item.GetProperty("SetRotation").Value;
-                item.SetRotation = new ObjectProperty<string>("setRotation", token, field, this);
+                item.SetRotation = new ObjectProperty<Point3D>("setRotation", token, field, this);
                 token.File.AddProperty(item.SetRotation);
             }
 

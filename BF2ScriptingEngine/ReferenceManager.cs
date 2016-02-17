@@ -22,11 +22,13 @@ namespace BF2ScriptingEngine
             // Create Object Template
             current = new ReferenceType("ObjectTemplate", typeof(ObjectTemplate));
             current.Mappings.Add("create", ObjectTemplate.Create);
+            current.Mappings.Add("activeSafe", ObjectTemplate.Create);
             AddType(current);
 
             // Create Weapon Template
             current = new ReferenceType("weaponTemplate", typeof(WeaponTemplate));
             current.Mappings.Add("create", WeaponTemplate.Create);
+            current.Mappings.Add("activeSafe", WeaponTemplate.Create);
             AddType(current);
 
             // Create Ai Template
@@ -47,6 +49,7 @@ namespace BF2ScriptingEngine
             // Create Kit Template
             current = new ReferenceType("GeometryTemplate", typeof(GeometryTemplate));
             current.Mappings.Add("create", GeometryTemplate.Create);
+            current.Mappings.Add("activeSafe", GeometryTemplate.Create);
             AddType(current);
 
             // Create Kit Template
@@ -108,7 +111,8 @@ namespace BF2ScriptingEngine
         {
             foreach (KeyValuePair<string, ReferenceType> item in Registry)
             {
-                if (item.Value.Type.IsAssignableFrom(objType))
+                Type check = item.Value.Type;
+                if (check == objType || check.IsAssignableFrom(objType))
                     return item.Value;
             }
 

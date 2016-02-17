@@ -132,9 +132,12 @@ namespace BF2Editor
 
         protected Scope CreateScope()
         {
-            // Create a new Detached scope
+            // Create a new Detached scope, because we want to keep
+            // our object references seperated, this way we can save
+            // our changes back into their correct files
             Scope scope = new Scope(GlobalScope, ScopeType.Detached);
             scope.MissingObjectHandling = MissingObjectHandling.CheckParent;
+            scope.RegisterObjects = true;
             return scope;
         }
     }
