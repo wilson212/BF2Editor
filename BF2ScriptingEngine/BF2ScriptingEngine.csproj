@@ -52,9 +52,16 @@
     <Compile Include="ReferenceManager.cs" />
     <Compile Include="ScopeType.cs" />
     <Compile Include="Scripting\Abstract\CollisionManager.cs" />
+    <Compile Include="Scripting\Components\Abstract\TargetComp.cs" />
     <Compile Include="Scripting\Components\DefaultAmmoComp.cs" />
+    <Compile Include="Scripting\Components\DefaultCollisionComp.cs" />
+    <Compile Include="Scripting\Components\DefaultDetonationComp.cs" />
+    <Compile Include="Scripting\Components\DefaultPenetrateComp.cs" />
+    <Compile Include="Scripting\Components\DefaultProjSoundComp.cs" />
+    <Compile Include="Scripting\Components\DefaultRicochetComp.cs" />
     <Compile Include="Scripting\Components\DefaultZoomComp.cs" />
     <Compile Include="Scripting\Components\Abstract\FireComp.cs" />
+    <Compile Include="Scripting\Components\LPTargetComp.cs" />
     <Compile Include="Scripting\Components\MultiFireComp.cs" />
     <Compile Include="Scripting\Components\SimpleDeviationComp.cs" />
     <Compile Include="Scripting\Components\SingleFireComp.cs" />
@@ -82,7 +89,9 @@
     <Compile Include="Scripting\ObjectTemplates\SupplyObject.cs" />
     <Compile Include="Scripting\ObjectTemplates\UAVVehicle.cs" />
     <Compile Include="Scripting\ObjectTemplates\Wing.cs" />
-    <Compile Include="Scripting\Point3D.cs" />
+    <Compile Include="Scripting\ValueTypes\CRD.cs" />
+    <Compile Include="Scripting\ValueTypes\CrdType.cs" />
+    <Compile Include="Scripting\ValueTypes\Point3D.cs" />
     <Compile Include="Scripting\RunStatement.cs" />
     <Compile Include="ReferenceType.cs" />
     <Compile Include="Scope.cs" />

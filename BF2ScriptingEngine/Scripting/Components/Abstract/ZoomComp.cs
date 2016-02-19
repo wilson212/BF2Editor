@@ -1,13 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using BF2ScriptingEngine.Scripting.Attributes;
 
 namespace BF2ScriptingEngine.Scripting.Components
 {
     public abstract class ZoomComp : ConFileObject, IComponent
     {
+        [PropertyName("startCameraId")]
+        public ObjectProperty<int> StartCameraId { get; internal set; }
+
+        [PropertyName("startCameraViewMode")]
+        public ObjectProperty<int> StartCameraViewMode { get; internal set; }
+
         public ZoomComp(string name, Token token) : base(name, token)
         {
 

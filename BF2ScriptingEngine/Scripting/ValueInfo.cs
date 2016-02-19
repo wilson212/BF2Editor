@@ -114,7 +114,7 @@ namespace BF2ScriptingEngine.Scripting
             else if (propertyType == typeof(Double))
             {
                 double dVal = (double)Convert.ChangeType(value, TypeCode.Double);
-                return dVal.ToString("0.0###", CultureInfo.InvariantCulture);
+                return dVal.ToString("0.####", CultureInfo.InvariantCulture);
             }
             else if (propertyType == typeof(Decimal))
             {
