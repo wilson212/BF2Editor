@@ -12,21 +12,21 @@ namespace BF2ScriptingEngine.Scripting.Components
         /// 300, 360, 450, 600, 900, 1200, 1800
         /// </remarks>
         [PropertyName("roundsPerMinute")]
-        public ObjectProperty<int> RoundsPerMinute { get; internal set; }
+        public virtual ObjectProperty<int> RoundsPerMinute { get; internal set; }
 
         /// <summary>
         /// Gets or Sets the time in seconds from when you pull a trigger 
         /// to when the projectile is actually fired.
         /// </summary>
         [PropertyName("fireStartDelay")]
-        public ObjectProperty<CRD> FireStartDelay { get; internal set; }
+        public virtual ObjectProperty<CRD> FireStartDelay { get; internal set; }
 
         /// <summary>
         /// Use for hand fire arms. Fire the projectile from the center of 
         /// the crosshair as opposed to the center of the weapon model.
         /// </summary>
         [PropertyName("fireInCameraDof")]
-        public ObjectProperty<bool> FireInCameraDof { get; internal set; }
+        public virtual ObjectProperty<bool> FireInCameraDof { get; internal set; }
 
         public FireComp(string name, Token token) : base(name, token)
         {

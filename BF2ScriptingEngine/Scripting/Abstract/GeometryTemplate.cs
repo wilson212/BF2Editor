@@ -25,7 +25,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </remarks>
         /// <seealso cref="http://bfmods.com/mdt/scripting/GeometryTemplate/Properties/SetLodDistance.html"/>
         [PropertyName("setSubGeometryLodDistance")]
-        public ObjectPropertyList<int, int, int> SubGeometryLodDistances { get; internal set; } 
+        public virtual ObjectPropertyList<int, int, int> SubGeometryLodDistances { get; internal set; } 
 
         #region Mappings
 

@@ -19,6 +19,17 @@ namespace BF2ScriptingEngine
             Registry = new Dictionary<string, ReferenceType>();
             ReferenceType current;
 
+            // ===== NOTE
+            // As you may notice below, there are some "activeSafe" mappings.
+            // The ScriptEngine knows how to handle an active object switch,
+            // however this mapping is ONLY used under very specific Scope settings.
+            // 
+            // If a Scope's MissingObjectHandling is set to CreateNew, than the 
+            // ActiveSafe mapping is used to create a new instance of the object type
+            // when the scope is unable to find the object instance in itself or parent
+            // scopes.
+            // ===
+
             // Create Object Template
             current = new ReferenceType("ObjectTemplate", typeof(ObjectTemplate));
             current.Mappings.Add("create", ObjectTemplate.Create);

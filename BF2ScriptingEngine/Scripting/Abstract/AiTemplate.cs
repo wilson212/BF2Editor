@@ -11,14 +11,14 @@ namespace BF2ScriptingEngine.Scripting
         /// Contains a list of Object types that dsecribe this object
         /// </summary>
         [PropertyName("addType")]
-        public ObjectPropertyList<string> Types { get; set; }
+        public virtual ObjectPropertyList<string> Types { get; set; }
 
         /// <summary>
         /// Gets or Sets how fast the bots forget the object once they cannot see it anymore. 
         /// </summary>
         /// <remarks>Format appears to be in seconds</remarks>
         [PropertyName("degeneration")]
-        public ObjectProperty<int> Degeneration { get; set; }
+        public virtual ObjectProperty<int> Degeneration { get; set; }
 
         /// <summary>
         /// This command is used to tell the bots how often they should update the information they have 
@@ -30,7 +30,7 @@ namespace BF2ScriptingEngine.Scripting
         /// erroneous decisions based on it.
         /// </remarks>
         [PropertyName("allowedTimeDiff")]
-        public ObjectProperty<double> AllowedTimeDiff { get; set; }
+        public virtual ObjectProperty<double> AllowedTimeDiff { get; set; }
 
         /// <summary>
         /// Gets or Sets the basic temperature of this template. The higher the
@@ -38,25 +38,25 @@ namespace BF2ScriptingEngine.Scripting
         /// other objects and actions
         /// </summary>
         [PropertyName("basicTemp")]
-        public ObjectProperty<int> BasicTemp { get; set; }
+        public virtual ObjectProperty<int> BasicTemp { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("commonKnowledge")]
-        public ObjectProperty<bool> CommonKnowledge { get; set; }
+        public virtual ObjectProperty<bool> CommonKnowledge { get; set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("secondary")]
-        public ObjectProperty<bool> Secondary { get; set; }
+        public virtual ObjectProperty<bool> Secondary { get; set; }
 
         /// <summary>
         /// Contains a list of AiTemplatePlugins for this object
         /// </summary>
         [PropertyName("addPlugIn")]
-        public ObjectPropertyList<string> Plugins { get; set; }
+        public virtual ObjectPropertyList<string> Plugins { get; set; }
 
         /// <summary>
         /// Creates a new instance of AiTemplate

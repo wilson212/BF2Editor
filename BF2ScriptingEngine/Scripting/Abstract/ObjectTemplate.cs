@@ -23,7 +23,7 @@ namespace BF2ScriptingEngine.Scripting
         /// The root object in the hierarchy should have this as true
         /// </remarks>
         [PropertyName("saveInSeparateFile")]
-        public ObjectProperty<bool> SaveInSeparateFile { get; internal set; }
+        public virtual ObjectProperty<bool> SaveInSeparateFile { get; internal set; }
 
         /// <summary>
         /// This command tells the game that the object is not limited to any space constraints, 
@@ -38,22 +38,22 @@ namespace BF2ScriptingEngine.Scripting
         /// <seealso cref="GenericProjectile"/>
         /// <seealso cref="http://bfmods.com/mdt/scripting/ObjectTemplate/Properties/CreateNotInGrid.html"/>
         [PropertyName("createNotInGrid")]
-        public ObjectProperty<bool> NotInGrid { get; internal set; }
+        public virtual ObjectProperty<bool> NotInGrid { get; internal set; }
 
         /// <summary>
         /// Should be true if object or part does not have a visible mesh.
         /// </summary>
         [PropertyName("createdInEditor")]
-        public ObjectProperty<bool> CreatedInEditor { get; internal set; }
+        public virtual ObjectProperty<bool> CreatedInEditor { get; internal set; }
 
         [PropertyName("castsDynamicShadow")]
-        public ObjectProperty<bool> CastsDynamicShadow { get; internal set; }
+        public virtual ObjectProperty<bool> CastsDynamicShadow { get; internal set; }
 
         /// <summary>
         /// Do not change, Unknown Function!
         /// </summary>
         [PropertyName("preCacheObject")]
-        public ObjectProperty<bool> PreCacheObject { get; internal set; }
+        public virtual ObjectProperty<bool> PreCacheObject { get; internal set; }
 
         #endregion Flags
 
@@ -63,13 +63,13 @@ namespace BF2ScriptingEngine.Scripting
         /// Last person to save the tweaks file.
         /// </summary>
         [PropertyName("creator")]
-        public ObjectProperty<string> CreatedBy { get; internal set; }
+        public virtual ObjectProperty<string> CreatedBy { get; internal set; }
 
         /// <summary>
         /// Gets the last user to modify this object
         /// </summary>
         [PropertyName("modifiedByUser")]
-        public ObjectProperty<string> ModifiedBy { get; internal set; }
+        public virtual ObjectProperty<string> ModifiedBy { get; internal set; }
 
         /// <summary>
         /// 
@@ -79,7 +79,7 @@ namespace BF2ScriptingEngine.Scripting
         /// are trying to be stored here...
         /// </remarks>
         [PropertyName("aiTemplate")] //, ExistingObject]
-        public ObjectProperty<string> AiTemplate { get; internal set; }
+        public virtual ObjectProperty<string> AiTemplate { get; internal set; }
 
         /// <summary>
         /// Gets or Sets the named geometry object
@@ -94,19 +94,19 @@ namespace BF2ScriptingEngine.Scripting
         /// Gets or Sets the name of the network id for this object.
         /// </summary>
         [PropertyName("networkableInfo", "setNetworkableInfo")]
-        public ObjectProperty<NetworkableInfo> NetworkableInfo { get; internal set; }
+        public virtual ObjectProperty<NetworkableInfo> NetworkableInfo { get; internal set; }
 
         [PropertyName("collisionMesh", "setCollisionMesh")]
-        public ObjectProperty<string> CollisionMesh { get; internal set; }
+        public virtual ObjectProperty<string> CollisionMesh { get; internal set; }
 
         [PropertyName("collisionPart")]
-        public ObjectProperty<int> CollisionPart { get; internal set; }
+        public virtual ObjectProperty<int> CollisionPart { get; internal set; }
 
         /// <summary>
         /// Do not change, Unknown Function!
         /// </summary>
         [PropertyName("anchor")]
-        public ObjectProperty<string> Anchor { get; internal set; }
+        public virtual ObjectProperty<string> Anchor { get; internal set; }
 
         /// <summary>
         /// 
@@ -117,7 +117,7 @@ namespace BF2ScriptingEngine.Scripting
         /// 3rd Param is material number
         /// </remarks>
         [PropertyName("mapMaterial")]
-        public ObjectPropertyList<int, string, int> Materials { get; internal set; }
+        public virtual ObjectPropertyList<int, string, int> Materials { get; internal set; }
 
         #endregion Default
 
@@ -130,7 +130,7 @@ namespace BF2ScriptingEngine.Scripting
         /// When set, the geometry mesh associated with this object must have at least one collision mesh
         /// </remarks>
         [PropertyName("hasCollisionPhysics", "setHasCollisionPhysics")]
-        public ObjectProperty<bool> HasCollisionPhysics { get; internal set; }
+        public virtual ObjectProperty<bool> HasCollisionPhysics { get; internal set; }
 
         /// <summary>
         /// Gets or Sets that this object can collide with other objects
@@ -139,7 +139,7 @@ namespace BF2ScriptingEngine.Scripting
         /// When set, the geometry mesh associated with this object must have at least one collision mesh
         /// </remarks>
         [PropertyName("physicsType")]
-        public ObjectProperty<PhysicsType> PhysicsType { get; internal set; }
+        public virtual ObjectProperty<PhysicsType> PhysicsType { get; internal set; }
 
         /// <summary>
         /// Gets or Sets whether this object is mobile
@@ -149,13 +149,13 @@ namespace BF2ScriptingEngine.Scripting
         /// This property sets the physics engine to calculate the object in the world as a mobile object. 
         /// </remarks>
         [PropertyName("hasMobilePhysics")]
-        public ObjectProperty<bool> HasMobilePhysics { get; internal set; }
+        public virtual ObjectProperty<bool> HasMobilePhysics { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("floaterMod")]
-        public ObjectProperty<decimal> FloaterMod { get; internal set; }
+        public virtual ObjectProperty<decimal> FloaterMod { get; internal set; }
 
         #endregion Physics
 
@@ -189,7 +189,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </remarks>
         /// <seealso cref="http://bfmods.com/mdt/scripting/ObjectTemplate/Properties/SetMinRotation.html"/>
         [PropertyName("setMinRotation")]
-        public ObjectProperty<Point3D> SetMinRotation { get; internal set; }
+        public virtual ObjectProperty<Point3D> SetMinRotation { get; internal set; }
 
         /// <summary>
         /// Gets or Sets the maximum rotation angles in degrees for an object, 
@@ -199,7 +199,7 @@ namespace BF2ScriptingEngine.Scripting
         /// See SetMinRotation for a full explanation.
         /// </remarks>
         [PropertyName("setMaxRotation")]
-        public ObjectProperty<Point3D> SetMaxRotation { get; internal set; }
+        public virtual ObjectProperty<Point3D> SetMaxRotation { get; internal set; }
 
         /// <summary>
         /// Gets or Sets the maximum speed an object rotates in a plane of rotation in 
@@ -207,7 +207,7 @@ namespace BF2ScriptingEngine.Scripting
         /// an engine responds to player input,
         /// </summary>
         [PropertyName("setMaxSpeed")]
-        public ObjectProperty<Point3D> SetMaxSpeed { get; internal set; }
+        public virtual ObjectProperty<Point3D> SetMaxSpeed { get; internal set; }
 
         /// <summary>
         /// Gets or Sets the amount of acceleration per second an object can gain 
@@ -231,25 +231,25 @@ namespace BF2ScriptingEngine.Scripting
         /// </remarks>
         /// <seealso cref="http://bfmods.com/mdt/scripting/ObjectTemplate/Properties/SetAcceleration.html"/>
         [PropertyName("setAcceleration")]
-        public ObjectProperty<Point3D> SetAcceleration { get; internal set; }
+        public virtual ObjectProperty<Point3D> SetAcceleration { get; internal set; }
 
         [PropertyName("setDeAcceleration")]
-        public ObjectProperty<Point3D> SetDeAcceleration { get; internal set; }
+        public virtual ObjectProperty<Point3D> SetDeAcceleration { get; internal set; }
 
         [PropertyName("setUseDeAcceleration")]
-        public ObjectProperty<bool> UseDeAcceleration { get; internal set; }
+        public virtual ObjectProperty<bool> UseDeAcceleration { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("setInputToYaw")]
-        public ObjectProperty<PlayerInput> SetInputToYaw { get; internal set; }
+        public virtual ObjectProperty<PlayerInput> SetInputToYaw { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("setInputToPitch")]
-        public ObjectProperty<PlayerInput> SetInputToPitch { get; internal set; }
+        public virtual ObjectProperty<PlayerInput> SetInputToPitch { get; internal set; }
 
         /// <summary>
         /// 
@@ -258,19 +258,19 @@ namespace BF2ScriptingEngine.Scripting
         /// Limits the response speed of yaw functions?
         /// </remarks>
         [PropertyName("regulatePitch")]
-        public ObjectProperty<string> RegulatePitch { get; internal set; }
+        public virtual ObjectProperty<string> RegulatePitch { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("setInputToRoll")]
-        public ObjectProperty<PlayerInput> SetInputToRoll { get; internal set; }
+        public virtual ObjectProperty<PlayerInput> SetInputToRoll { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("regulateYawInput")]
-        public ObjectProperty<PlayerInput> RegulateYawInput { get; internal set; }
+        public virtual ObjectProperty<PlayerInput> RegulateYawInput { get; internal set; }
 
         /// <summary>
         /// 
@@ -279,13 +279,13 @@ namespace BF2ScriptingEngine.Scripting
         /// Limits the response speed of yaw functions?
         /// </remarks>
         [PropertyName("regulateYaw")]
-        public ObjectProperty<string> RegulateYaw { get; internal set; }
+        public virtual ObjectProperty<string> RegulateYaw { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("regulateVerticalPosInput")]
-        public ObjectProperty<PlayerInput> RegulateVerticalPosInput { get; internal set; }
+        public virtual ObjectProperty<PlayerInput> RegulateVerticalPosInput { get; internal set; }
 
         /// <summary>
         /// 
@@ -294,31 +294,31 @@ namespace BF2ScriptingEngine.Scripting
         /// Limits the response speed of vertical functions?
         /// </remarks>
         [PropertyName("regulateVerticalPos")]
-        public ObjectProperty<string> RegulateVerticalPos { get; internal set; }
+        public virtual ObjectProperty<string> RegulateVerticalPos { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("maxVertRegAngle")]
-        public ObjectProperty<double> MaxVertRegAngle { get; internal set; }
+        public virtual ObjectProperty<double> MaxVertRegAngle { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("noVertRegAngle")]
-        public ObjectProperty<double> NoVertRegAngle { get; internal set; }
+        public virtual ObjectProperty<double> NoVertRegAngle { get; internal set; }
 
         /// <summary>
         /// 
         /// </summary>
         [PropertyName("unlockIndex")]
-        public ObjectProperty<int> UnlockIndex { get; internal set; }
+        public virtual ObjectProperty<int> UnlockIndex { get; internal set; }
 
         /// <summary>
         /// This property determines at what distance an object is entirely culled out from display.
         /// </summary>
         [PropertyName("cullRadiusScale")]
-        public ObjectProperty<double> CullRadiusScale { get; internal set; }
+        public virtual ObjectProperty<double> CullRadiusScale { get; internal set; }
 
         /// <summary>
         /// Contains a list of child objects attached to this object
@@ -356,6 +356,11 @@ namespace BF2ScriptingEngine.Scripting
         /// </summary>
         public static Dictionary<string, Type> ObjectTypes { get; set; }
 
+        /// <summary>
+        /// Contains a Mapping of component types, that inherit from <see cref="IComponent"/>
+        /// </summary>
+        public static Dictionary<string, Type> ComponentTypes { get; set; }
+
         #endregion
 
         /// <summary>
@@ -369,12 +374,18 @@ namespace BF2ScriptingEngine.Scripting
             // Create our component map
             ComponentMap = new Dictionary<string, Dictionary<string, PropertyInfo>>();
 
-            // Create object mappings
+            // Create object mappings of type ObjectTemplate
             var Comparer = StringComparer.InvariantCultureIgnoreCase;
             Type baseType = typeof(ObjectTemplate);
             Type[] typelist = TypeCache.GetTypesInNamespace("BF2ScriptingEngine.Scripting")
                 .Where(x => baseType.IsAssignableFrom(x)).ToArray();
             ObjectTypes = typelist.ToDictionary(x => x.Name, v => v, Comparer);
+
+            // Create mappings of all Components
+            typelist = TypeCache.GetTypesInNamespace("BF2ScriptingEngine.Scripting.Components")
+                .Where(x => !x.IsAbstract && x.GetInterface("IComponent") != null)
+                .ToArray();
+            ComponentTypes = typelist.ToDictionary(x => x.Name, v => v, Comparer);
         }
 
         /// <summary>
@@ -394,7 +405,7 @@ namespace BF2ScriptingEngine.Scripting
             // Grab this derived type information
             Type type = this.GetType();
 
-            // Ensure we have a map of components => property
+            // Map components that are used in this template
             if (!ComponentMap.ContainsKey(type.Name))
             {
                 Dictionary<string, PropertyInfo> properties = new Dictionary<string, PropertyInfo>();
@@ -415,6 +426,7 @@ namespace BF2ScriptingEngine.Scripting
                     }
                 }
 
+                // [name] => array of component types that are used in this template
                 ComponentMap[type.Name] = properties;
             }
         }
@@ -426,7 +438,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </summary>
         /// <param name="token"></param>
         /// <param name="comment"></param>
-        public virtual ConFileEntry Method_CreateComponent(Token token, string name)
+        protected virtual ConFileEntry Method_CreateComponent(Token token, string name)
         {
             Type type = this.GetType();
 
@@ -434,7 +446,11 @@ namespace BF2ScriptingEngine.Scripting
             token.Kind = TokenType.Component;
 
             // Ensure we have a map of components => property
-            if (!ComponentMap.ContainsKey(type.Name))
+            if (!ComponentTypes.ContainsKey(name))
+            {
+                throw new Exception($"Unregistered component type \"{name}\"");
+            }
+            else if (!ComponentMap.ContainsKey(type.Name))
             {
                 throw new Exception($"Object type \"{type.Name}\" does not support Components");
             }
@@ -445,7 +461,8 @@ namespace BF2ScriptingEngine.Scripting
 
             // Get our field 
             PropertyInfo property = ComponentMap[type.Name][name];
-            Type componentType = property.PropertyType.GenericTypeArguments[0];
+            //Type componentType = property.PropertyType.GenericTypeArguments[0];
+            Type componentType = ComponentTypes[name];
             var args = new object[] { name, token };
 
             // Create instances
@@ -469,7 +486,7 @@ namespace BF2ScriptingEngine.Scripting
         /// <param name="token"></param>
         /// <param name="name"></param>
         /// <returns></returns>
-        public virtual ConFileEntry Method_AddTemplate(Token token, string name)
+        protected virtual ConFileEntry Method_AddTemplate(Token token, string name)
         {
             // Get the internal property, and check if templates is null
             var info = GetProperty("__addTemplate").Value;
@@ -497,7 +514,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </remarks>
         /// <param name="token"></param>
         /// <param name="arg1"></param>
-        private ConFileEntry Method_SetPosition(Token token, string arg1 = "0/0/0")
+        protected virtual ConFileEntry Method_SetPosition(Token token, string arg1 = "0/0/0")
         {
             // Ensure that we have a child template to set the position on
             ChildTemplate item = Templates?.Items?.LastOrDefault()?.Value;
@@ -535,7 +552,7 @@ namespace BF2ScriptingEngine.Scripting
         /// </remarks>
         /// <param name="token"></param>
         /// <param name="arg1"></param>
-        private ConFileEntry Method_SetRotation(Token token, string arg1 = "0/0/0")
+        protected virtual ConFileEntry Method_SetRotation(Token token, string arg1 = "0/0/0")
         {
             // Ensure that we have a child template
             ChildTemplate item = Templates?.Items?.LastOrDefault()?.Value;

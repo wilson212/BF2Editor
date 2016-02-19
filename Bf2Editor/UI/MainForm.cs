@@ -201,7 +201,7 @@ namespace BF2Editor
                         await nspace.LoadFile($"{subdirName}.con");
 
                         // Load tweak (if it exists)
-                        //await nspace.LoadFile($"{subdirName}.tweak");
+                        await nspace.LoadFile($"{subdirName}.tweak");
 
                         // Load Ai Files
                         await nspace.LoadFile("ai/Objects.ai");
